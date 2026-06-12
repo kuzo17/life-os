@@ -1802,8 +1802,10 @@ function deleteTx(ts){
     moveAsset(tx.asset, tx.tipo==='entrata'?-tx.importo:tx.importo);
     log.splice(idx,1);
     sv('txLog',log);
+    sv('assets',ld('assets',[])); // forza sync assets su Firebase
     renderAssets();renderTxMonth();
-    if(txLogVisible){txLogVisible=false;toggleTxLog();}
+    // Ricarica storico se aperto
+    if(txLogVisible){txLogVisible=false;toggleTxLog();setTimeout(()=>{txLogVisible=false;toggleTxLog();},100);}
     updateOv();renderTopbar();renderCharts();renderPatTarget();
     toast('TRANSAZIONE ANNULLATA');
   });
@@ -1968,14 +1970,31 @@ function importData(e){const file=e.target.files[0];if(!file)return;const reader
 
 // Ricarica tutta la UI (chiamato da Firebase real-time listener)
 window._refreshAll = function(){
-  const inDet = document.getElementById('det')?.style.display !== 'none';
+  const detEl = document.getElementById('det');
+  const inDet = detEl?.style.display !== 'none';
   if(!inDet){
     renderHome();
     renderTopbar();
+  } else {
+    // Siamo dentro un progetto: aggiorna la home in background e riapri il progetto corrente
+    renderTopbar();
+    // Trova quale progetto è aperto guardando il titolo nel dettaglio
+    const projTitle = detEl?.querySelector('.dn');
+    if(projTitle){
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const tag = projTitle.textContent.trim();
+      const proj = allProjs.find(p=>p.tag===tag);
+      if(proj) openProj(proj.id);
+    }
   }
   renderHab();
   renderAssets();
   renderTxMonth();
+  if(txLogVisible){
+    // Ricarica storico se aperto
+    const el=document.getElementById('tx-log');
+    if(el&&el.style.display!=='none'){txLogVisible=false;toggleTxLog();}
+  }
   renderSpese();
   renderSpeseGen();
   updateOv();
