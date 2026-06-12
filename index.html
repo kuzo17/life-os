@@ -73,13 +73,22 @@ window._fbListen = function(){
     const data = snapshot.val();
     let changed = false;
     Object.keys(data).forEach(k => {
-      // Salta se questa chiave è stata scritta da noi negli ultimi 3 secondi
-      if(_writeKeys[k] && Date.now() - _writeKeys[k] < 3000) return;
+      // txLog e assets non vengono mai bloccati — devono sempre sincronizzare
+      const neverBlock = ['txLog','assets'];
+      if(!neverBlock.includes(k) && _writeKeys[k] && Date.now() - _writeKeys[k] < 3000) return;
       const fbJson = JSON.stringify(data[k]);
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
         changed = true;
+      }
+    });
+    // Gestisce chiavi eliminate su Firebase (es. chiave che non esiste più)
+    Object.keys(localStorage).forEach(lk => {
+      if(!lk.startsWith('g_')) return;
+      const k = lk.slice(2);
+      if(!(k in data) && !(_writeKeys[k] && Date.now() - _writeKeys[k] < 3000)){
+        // La chiave non esiste più su Firebase — non toccare (potrebbero essere dati locali validi)
       }
     });
     if(changed && window._refreshAll) window._refreshAll();
@@ -1799,14 +1808,20 @@ function deleteTx(ts){
     const idx=log.findIndex(t=>t.ts===ts);
     if(idx<0)return;
     const tx=log[idx];
+    // Prima aggiorna asset
     moveAsset(tx.asset, tx.tipo==='entrata'?-tx.importo:tx.importo);
+    sv('assets',ld('assets',[]));
+    // Poi aggiorna txLog con piccolo delay per evitare race condition
     log.splice(idx,1);
-    sv('txLog',log);
-    sv('assets',ld('assets',[])); // forza sync assets su Firebase
-    renderAssets();renderTxMonth();
-    // Ricarica storico se aperto
-    if(txLogVisible){txLogVisible=false;toggleTxLog();setTimeout(()=>{txLogVisible=false;toggleTxLog();},100);}
-    updateOv();renderTopbar();renderCharts();renderPatTarget();
+    setTimeout(()=>{
+      sv('txLog',log);
+      renderAssets();renderTxMonth();
+      if(txLogVisible){
+        const el=document.getElementById('tx-log');
+        if(el&&el.style.display!=='none'){txLogVisible=false;setTimeout(()=>toggleTxLog(),50);}
+      }
+      updateOv();renderTopbar();renderCharts();renderPatTarget();
+    },100);
     toast('TRANSAZIONE ANNULLATA');
   });
 }
@@ -1972,13 +1987,11 @@ function importData(e){const file=e.target.files[0];if(!file)return;const reader
 window._refreshAll = function(){
   const detEl = document.getElementById('det');
   const inDet = detEl?.style.display !== 'none';
-  if(!inDet){
-    renderHome();
-    renderTopbar();
-  } else {
-    // Siamo dentro un progetto: aggiorna la home in background e riapri il progetto corrente
-    renderTopbar();
-    // Trova quale progetto è aperto guardando il titolo nel dettaglio
+  // Aggiorna sempre home (percentuali card si aggiornano)
+  renderHome();
+  renderTopbar();
+  if(inDet){
+    // Riapri il progetto corrente con dati aggiornati
     const projTitle = detEl?.querySelector('.dn');
     if(projTitle){
       const allProjs=[...PD,...ld('customProjs',[])];
@@ -1991,7 +2004,6 @@ window._refreshAll = function(){
   renderAssets();
   renderTxMonth();
   if(txLogVisible){
-    // Ricarica storico se aperto
     const el=document.getElementById('tx-log');
     if(el&&el.style.display!=='none'){txLogVisible=false;toggleTxLog();}
   }
