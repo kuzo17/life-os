@@ -15,7 +15,7 @@
 <script type="module">
 // ── FIREBASE ──────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwcdUR6jo9yWIJFguZ-XpKmmlLUr5sitk",
@@ -29,52 +29,64 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
-const ROOT = 'lifeOS/data';
+const ROOT = 'lifeOS';
 
-// Salva TUTTO il localStorage su Firebase come unico oggetto
-window._fbSaveAll = function(){
-  const data = {};
-  Object.keys(localStorage).forEach(k=>{
-    if(k.startsWith('g_')){
-      try{ data[k.slice(2)] = JSON.parse(localStorage.getItem(k)); }catch(e){}
-    }
-  });
-  set(ref(db, ROOT), data).catch(e=>console.warn('Firebase write:', e));
+// Scrive una singola chiave su Firebase
+window._fbWrite = (key, value) => {
+  set(ref(db, ROOT+'/'+key), value).catch(e => console.warn('FB write:', e));
 };
 
-// Legge tutto da Firebase → localStorage
+// Legge tutto il nodo e popola localStorage
 window._fbLoadAll = function(cb){
-  get(ref(db, ROOT)).then(snapshot=>{
+  get(ref(db, ROOT)).then(snapshot => {
     if(snapshot.exists()){
       const data = snapshot.val();
-      Object.keys(data).forEach(k=>{
+      Object.keys(data).forEach(k => {
         try{ localStorage.setItem('g_'+k, JSON.stringify(data[k])); }catch(e){}
       });
       console.log('Dati caricati da Firebase');
+    } else {
+      // Firebase vuoto: carica da localStorage e fai upload iniziale
+      console.log('Firebase vuoto, carico da localStorage');
+      Object.keys(localStorage).forEach(k => {
+        if(k.startsWith('g_')){
+          try{
+            const key = k.slice(2);
+            const val = JSON.parse(localStorage.getItem(k));
+            window._fbWrite(key, val);
+          }catch(e){}
+        }
+      });
     }
     if(cb) cb();
-  }).catch(e=>{ console.warn('Firebase read:', e); if(cb) cb(); });
+  }).catch(e => { console.warn('FB read:', e); if(cb) cb(); });
 };
 
-// Listener real-time: quando Firebase cambia da un altro dispositivo, aggiorna tutto
-let _writeTs = 0;
-let _listening = false;
+// Real-time: ascolta cambiamenti per chiave singola
+// Usa un debounce per evitare loop tra dispositivi
+let _writeKeys = {}; // tiene traccia delle chiavi scritte di recente da questo dispositivo
 
 window._fbListen = function(){
-  if(_listening) return;
-  _listening = true;
-  onValue(ref(db, ROOT), snapshot=>{
-    if(Date.now() - _writeTs < 3000) return; // ignora le nostre stesse scritture
+  // Ascolta il nodo root — quando cambia qualcosa aggiorna solo le chiavi cambiate
+  onValue(ref(db, ROOT), snapshot => {
     if(!snapshot.exists()) return;
     const data = snapshot.val();
-    Object.keys(data).forEach(k=>{
-      try{ localStorage.setItem('g_'+k, JSON.stringify(data[k])); }catch(e){}
+    let changed = false;
+    Object.keys(data).forEach(k => {
+      // Salta se questa chiave è stata scritta da noi negli ultimi 3 secondi
+      if(_writeKeys[k] && Date.now() - _writeKeys[k] < 3000) return;
+      const fbJson = JSON.stringify(data[k]);
+      const localJson = localStorage.getItem('g_'+k);
+      if(fbJson !== localJson){
+        try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
+        changed = true;
+      }
     });
-    if(window._refreshAll) window._refreshAll();
+    if(changed && window._refreshAll) window._refreshAll();
   });
 };
 
-window._fbMarkWrite = function(){ _writeTs = Date.now(); };
+window._fbMarkKey = function(key){ _writeKeys[key] = Date.now(); };
 window._fbReady = true;
 console.log('Firebase connesso');
 </script>
@@ -419,7 +431,7 @@ textarea::placeholder{color:#333;}
 const sv=(k,v)=>{
   try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
   if(window._fbReady){
-    try{window._fbMarkWrite();window._fbSaveAll();}catch(e){}
+    try{window._fbMarkKey(k);window._fbWrite(k,v);}catch(e){}
   }
 };
 const ld=(k,d)=>{
