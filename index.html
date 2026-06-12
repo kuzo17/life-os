@@ -15,7 +15,7 @@
 <script type="module">
 // ── FIREBASE ──────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwcdUR6jo9yWIJFguZ-XpKmmlLUr5sitk",
@@ -31,12 +31,12 @@ const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
 const ROOT = 'lifeOS';
 
-// Scrive una singola chiave su Firebase
+// Scrive una chiave su Firebase
 window._fbWrite = (key, value) => {
   set(ref(db, ROOT+'/'+key), value).catch(e => console.warn('FB write:', e));
 };
 
-// Legge tutto il nodo e popola localStorage
+// Carica tutto da Firebase → localStorage al boot
 window._fbLoadAll = function(cb){
   get(ref(db, ROOT)).then(snapshot => {
     if(snapshot.exists()){
@@ -46,15 +46,10 @@ window._fbLoadAll = function(cb){
       });
       console.log('Dati caricati da Firebase');
     } else {
-      // Firebase vuoto: carica da localStorage e fai upload iniziale
-      console.log('Firebase vuoto, carico da localStorage');
-      Object.keys(localStorage).forEach(k => {
-        if(k.startsWith('g_')){
-          try{
-            const key = k.slice(2);
-            const val = JSON.parse(localStorage.getItem(k));
-            window._fbWrite(key, val);
-          }catch(e){}
+      // Firebase vuoto: upload iniziale da localStorage
+      Object.keys(localStorage).forEach(lk => {
+        if(lk.startsWith('g_')){
+          try{ window._fbWrite(lk.slice(2), JSON.parse(localStorage.getItem(lk))); }catch(e){}
         }
       });
     }
@@ -62,46 +57,40 @@ window._fbLoadAll = function(cb){
   }).catch(e => { console.warn('FB read:', e); if(cb) cb(); });
 };
 
-// Real-time: ascolta cambiamenti per chiave singola
-// Usa un debounce per evitare loop tra dispositivi
-let _writeKeys = {}; // tiene traccia delle chiavi scritte di recente da questo dispositivo
+// Snapshot locale dell'ultimo stato inviato a Firebase
+// Serve per non riprocessare i nostri stessi aggiornamenti
+const _sentToFb = {};
 
 window._fbListen = function(){
-  // Ascolta il nodo root — quando cambia qualcosa aggiorna solo le chiavi cambiate
   onValue(ref(db, ROOT), snapshot => {
     if(!snapshot.exists()) return;
     const data = snapshot.val();
-    let changed = false;
+    let changed = [];
+
     Object.keys(data).forEach(k => {
-      // txLog e assets: sempre sincronizzati, mai bloccati
-      const alwaysSync = ['txLog','assets'];
-      const isBlocked = !alwaysSync.includes(k) && _writeKeys[k] && Date.now() - _writeKeys[k] < 3000;
-      if(isBlocked) return;
       const fbJson = JSON.stringify(data[k]);
+      // Se questo valore è esattamente quello che abbiamo appena inviato noi, skip
+      if(_sentToFb[k] === fbJson) return;
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
-        changed = true;
-        // Se txLog cambia, forza refresh UI transazioni subito
-        if(k === 'txLog'){
-          setTimeout(()=>{
-            renderTxMonth();
-            if(txLogVisible){
-              txLogVisible=false;
-              const el=document.getElementById('tx-log');
-              if(el){el.style.display='none';}
-              setTimeout(()=>toggleTxLog(),50);
-            }
-            updateOv();
-          },0);
-        }
+        changed.push(k);
       }
     });
-    if(changed && window._refreshAll) window._refreshAll();
+
+    if(changed.length > 0 && window._refreshAll){
+      window._refreshAll(changed);
+    }
   });
 };
 
-window._fbMarkKey = function(key){ _writeKeys[key] = Date.now(); };
+// Marca un valore come "appena inviato da noi" così il listener lo ignora
+window._fbMarkSent = function(key, value){
+  _sentToFb[key] = JSON.stringify(value);
+  // Dopo 5 secondi rimuovi il blocco così aggiornamenti futuri passano
+  setTimeout(() => { delete _sentToFb[key]; }, 5000);
+};
+
 window._fbReady = true;
 console.log('Firebase connesso');
 </script>
@@ -446,7 +435,10 @@ textarea::placeholder{color:#333;}
 const sv=(k,v)=>{
   try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
   if(window._fbReady){
-    try{window._fbMarkKey(k);window._fbWrite(k,v);}catch(e){}
+    try{
+      window._fbMarkSent(k,v);
+      window._fbWrite(k,v);
+    }catch(e){}
   }
 };
 const ld=(k,d)=>{
@@ -1992,37 +1984,62 @@ function exportData(){const keys=Object.keys(localStorage).filter(k=>k.startsWit
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.keys(data).forEach(k=>localStorage.setItem('g_'+k,JSON.stringify(data[k])));toast('IMPORTATO — RICARICA');setTimeout(()=>{renderHome();renderHab();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();updateOv();const qn=document.getElementById('quicknote');if(qn)qn.value=ld('quicknote','');const tgt=document.getElementById('pat-tgt-inp');if(tgt)tgt.value='€'+(ld('pat_target',0)).toFixed(0);},300);}catch(err){toast('ERRORE IMPORT');}};reader.readAsText(file);}
 
 // Ricarica tutta la UI (chiamato da Firebase real-time listener)
-window._refreshAll = function(){
+window._refreshAll = function(changedKeys){
+  changedKeys = changedKeys || [];
   const detEl = document.getElementById('det');
   const inDet = detEl?.style.display !== 'none';
-  // Aggiorna sempre home (percentuali card si aggiornano)
+
+  // Aggiorna home (percentuali card)
   renderHome();
   renderTopbar();
+
+  // Se siamo dentro un progetto, aggiorna solo i pezzi cambiati senza riaprire tutto
   if(inDet){
-    // Riapri il progetto corrente con dati aggiornati
     const projTitle = detEl?.querySelector('.dn');
     if(projTitle){
       const allProjs=[...PD,...ld('customProjs',[])];
       const tag = projTitle.textContent.trim();
       const proj = allProjs.find(p=>p.tag===tag);
-      if(proj) openProj(proj.id);
+      if(proj){
+        const id = proj.id;
+        // Aggiorna % header triplo se cambiano task/obiettivi
+        const needsPctUpdate = changedKeys.some(k =>
+          k.startsWith('dtasks_'+id) || k.startsWith('dchecks_'+id) ||
+          k.startsWith('wtasks_'+id) || k.startsWith('wchecks_'+id) ||
+          k.startsWith('goals_'+id) || k.startsWith('gchecks_'+id)
+        );
+        if(needsPctUpdate || changedKeys.length === 0){
+          // Riapri il progetto aggiornato
+          openProj(id);
+          return; // openProj gestisce già tutto il resto del dettaglio
+        }
+      }
     }
   }
-  renderHab();
-  renderAssets();
-  renderTxMonth();
-  if(txLogVisible){
-    const el=document.getElementById('tx-log');
-    if(el&&el.style.display!=='none'){txLogVisible=false;toggleTxLog();}
+
+  // Aggiorna sezioni specifiche in base alle chiavi cambiate
+  const keys = changedKeys;
+  const hasAssets = keys.includes('assets') || keys.length===0;
+  const hasTx = keys.includes('txLog') || keys.length===0;
+  const hasHabits = keys.some(k=>k.startsWith('habit')) || keys.length===0;
+  const hasSpese = keys.some(k=>k.startsWith('spese_')||k==='speseGen') || keys.length===0;
+
+  if(hasAssets){renderAssets();renderCharts();renderPatTarget();renderPatChart();}
+  if(hasTx){
+    renderTxMonth();
+    if(txLogVisible){
+      txLogVisible=false;
+      const el=document.getElementById('tx-log');
+      if(el) el.style.display='none';
+      setTimeout(()=>toggleTxLog(),50);
+    }
   }
-  renderSpese();
-  renderSpeseGen();
+  if(hasHabits) renderHab();
+  if(hasSpese){renderSpese();renderSpeseGen();}
   updateOv();
-  renderCharts();
-  renderPatTarget();
-  renderPatChart();
   const qn=document.getElementById('quicknote');
-  if(qn && document.activeElement!==qn) qn.value=ld('quicknote','');
+  if(qn && document.activeElement!==qn && (keys.includes('quicknote')||keys.length===0))
+    qn.value=ld('quicknote','');
   toast('↕ sync');
 };
 
