@@ -73,22 +73,28 @@ window._fbListen = function(){
     const data = snapshot.val();
     let changed = false;
     Object.keys(data).forEach(k => {
-      // txLog e assets non vengono mai bloccati — devono sempre sincronizzare
-      const neverBlock = ['txLog','assets'];
-      if(!neverBlock.includes(k) && _writeKeys[k] && Date.now() - _writeKeys[k] < 3000) return;
+      // txLog e assets: sempre sincronizzati, mai bloccati
+      const alwaysSync = ['txLog','assets'];
+      const isBlocked = !alwaysSync.includes(k) && _writeKeys[k] && Date.now() - _writeKeys[k] < 3000;
+      if(isBlocked) return;
       const fbJson = JSON.stringify(data[k]);
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
         changed = true;
-      }
-    });
-    // Gestisce chiavi eliminate su Firebase (es. chiave che non esiste più)
-    Object.keys(localStorage).forEach(lk => {
-      if(!lk.startsWith('g_')) return;
-      const k = lk.slice(2);
-      if(!(k in data) && !(_writeKeys[k] && Date.now() - _writeKeys[k] < 3000)){
-        // La chiave non esiste più su Firebase — non toccare (potrebbero essere dati locali validi)
+        // Se txLog cambia, forza refresh UI transazioni subito
+        if(k === 'txLog'){
+          setTimeout(()=>{
+            renderTxMonth();
+            if(txLogVisible){
+              txLogVisible=false;
+              const el=document.getElementById('tx-log');
+              if(el){el.style.display='none';}
+              setTimeout(()=>toggleTxLog(),50);
+            }
+            updateOv();
+          },0);
+        }
       }
     });
     if(changed && window._refreshAll) window._refreshAll();
@@ -1808,20 +1814,22 @@ function deleteTx(ts){
     const idx=log.findIndex(t=>t.ts===ts);
     if(idx<0)return;
     const tx=log[idx];
-    // Prima aggiorna asset
+    // Annulla effetto sull'asset
     moveAsset(tx.asset, tx.tipo==='entrata'?-tx.importo:tx.importo);
-    sv('assets',ld('assets',[]));
-    // Poi aggiorna txLog con piccolo delay per evitare race condition
+    // Rimuovi dal log e salva entrambi atomicamente
     log.splice(idx,1);
-    setTimeout(()=>{
-      sv('txLog',log);
-      renderAssets();renderTxMonth();
-      if(txLogVisible){
-        const el=document.getElementById('tx-log');
-        if(el&&el.style.display!=='none'){txLogVisible=false;setTimeout(()=>toggleTxLog(),50);}
-      }
-      updateOv();renderTopbar();renderCharts();renderPatTarget();
-    },100);
+    sv('txLog',log);
+    sv('assets',ld('assets',[]));
+    // Aggiorna UI locale
+    renderAssets();
+    renderTxMonth();
+    if(txLogVisible){
+      txLogVisible=false;
+      const el=document.getElementById('tx-log');
+      if(el) el.style.display='none';
+      setTimeout(()=>toggleTxLog(),50);
+    }
+    updateOv();renderTopbar();renderCharts();renderPatTarget();
     toast('TRANSAZIONE ANNULLATA');
   });
 }
