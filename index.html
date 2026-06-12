@@ -436,7 +436,8 @@ const sv=(k,v)=>{
   try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
   if(window._fbReady){
     try{
-      window._fbMarkSent(k,v);
+      // txLog non viene mai bloccato nel listener — non marcare
+      if(k !== 'txLog') window._fbMarkSent(k,v);
       window._fbWrite(k,v);
     }catch(e){}
   }
@@ -617,7 +618,7 @@ function initData(){
   sv('habitDots',[0,1,2,3,4].map(()=>Array(7).fill(false)));
   sv('finIn',[{l:'Paghetta famiglia',v:200},{l:'Lavoro negozio STOSA',v:400},{l:'Variabili',v:0}]);
   sv('finOut',[{l:'Spese personali',v:0},{l:'Strumenti & software',v:0},{l:'RunPod / compute',v:0}]);
-  sv('assets',[{l:'Liquidità',v:0,special:'liquidity'},{l:'Risparmi',v:750,special:'savings'},{l:'Carte eBay (val. mercato)',v:0},{l:'Vinted (potenziale)',v:0}]);
+  sv('assets',[{l:'Liquidità',v:100,special:'liquidity'},{l:'Risparmi',v:750,special:'savings'},{l:'Carte eBay (val. mercato)',v:0},{l:'Vinted (potenziale)',v:0}]);
   sv('modelli',[{l:'STOSA Messina',v:400,freq:'mensile'},{l:'Paghetta famiglia',v:50,freq:'settimanale'}]);
   sv('txLog',[]);
   sv('dataInit',true);
@@ -1540,7 +1541,7 @@ function ckSpesa(i,id){
   const wasPaid=s[i].paid;
   if(!wasPaid&&s[i].v>0){
     // Chiede da quale asset scalare
-    const assets=ld('assets',[]);
+    const assets=ld('assets',[]).filter(a=>a.special);
     const opts=assets.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:#000a;z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
@@ -1714,7 +1715,8 @@ function renderAssets(){
 }
 
 function populateAssetSelects(){
-  const a=ld('assets',[]);
+  // Solo Liquidità e Risparmi per entrate/uscite
+  const a=ld('assets',[]).filter(x=>x.special);
   const opts=a.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
   ['reg-asset','reg-out-asset'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1919,7 +1921,7 @@ function ckSpeseGen(i){
   const s=ld('speseGen',[]);
   const wasPaid=s[i].paid;
   if(!wasPaid&&s[i].v>0){
-    const assets=ld('assets',[]);
+    const assets=ld('assets',[]).filter(a=>a.special);
     const opts=assets.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:#000a;z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
