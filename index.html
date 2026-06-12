@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script type="module">
-// ── FIREBASE SDK ─────────────────────────────────────────
+// ── FIREBASE ──────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -29,11 +29,52 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
+const ROOT = 'lifeOS/data';
 
-// Espone le funzioni Firebase al scope globale
-window._fbSet = (key, value) => set(ref(db, 'lifeOS/'+key), value);
-window._fbGet = (key) => get(ref(db, 'lifeOS/'+key)).then(s => s.exists() ? s.val() : null);
-window._fbOnValue = (key, cb) => onValue(ref(db, 'lifeOS/'+key), s => cb(s.exists() ? s.val() : null));
+// Salva TUTTO il localStorage su Firebase come unico oggetto
+window._fbSaveAll = function(){
+  const data = {};
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith('g_')){
+      try{ data[k.slice(2)] = JSON.parse(localStorage.getItem(k)); }catch(e){}
+    }
+  });
+  set(ref(db, ROOT), data).catch(e=>console.warn('Firebase write:', e));
+};
+
+// Legge tutto da Firebase → localStorage
+window._fbLoadAll = function(cb){
+  get(ref(db, ROOT)).then(snapshot=>{
+    if(snapshot.exists()){
+      const data = snapshot.val();
+      Object.keys(data).forEach(k=>{
+        try{ localStorage.setItem('g_'+k, JSON.stringify(data[k])); }catch(e){}
+      });
+      console.log('Dati caricati da Firebase');
+    }
+    if(cb) cb();
+  }).catch(e=>{ console.warn('Firebase read:', e); if(cb) cb(); });
+};
+
+// Listener real-time: quando Firebase cambia da un altro dispositivo, aggiorna tutto
+let _writeTs = 0;
+let _listening = false;
+
+window._fbListen = function(){
+  if(_listening) return;
+  _listening = true;
+  onValue(ref(db, ROOT), snapshot=>{
+    if(Date.now() - _writeTs < 3000) return; // ignora le nostre stesse scritture
+    if(!snapshot.exists()) return;
+    const data = snapshot.val();
+    Object.keys(data).forEach(k=>{
+      try{ localStorage.setItem('g_'+k, JSON.stringify(data[k])); }catch(e){}
+    });
+    if(window._refreshAll) window._refreshAll();
+  });
+};
+
+window._fbMarkWrite = function(){ _writeTs = Date.now(); };
 window._fbReady = true;
 console.log('Firebase connesso');
 </script>
@@ -377,9 +418,8 @@ textarea::placeholder{color:#333;}
 <script>
 const sv=(k,v)=>{
   try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
-  // Sync su Firebase se disponibile
   if(window._fbReady){
-    try{window._fbSet(k,v);}catch(e){}
+    try{window._fbMarkWrite();window._fbSaveAll();}catch(e){}
   }
 };
 const ld=(k,d)=>{
@@ -389,35 +429,7 @@ const ld=(k,d)=>{
 // Sincronizza Firebase → localStorage al primo carico
 function syncFromFirebase(cb){
   if(!window._fbReady){setTimeout(()=>syncFromFirebase(cb),300);return;}
-  window._fbGet('__all__').then(()=>{
-    // Legge tutto il nodo lifeOS da Firebase
-    window._fbOnValue('__ping__', ()=>{}); // testa connessione
-  });
-  // Strategia: legge ogni chiave nota da Firebase e aggiorna localStorage se Firebase è più recente
-  const KEYS=['assets','txLog','txLog','carteInv','vinInv','vinSold','habits','habitDots',
-    'habHist','speseGen','modelli','folders','archived','customProjs','quicknote',
-    'finIn','finOut','pat_hist_weekly','pat_target','dataInit','pat_last_snap',
-    'savings_target','pat_last_snap'];
-  
-  const unique=[...new Set(KEYS)];
-  let pending=unique.length;
-  
-  unique.forEach(key=>{
-    window._fbGet(key).then(fbVal=>{
-      if(fbVal!==null){
-        // Firebase ha dati: aggiorna localStorage silenziosamente
-        try{localStorage.setItem('g_'+key,JSON.stringify(fbVal));}catch(e){}
-      } else {
-        // Firebase vuoto per questa chiave: carica da localStorage e pushа su Firebase
-        const local=localStorage.getItem('g_'+key);
-        if(local!==null){
-          try{window._fbSet(key,JSON.parse(local));}catch(e){}
-        }
-      }
-      pending--;
-      if(pending===0&&cb)cb();
-    }).catch(()=>{pending--;if(pending===0&&cb)cb();});
-  });
+  window._fbLoadAll(cb);
 }
 const AC=['#4ade80','#fb923c','#a78bfa','#60a5fa','#f472b6','#e8b04a','#38bdf8','#fff'];
 const D=new Date(),GG=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],MM=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
@@ -1942,6 +1954,27 @@ function renderCharts(){
 function exportData(){const keys=Object.keys(localStorage).filter(k=>k.startsWith('g_'));const data={};keys.forEach(k=>data[k.slice(2)]=JSON.parse(localStorage.getItem(k)));const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lifeOS_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('BACKUP ESPORTATO');}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.keys(data).forEach(k=>localStorage.setItem('g_'+k,JSON.stringify(data[k])));toast('IMPORTATO — RICARICA');setTimeout(()=>{renderHome();renderHab();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();updateOv();const qn=document.getElementById('quicknote');if(qn)qn.value=ld('quicknote','');const tgt=document.getElementById('pat-tgt-inp');if(tgt)tgt.value='€'+(ld('pat_target',0)).toFixed(0);},300);}catch(err){toast('ERRORE IMPORT');}};reader.readAsText(file);}
 
+// Ricarica tutta la UI (chiamato da Firebase real-time listener)
+window._refreshAll = function(){
+  const inDet = document.getElementById('det')?.style.display !== 'none';
+  if(!inDet){
+    renderHome();
+    renderTopbar();
+  }
+  renderHab();
+  renderAssets();
+  renderTxMonth();
+  renderSpese();
+  renderSpeseGen();
+  updateOv();
+  renderCharts();
+  renderPatTarget();
+  renderPatChart();
+  const qn=document.getElementById('quicknote');
+  if(qn && document.activeElement!==qn) qn.value=ld('quicknote','');
+  toast('↕ sync');
+};
+
 // ── BOOT ─────────────────────────────────────────────────
 function bootApp(){
   initData();
@@ -1953,7 +1986,9 @@ function bootApp(){
   renderTxMonth();
   renderSpese();
   renderSpeseGen();
-  setTimeout(()=>{renderCharts();renderPatTarget();renderPatChart();updateOv();},200);
+  setTimeout(()=>{renderCharts();renderPatTarget();renderPatChart();updateOv();
+    if(window._fbListen) window._fbListen();
+  },1000);
   document.getElementById('quicknote').value=ld('quicknote','');
 }
 
