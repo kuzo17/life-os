@@ -1024,6 +1024,31 @@ function agendaKey(date){
 function getAgendaDay(date){return ld(agendaKey(date),[]);}
 function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
 
+function getAgendaDayFull(day, allProjs){
+  // Combina task agenda + task giornalieri progetti (solo per oggi)
+  const today=new Date();today.setHours(0,0,0,0);
+  const isToday=day.getTime()===today.getTime();
+  const agendaTasks=getAgendaDay(day).map(t=>({...t,_src:'agenda'}));
+
+  if(!isToday) return agendaTasks;
+
+  // Aggiungi task giornalieri dei progetti come task virtuali
+  const projTasks=[];
+  allProjs.forEach(p=>{
+    const dtasks=ld('dtasks_'+p.id,[]);
+    const dchecks=ld('dchecks_'+p.id,[]);
+    dtasks.forEach((text,i)=>{
+      // Evita duplicati: non aggiungere se già in agenda con stesso testo e projId
+      const alreadyIn=agendaTasks.find(t=>t.projId===p.id&&t.text===text);
+      if(!alreadyIn){
+        projTasks.push({text,projId:p.id,done:!!dchecks[i],_src:'proj',_projIdx:i,_ts:p.id+'_'+i});
+      }
+    });
+  });
+
+  return [...agendaTasks,...projTasks];
+}
+
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
@@ -1031,38 +1056,37 @@ function renderAgenda(){
   const dayNames=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
 
-  // ── Vista settimana compatta in cima ──
+  // ── Vista settimana compatta ──
   let h='<div style="margin-bottom:16px">';
   h+='<div style="font-family:Space Mono,monospace;font-size:9px;color:#444;letter-spacing:.1em;margin-bottom:8px">QUESTA SETTIMANA</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
   for(let i=0;i<7;i++){
     const d=new Date(today);
-    // Vai a lunedì di questa settimana
     const dow=today.getDay()===0?6:today.getDay()-1;
     d.setDate(today.getDate()-dow+i);
     const key=agendaKey(d);
-    const tasks=getAgendaDay(d);
+    const tasks=getAgendaDayFull(d,allProjs);
     const done=tasks.filter(t=>t.done).length;
     const isToday=d.getTime()===today.getTime();
     const isPast=d<today;
-    const hasTasks=tasks.length>0;
-    h+=`<div onclick="scrollToDay('${key}')" style="background:${isToday?'#1a2e1a':'#1a1a1a'};border:1px solid ${isToday?'#4ade80':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='#444'" onmouseout="this.style.borderColor='${isToday?'#4ade80':'#2a2a2a'}'">
-      <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#555'};margin-bottom:3px">${['L','M','M','G','V','S','D'][i]}</div>
-      <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'}">${d.getDate()}</div>
-      ${hasTasks?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${done}/${tasks.length}</div>`:'<div style="height:14px"></div>'}
+    h+=`<div onclick="scrollToDay('${key}')" style="background:${isToday?'#1a2e1a':'#1a1a1a'};border:1px solid ${isToday?'#4ade80':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
+      <div style="font-family:Space Mono,monospace;font-size:8px;color:${isToday?'#4ade80':'#555'};margin-bottom:3px">${['L','M','M','G','V','S','D'][i]}</div>
+      <div style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'}">${d.getDate()}</div>
+      ${tasks.length?`<div style="font-family:Space Mono,monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${done}/${tasks.length}</div>`:'<div style="height:14px"></div>'}
     </div>`;
   }
   h+='</div></div>';
 
-  // ── Lista giorni dettagliata: 2 ieri + oggi + 13 futuri ──
+  // ── Lista giorni ──
   const days=[];
   for(let i=-1;i<=13;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
     days.push(d);
   }
+
   days.forEach(day=>{
     const key=agendaKey(day);
-    const tasks=getAgendaDay(day);
+    const tasks=getAgendaDayFull(day,allProjs);
     const isToday=day.getTime()===today.getTime();
     const isPast=day<today;
     const doneCount=tasks.filter(t=>t.done).length;
@@ -1070,10 +1094,10 @@ function renderAgenda(){
 
     h+=`<div id="agenda-day-${key}" style="margin-bottom:14px;scroll-margin-top:8px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'};min-width:110px">
+        <div style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'};min-width:110px">
           ${dayNames[day.getDay()]} ${day.getDate()} ${monthNames[day.getMonth()]}${isToday?' · <span style="color:#4ade80;font-size:9px">OGGI</span>':''}
         </div>
-        ${tasks.length?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:#444">${doneCount}/${tasks.length} · ${pct}%</span>`:''}
+        ${tasks.length?`<span style="font-family:Space Mono,monospace;font-size:9px;color:#444">${doneCount}/${tasks.length} · ${pct}%</span>`:''}
         <div style="flex:1;height:1px;background:${isToday?'#2a3a2a':'#1e1e1e'}"></div>
       </div>`;
 
@@ -1081,12 +1105,20 @@ function renderAgenda(){
       h+='<div class="card" style="margin-bottom:6px">';
       tasks.forEach((t,i)=>{
         const proj=allProjs.find(p=>p.id===t.projId);
+        const isProjTask=t._src==='proj';
+        // Per task progetto usiamo ckDayTask, per agenda ckAgendaTask
+        const ckFn=isProjTask
+          ?`ckDayTask(${t._projIdx},'${t.projId}')`
+          :`ckAgendaTask('${key}',${i})`;
+        const delFn=isProjTask
+          ?`delDayTask(${t._projIdx},'${t.projId}')`
+          :`delAgendaTask('${key}',${i})`;
         h+=`<div class="row${t.done?' done':''}">
-          <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${key}',${i})" style="margin:0;flex-shrink:0"></div>
-          ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block"></span>`:'<span style="width:6px;height:6px;flex-shrink:0"></span>'}
-          <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${key}',${i},this.value)" style="${isPast&&!t.done?'color:#555':''}">
-          ${proj?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:${proj.color};margin-right:4px;flex-shrink:0">${proj.tag}</span>`:''}
-          <button class="xb" onclick="delAgendaTask('${key}',${i})">×</button>
+          <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
+          ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block"></span>`:'<span style="width:6px;height:6px;border-radius:50%;background:#444;flex-shrink:0;display:inline-block"></span>'}
+          <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly style="color:#aaa"':''} onchange="if(!${isProjTask})edAgendaTask('${key}',${i},this.value)" style="${isPast&&!t.done?'color:#555':''}">
+          <span style="font-family:Space Mono,monospace;font-size:9px;color:${proj?proj.color:'#555'};margin-right:4px;flex-shrink:0">${proj?proj.tag:'ALTRO'}</span>
+          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${i})">×</button>`:''}
         </div>`;
       });
       h+='</div>';
@@ -1099,8 +1131,8 @@ function renderAgenda(){
         <input class="ain" id="ag-inp-${key}" placeholder="+ aggiungi task…"
           style="background:#1a1a1a;border:1px solid #1e1e1e;border-radius:6px;padding:6px 10px;font-size:12px;flex:1"
           onkeydown="if(event.key==='Enter')addAgendaTask('${key}')">
-        <select id="ag-proj-${key}" style="background:#1a1a1a;border:1px solid #1e1e1e;color:#555;font-family:'Space Mono',monospace;font-size:9px;padding:6px;border-radius:6px;outline:none">
-          <option value="">— progetto</option>
+        <select id="ag-proj-${key}" style="background:#1a1a1a;border:1px solid #1e1e1e;color:#555;font-family:Space Mono,monospace;font-size:9px;padding:6px;border-radius:6px;outline:none">
+          <option value="">Altro</option>
           ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
         </select>
         <button class="abtn" onclick="addAgendaTask('${key}')" style="border:1px solid #2a2a2a;padding:4px 10px;border-radius:6px">+ ADD</button>
