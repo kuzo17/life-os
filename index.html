@@ -13,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script type="module">
-// ── FIREBASE ──────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -31,12 +30,12 @@ const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
 const ROOT = 'lifeOS';
 
-// Scrive una chiave su Firebase
+// Scrive chiave singola
 window._fbWrite = (key, value) => {
   set(ref(db, ROOT+'/'+key), value).catch(e => console.warn('FB write:', e));
 };
 
-// Carica tutto da Firebase → localStorage al boot
+// Carica tutto al boot
 window._fbLoadAll = function(cb){
   get(ref(db, ROOT)).then(snapshot => {
     if(snapshot.exists()){
@@ -46,7 +45,6 @@ window._fbLoadAll = function(cb){
       });
       console.log('Dati caricati da Firebase');
     } else {
-      // Firebase vuoto: upload iniziale da localStorage
       Object.keys(localStorage).forEach(lk => {
         if(lk.startsWith('g_')){
           try{ window._fbWrite(lk.slice(2), JSON.parse(localStorage.getItem(lk))); }catch(e){}
@@ -57,42 +55,46 @@ window._fbLoadAll = function(cb){
   }).catch(e => { console.warn('FB read:', e); if(cb) cb(); });
 };
 
-// Snapshot locale dell'ultimo stato inviato a Firebase
-// Serve per non riprocessare i nostri stessi aggiornamenti
 const _sentToFb = {};
+window._fbMarkSent = function(key, value){
+  _sentToFb[key] = JSON.stringify(value);
+  setTimeout(() => { delete _sentToFb[key]; }, 5000);
+};
 
 window._fbListen = function(){
+  // Listener separato per txLog — sempre aggiornato, massima priorità
+  onValue(ref(db, ROOT+'/txLog'), snapshot => {
+    const fbVal = snapshot.exists() ? snapshot.val() : [];
+    const fbJson = JSON.stringify(fbVal);
+    const localJson = localStorage.getItem('g_txLog');
+    if(fbJson !== localJson){
+      try{ localStorage.setItem('g_txLog', fbJson); }catch(e){}
+      if(window._refreshTxLog) window._refreshTxLog();
+    } else {
+      // Anche se uguale, forza refresh UI per sicurezza
+      if(window._refreshTxLog) window._refreshTxLog();
+    }
+  });
+
+  // Listener generale per tutto il resto
   onValue(ref(db, ROOT), snapshot => {
     if(!snapshot.exists()) return;
     const data = snapshot.val();
-    let changed = [];
-
+    const changed = [];
     Object.keys(data).forEach(k => {
+      if(k === 'txLog') return; // gestito dal listener dedicato
       const fbJson = JSON.stringify(data[k]);
-      // txLog: mai bloccato, sempre processato
-      if(k !== 'txLog' && _sentToFb[k] === fbJson) return;
+      if(_sentToFb[k] === fbJson) return;
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
         changed.push(k);
       }
-      // txLog: aggiunge sempre a changed per forzare il refresh UI
-      if(k === 'txLog' && !changed.includes('txLog')){
-        changed.push('txLog');
-      }
     });
-
     if(changed.length > 0 && window._refreshAll){
       window._refreshAll(changed);
     }
   });
-};
-
-// Marca un valore come "appena inviato da noi" così il listener lo ignora
-window._fbMarkSent = function(key, value){
-  _sentToFb[key] = JSON.stringify(value);
-  // Dopo 5 secondi rimuovi il blocco così aggiornamenti futuri passano
-  setTimeout(() => { delete _sentToFb[key]; }, 5000);
 };
 
 window._fbReady = true;
@@ -2066,7 +2068,18 @@ window._refreshAll = function(changedKeys){
   toast('↕ sync');
 };
 
-// ── BOOT ─────────────────────────────────────────────────
+// Refresh dedicato solo per transazioni — chiamato dal listener txLog
+window._refreshTxLog = function(){
+  renderTxMonth();
+  updateOv();
+  renderTopbar();
+  if(txLogVisible){
+    txLogVisible=false;
+    const el=document.getElementById('tx-log');
+    if(el) el.style.display='none';
+    setTimeout(()=>toggleTxLog(),50);
+  }
+};
 function bootApp(){
   initData();
   autoSnapOnce();
