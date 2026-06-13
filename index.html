@@ -390,7 +390,9 @@ const ld=(k,d)=>{
 
 // Sincronizza Firebase → localStorage al primo carico
 function syncFromFirebase(cb){
-  if(!window._fbReady){setTimeout(()=>syncFromFirebase(cb),300);return;}
+  if(!window._fbReady||!window._fbLoadAll){
+    setTimeout(()=>syncFromFirebase(cb),300);return;
+  }
   window._fbLoadAll(cb);
 }
 const AC=['#4ade80','#fb923c','#a78bfa','#60a5fa','#f472b6','#e8b04a','#38bdf8','#fff'];
@@ -949,6 +951,9 @@ function agendaKey(date){
 }
 function getAgendaDay(date){return ld(agendaKey(date),[]);}
 function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
+
+let _agendaFilter='';
+function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
 
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
