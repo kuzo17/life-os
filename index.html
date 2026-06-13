@@ -410,35 +410,7 @@ const ld=(k,d)=>{
 // Sincronizza Firebase → localStorage al primo carico
 function syncFromFirebase(cb){
   if(!window._fbReady){setTimeout(()=>syncFromFirebase(cb),300);return;}
-  window._fbGet('__all__').then(()=>{
-    // Legge tutto il nodo lifeOS da Firebase
-    window._fbOnValue('__ping__', ()=>{}); // testa connessione
-  });
-  // Strategia: legge ogni chiave nota da Firebase e aggiorna localStorage se Firebase è più recente
-  const KEYS=['assets','txLog','txLog','carteInv','vinInv','vinSold','habits','habitDots',
-    'habHist','speseGen','modelli','folders','archived','customProjs','quicknote',
-    'finIn','finOut','pat_hist_weekly','pat_target','dataInit','pat_last_snap',
-    'savings_target','pat_last_snap'];
-  
-  const unique=[...new Set(KEYS)];
-  let pending=unique.length;
-  
-  unique.forEach(key=>{
-    window._fbGet(key).then(fbVal=>{
-      if(fbVal!==null){
-        // Firebase ha dati: aggiorna localStorage silenziosamente
-        try{localStorage.setItem('g_'+key,JSON.stringify(fbVal));}catch(e){}
-      } else {
-        // Firebase vuoto per questa chiave: carica da localStorage e pushа su Firebase
-        const local=localStorage.getItem('g_'+key);
-        if(local!==null){
-          try{window._fbSet(key,JSON.parse(local));}catch(e){}
-        }
-      }
-      pending--;
-      if(pending===0&&cb)cb();
-    }).catch(()=>{pending--;if(pending===0&&cb)cb();});
-  });
+  window._fbLoadAll(cb);
 }
 const AC=['#4ade80','#fb923c','#a78bfa','#60a5fa','#f472b6','#e8b04a','#38bdf8','#fff'];
 const D=new Date(),GG=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],MM=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
