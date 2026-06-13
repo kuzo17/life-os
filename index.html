@@ -69,12 +69,16 @@ window._fbListen = function(){
 
     Object.keys(data).forEach(k => {
       const fbJson = JSON.stringify(data[k]);
-      // Se questo valore è esattamente quello che abbiamo appena inviato noi, skip
       if(_sentToFb[k] === fbJson) return;
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
         changed.push(k);
+      }
+      // txLog: anche se uguale al locale, forza refresh UI
+      // perché potrebbe essere stato eliminato da un altro dispositivo
+      if(k === 'txLog' && !changed.includes('txLog')){
+        changed.push('txLog');
       }
     });
 
