@@ -463,12 +463,22 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g
 // Fix #17: syncAssets lazy — scrive su localStorage solo se i valori sono cambiati
 let _lastSyncHash='';
 function syncAssets(){
-  const a=ld('assets',[]);
-  const newCarte=carteEbay(),newVin=vinPot();
-  const hash=newCarte+'|'+newVin;
+  let a=ld('assets',[]);
+  // Assicura che Liquidità e Risparmi esistano con special
+  const hasLiq=a.find(x=>x.l==='Liquidità'||x.special==='liquidity');
+  const hasSav=a.find(x=>x.l==='Risparmi'||x.special==='savings');
+  if(!hasLiq){a.unshift({l:'Liquidità',v:100,special:'liquidity'});}
+  else if(!hasLiq.special){hasLiq.special='liquidity';}
+  if(!hasSav){a.splice(1,0,{l:'Risparmi',v:0,special:'savings'});}
+  else if(!hasSav.special){hasSav.special='savings';}
+  // Aggiorna valori automatici
+  a.forEach(x=>{
+    if(x.l==='Carte eBay (val. mercato)')x.v=carteEbay();
+    if(x.l==='Vinted (potenziale)')x.v=vinPot();
+  });
+  const hash=carteEbay()+'|'+vinPot();
   if(hash===_lastSyncHash)return;
   _lastSyncHash=hash;
-  a.forEach(x=>{if(x.l==='Carte eBay (val. mercato)')x.v=newCarte;if(x.l==='Vinted (potenziale)')x.v=newVin;});
   sv('assets',a);
 }
 
@@ -1541,8 +1551,10 @@ function ckSpesa(i,id){
   const wasPaid=s[i].paid;
   if(!wasPaid&&s[i].v>0){
     // Chiede da quale asset scalare
-    const assets=ld('assets',[]).filter(a=>a.special);
-    const opts=assets.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
+    const allAssets=ld('assets',[]);
+    const assets=allAssets.filter(a=>a.special||a.l==='Liquidità'||a.l==='Risparmi');
+    const assetList=assets.length?assets:allAssets;
+    const opts=assetList.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:#000a;z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
     ov.innerHTML=`<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;max-width:300px;width:100%">
@@ -1715,16 +1727,19 @@ function renderAssets(){
 }
 
 function populateAssetSelects(){
-  // Solo Liquidità e Risparmi per entrate/uscite
-  const a=ld('assets',[]).filter(x=>x.special);
-  const opts=a.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
+  const all=ld('assets',[]);
+  // Mostra solo Liquidità e Risparmi — identifica per special o per nome
+  const a=all.filter(x=>x.special||x.l==='Liquidità'||x.l==='Risparmi');
+  // Se non trova niente mostra tutti (fallback)
+  const list=a.length?a:all;
+  const opts=list.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
   ['reg-asset','reg-out-asset'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     const cur=el.value;
     el.innerHTML=opts;
-    if(cur&&a.find(x=>x.l===cur))el.value=cur;
-    else if(a.length)el.value=a[0].l;
+    if(cur&&list.find(x=>x.l===cur))el.value=cur;
+    else if(list.length)el.value=list[0].l;
   });
 }
 function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();renderAssets();renderCharts();updateOv();renderPatTarget();toast();}
@@ -1921,8 +1936,10 @@ function ckSpeseGen(i){
   const s=ld('speseGen',[]);
   const wasPaid=s[i].paid;
   if(!wasPaid&&s[i].v>0){
-    const assets=ld('assets',[]).filter(a=>a.special);
-    const opts=assets.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
+    const allAssets=ld('assets',[]);
+    const assets=allAssets.filter(a=>a.special||a.l==='Liquidità'||a.l==='Risparmi');
+    const assetList=assets.length?assets:allAssets;
+    const opts=assetList.map(a=>`<option value="${esc(a.l)}">${esc(a.l)} (€${a.v.toFixed(0)})</option>`).join('');
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:#000a;z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
     ov.innerHTML=`<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;max-width:300px;width:100%">
