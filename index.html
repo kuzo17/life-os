@@ -69,14 +69,14 @@ window._fbListen = function(){
 
     Object.keys(data).forEach(k => {
       const fbJson = JSON.stringify(data[k]);
-      if(_sentToFb[k] === fbJson) return;
+      // txLog: mai bloccato, sempre processato
+      if(k !== 'txLog' && _sentToFb[k] === fbJson) return;
       const localJson = localStorage.getItem('g_'+k);
       if(fbJson !== localJson){
         try{ localStorage.setItem('g_'+k, fbJson); }catch(e){}
         changed.push(k);
       }
-      // txLog: anche se uguale al locale, forza refresh UI
-      // perché potrebbe essere stato eliminato da un altro dispositivo
+      // txLog: aggiunge sempre a changed per forzare il refresh UI
       if(k === 'txLog' && !changed.includes('txLog')){
         changed.push('txLog');
       }
