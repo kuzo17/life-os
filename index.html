@@ -1405,13 +1405,18 @@ function buildStd(p){
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">`;
+  const _todayKeyMini=new Date().toDateString();
+  const _recur=ld('recur_'+id,[]);
+  const _recurCh=ld('recurChecks_'+id,{});
   for(let i=0;i<14;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
     const key=agendaKey(d);
     const dayTasks=getAgendaDay(d).filter(t=>t.projId===id);
-    const tot=dayTasks.length;
-    const done=dayTasks.filter(t=>t.done).length;
     const isToday=i===0;
+    const recurTot=isToday?_recur.length:0;
+    const recurDone=isToday?_recur.filter((_,j)=>_recurCh[_todayKeyMini+'_'+j]).length:0;
+    const tot=dayTasks.length+recurTot;
+    const done=dayTasks.filter(t=>t.done).length+recurDone;
     const isSelected=ld('miniCalSel_'+id,'')===key;
     h+=`<div onclick="toggleMiniCalDay('${id}','${key}')" style="background:${isSelected?'#1a2e1a':'#141414'};border:1px solid ${isSelected?'#4ade80':isToday?'#4ade80':'#2a2a2a'};border-radius:5px;padding:5px 3px;text-align:center;cursor:pointer">
       <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#444'}">${['L','M','M','G','V','S','D'][(d.getDay()+6)%7]}</div>
@@ -1426,10 +1431,15 @@ function buildStd(p){
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
     const allSelTasks=getAgendaDay(selDate);
     const selDay=selDate.getDate()+' '+monthNames[selDate.getMonth()];
+    const selIsToday=selDate.getTime()===today.getTime();
+    const selRecurTot=selIsToday?_recur.length:0;
+    const selRecurDone=selIsToday?_recur.filter((_,j)=>_recurCh[_todayKeyMini+'_'+j]).length:0;
+    const selTot=selTasks.length+selRecurTot;
+    const selDone=selTasks.filter(t=>t.done).length+selRecurDone;
     h+=`<div class="card" style="margin-bottom:8px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e1e1e">
-        <span style="font-family:'Space Mono',monospace;font-size:10px;color:#888">TASK GIORNALIERE · ${selDay}</span>
-        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#555">${selTasks.filter(t=>t.done).length}/${selTasks.length}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:#888">TASK GIORNALIERE · ${selDay}${selIsToday?' + ricorrenti':''}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#555">${selDone}/${selTot}</span>
       </div>`;
     if(selTasks.length){
       selTasks.forEach(t=>{
