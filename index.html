@@ -411,6 +411,7 @@ const sv=(k,v)=>{
 const ld=(k,d)=>{
   try{const v=localStorage.getItem('g_'+k);return v!==null?JSON.parse(v):d;}catch(e){return d;}
 };
+const visibleAssets=()=>ld('assets',[]).filter(a=>!a.hidden);
 
 // Sincronizza Firebase → localStorage al primo carico
 function syncFromFirebase(cb){
@@ -609,11 +610,22 @@ const carteEbay=()=>ld('carteInv',[]).filter(c=>c.stato!=='Venduta').reduce((a,c
 const carteSoldTot=()=>ld('carteInv',[]).filter(c=>c.stato==='Venduta').reduce((a,c)=>a+(c.vendita||0),0);
 const calcPct=id=>{const p=PD.find(x=>x.id===id);const g=ld('goals_'+id,p?p.goals0||[]:[]);const c=ld('gchecks_'+id,[]);return g.length?Math.round(g.filter((_,i)=>c[i]).length/g.length*100):0;};
 const calcPctDay=id=>{
-  const t=ld('dtasks_'+id,[]);const ch=ld('dchecks_'+id,[]);
-  return t.length?Math.round(t.filter((_,i)=>ch[i]).length/t.length*100):0;
+  // % oggi = (ricorrenti completati oggi + task giornalieri completati) / totale
+  const todayKey=new Date().toDateString();
+  const recur=ld('recur_'+id,[]);
+  const recurCh=ld('recurChecks_'+id,{});
+  const dtasks=ld('dtasks_'+id,[]);
+  const dchecks=ld('dchecks_'+id,[]);
+  const tot=recur.length+dtasks.length;
+  if(!tot)return 0;
+  const done=recur.filter((_,i)=>recurCh[todayKey+'_'+i]).length
+            +dtasks.filter((_,i)=>dchecks[i]).length;
+  return Math.round(done/tot*100);
 };
 const calcPctWeek=id=>{
-  const t=ld('wtasks_'+id,[]);const ch=ld('wchecks_'+id,[]);
+  // % settimana = obiettivi settimanali completati / totale
+  const t=ld('weekGoals_'+id,[]);
+  const ch=ld('weekGoalChecks_'+id,[]);
   return t.length?Math.round(t.filter((_,i)=>ch[i]).length/t.length*100):0;
 };
 const tasksDone=id=>{const p=PD.find(x=>x.id===id);const t=ld('tasks_'+id,p?p.tasks0||[]:[]);const c=ld('tchecks_'+id,[]);return{done:c.filter(Boolean).length,tot:t.length};};
@@ -644,7 +656,14 @@ function showTab(name,btn){
   btn.classList.add('on');
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
   document.getElementById('tab-agenda').style.display=name==='agenda'?'block':'none';
-  if(name==='agenda')renderAgenda();
+  if(name==='agenda'){
+    renderAgenda();
+    setTimeout(()=>{
+      const todayKey='agenda_'+new Date().toISOString().slice(0,10);
+      const el=document.getElementById('agenda-day-'+todayKey);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+  }
 }
 
 // ── PATRIMONIO SNAPSHOT & TREND ──────────────────────────
@@ -804,8 +823,14 @@ function renderHome(){
       const pct=p.hasInv?ld('pct_'+p.id,0):calcPct(p.id);
       const pctDay=p.hasInv?ld('pct_'+p.id,0):calcPctDay(p.id);
       const pctWeek=p.hasInv?ld('pct_'+p.id,0):calcPctWeek(p.id);
-      const dtasks_tot=p.hasInv?0:ld('dtasks_'+p.id,[]).length;
-      const dtasks_done=p.hasInv?0:ld('dchecks_'+p.id,[]).filter(Boolean).length;
+      const _todayKey=new Date().toDateString();
+      const _recur=p.hasInv?[]:ld('recur_'+p.id,[]);
+      const _recurCh=p.hasInv?{}:ld('recurChecks_'+p.id,{});
+      const _dt=p.hasInv?[]:ld('dtasks_'+p.id,[]);
+      const _dc=p.hasInv?[]:ld('dchecks_'+p.id,[]);
+      const dtasks_tot=_recur.length+_dt.length;
+      const dtasks_done=_recur.filter((_,i)=>_recurCh[_todayKey+'_'+i]).length
+                       +_dt.filter((_,i)=>_dc[i]).length;
       const td=p.hasInv?null:tasksDone(p.id);
       const age=getAge(p.id);
       const pri=getPri(p.id);
@@ -974,6 +999,37 @@ function agendaKey(date){
 function getAgendaDay(date){return ld(agendaKey(date),[]);}
 function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
 
+let _agendaFilter='';
+function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
+
+// Ritorna task per un giorno: agenda libere + ricorrenti/giornalieri dei progetti (solo per oggi)
+function getAgendaDayFull(day,allProjs){
+  const today=new Date();today.setHours(0,0,0,0);
+  const isToday=day.getTime()===today.getTime();
+  const agendaTasks=getAgendaDay(day).map(t=>({...t,_src:'agenda'}));
+  if(!isToday) return agendaTasks;
+  // Aggiungi ricorrenti e task giornalieri dei progetti
+  const todayKey=new Date().toDateString();
+  const projTasks=[];
+  allProjs.forEach(p=>{
+    // Ricorrenti
+    const recur=ld('recur_'+p.id,[]);
+    const recurCh=ld('recurChecks_'+p.id,{});
+    recur.forEach((text,i)=>{
+      if(!agendaTasks.find(t=>t.projId===p.id&&t.text===text&&t.type==='recur'))
+        projTasks.push({text,projId:p.id,done:!!recurCh[todayKey+'_'+i],_src:'proj',_type:'recur',_projIdx:i});
+    });
+    // Task giornalieri
+    const dt=ld('dtasks_'+p.id,[]);
+    const dc=ld('dchecks_'+p.id,[]);
+    dt.forEach((text,i)=>{
+      if(!agendaTasks.find(t=>t.projId===p.id&&t.text===text&&t.type==='day'))
+        projTasks.push({text,projId:p.id,done:!!dc[i],_src:'proj',_type:'day',_projIdx:i});
+    });
+  });
+  return [...agendaTasks,...projTasks];
+}
+
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
@@ -981,67 +1037,86 @@ function renderAgenda(){
   const dayNames=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
 
-  // ── Vista settimana compatta in cima ──
-  let h='<div style="margin-bottom:16px">';
-  h+='<div style="font-family:Space Mono,monospace;font-size:9px;color:#444;letter-spacing:.1em;margin-bottom:8px">QUESTA SETTIMANA</div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
+  // ── Vista settimana compatta ──
+  let h='<div style="margin-bottom:12px">';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px">';
   for(let i=0;i<7;i++){
     const d=new Date(today);
-    // Vai a lunedì di questa settimana
     const dow=today.getDay()===0?6:today.getDay()-1;
     d.setDate(today.getDate()-dow+i);
     const key=agendaKey(d);
-    const tasks=getAgendaDay(d);
+    const tasks=getAgendaDayFull(d,allProjs);
     const done=tasks.filter(t=>t.done).length;
     const isToday=d.getTime()===today.getTime();
     const isPast=d<today;
-    const hasTasks=tasks.length>0;
-    h+=`<div onclick="scrollToDay('${key}')" style="background:${isToday?'#1a2e1a':'#1a1a1a'};border:1px solid ${isToday?'#4ade80':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='#444'" onmouseout="this.style.borderColor='${isToday?'#4ade80':'#2a2a2a'}'">
+    h+=`<div onclick="scrollToAgendaDay('${key}')" style="background:${isToday?'#1a2e1a':'#1a1a1a'};border:1px solid ${isToday?'#4ade80':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
       <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#555'};margin-bottom:3px">${['L','M','M','G','V','S','D'][i]}</div>
       <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'}">${d.getDate()}</div>
-      ${hasTasks?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${done}/${tasks.length}</div>`:'<div style="height:14px"></div>'}
+      ${tasks.length?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${done}/${tasks.length}</div>`:'<div style="height:14px"></div>'}
     </div>`;
   }
-  h+='</div></div>';
+  h+='</div>';
 
-  // ── Lista giorni dettagliata: 2 ieri + oggi + 13 futuri ──
+  // ── Filtro progetto ──
+  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <span style="font-family:'Space Mono',monospace;font-size:9px;color:#555;flex-shrink:0">FILTRA:</span>
+    <select onchange="setAgendaFilter(this.value)" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Space Mono',monospace;font-size:9px;padding:4px 8px;border-radius:6px;outline:none;flex:1">
+      <option value="">Tutti i progetti</option>
+      ${allProjs.map(p=>`<option value="${esc(p.id)}"${_agendaFilter===p.id?' selected':''}>${esc(p.tag)}</option>`).join('')}
+    </select>
+  </div>`;
+  h+='</div>';
+
+  // ── Lista giorni: 7 passati + oggi + 13 futuri ──
   const days=[];
-  for(let i=-1;i<=13;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);
-    days.push(d);
+  for(let i=-7;i<=13;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);
   }
+
   days.forEach(day=>{
     const key=agendaKey(day);
-    const tasks=getAgendaDay(day);
+    const allTasks=getAgendaDayFull(day,allProjs);
+    const tasks=_agendaFilter?allTasks.filter(t=>t.projId===_agendaFilter):allTasks;
     const isToday=day.getTime()===today.getTime();
     const isPast=day<today;
     const doneCount=tasks.filter(t=>t.done).length;
     const pct=tasks.length?Math.round(doneCount/tasks.length*100):0;
+    // Giorni passati: mostra solo non completate
+    const visTasks=isPast?tasks.filter(t=>!t.done):tasks;
 
     h+=`<div id="agenda-day-${key}" style="margin-bottom:14px;scroll-margin-top:8px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'};min-width:110px">
-          ${dayNames[day.getDay()]} ${day.getDate()} ${monthNames[day.getMonth()]}${isToday?' · <span style="color:#4ade80;font-size:9px">OGGI</span>':''}
+        <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'};min-width:120px">
+          ${dayNames[day.getDay()]} ${day.getDate()} ${monthNames[day.getMonth()]}${isToday?' <span style="color:#4ade80;font-size:9px">· OGGI</span>':''}
         </div>
         ${tasks.length?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:#444">${doneCount}/${tasks.length} · ${pct}%</span>`:''}
         <div style="flex:1;height:1px;background:${isToday?'#2a3a2a':'#1e1e1e'}"></div>
       </div>`;
 
-    if(tasks.length){
+    if(visTasks.length){
       h+='<div class="card" style="margin-bottom:6px">';
-      tasks.forEach((t,i)=>{
+      visTasks.forEach(t=>{
+        const idx=tasks.indexOf(t);
         const proj=allProjs.find(p=>p.id===t.projId);
+        const isProjTask=t._src==='proj';
+        const isRecur=t._type==='recur';
+        const ckFn=isRecur?`ckRecur(${t._projIdx},'${t.projId}')`:
+                   isProjTask&&t._type==='day'?`ckDayTask(${t._projIdx},'${t.projId}')`:
+                   `ckAgendaTask('${key}',${idx})`;
+        const typeLabel=isRecur?'R':isProjTask?'G':'';
+        const typeColor=isRecur?'#4ade80':'#e8b04a';
         h+=`<div class="row${t.done?' done':''}">
-          <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${key}',${i})" style="margin:0;flex-shrink:0"></div>
-          ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block"></span>`:'<span style="width:6px;height:6px;flex-shrink:0"></span>'}
-          <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${key}',${i},this.value)" style="${isPast&&!t.done?'color:#555':''}">
-          ${proj?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:${proj.color};margin-right:4px;flex-shrink:0">${proj.tag}</span>`:''}
-          <button class="xb" onclick="delAgendaTask('${key}',${i})">×</button>
+          <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
+          ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block"></span>`:''}
+          <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'#f87171':''}">
+          ${typeLabel?`<span style="font-family:'Space Mono',monospace;font-size:8px;color:${typeColor};padding:0 4px;flex-shrink:0">${typeLabel}</span>`:''}
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:${proj?proj.color:'#555'};margin-right:4px;flex-shrink:0">${proj?proj.tag:'ALTRO'}</span>
+          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${idx})">×</button>`:''}
         </div>`;
       });
       h+='</div>';
     } else if(!isPast){
-      h+=`<div style="font-size:12px;color:#2a2a2a;padding:4px 0 4px 2px;font-family:Space Mono,monospace">niente pianificato</div>`;
+      h+=`<div style="font-size:12px;color:#2a2a2a;padding:4px 0;font-family:'Space Mono',monospace">niente pianificato</div>`;
     }
 
     if(!isPast){
@@ -1050,7 +1125,7 @@ function renderAgenda(){
           style="background:#1a1a1a;border:1px solid #1e1e1e;border-radius:6px;padding:6px 10px;font-size:12px;flex:1"
           onkeydown="if(event.key==='Enter')addAgendaTask('${key}')">
         <select id="ag-proj-${key}" style="background:#1a1a1a;border:1px solid #1e1e1e;color:#555;font-family:'Space Mono',monospace;font-size:9px;padding:6px;border-radius:6px;outline:none">
-          <option value="">— progetto</option>
+          <option value="">— nessun progetto</option>
           ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
         </select>
         <button class="abtn" onclick="addAgendaTask('${key}')" style="border:1px solid #2a2a2a;padding:4px 10px;border-radius:6px">+ ADD</button>
@@ -1062,22 +1137,20 @@ function renderAgenda(){
   el.innerHTML=h;
 }
 
-function scrollToDay(key){
+function scrollToAgendaDay(key){
   const el=document.getElementById('agenda-day-'+key);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-
 function addAgendaTask(key){
   const inp=document.getElementById('ag-inp-'+key);
   const projSel=document.getElementById('ag-proj-'+key);
-  const text=inp?.value.trim();
-  if(!text)return;
+  const text=inp?.value.trim();if(!text)return;
   const projId=projSel?.value||'';
   const dateStr=key.replace('agenda_','');
   const date=new Date(dateStr);
   const tasks=getAgendaDay(date);
-  tasks.push({text,projId,done:false,ts:Date.now()});
+  tasks.push({text,projId,done:false,ts:Date.now(),type:'day'});
   setAgendaDay(date,tasks);
   if(inp)inp.value='';
   renderAgenda();toast();
@@ -1091,7 +1164,6 @@ function ckAgendaTask(key,i){
   tasks[i].done=!tasks[i].done;
   setAgendaDay(date,tasks);
   renderAgenda();
-  // Se è oggi aggiorna anche renderHome per il contatore
   const today=new Date();today.setHours(0,0,0,0);
   const d=new Date(dateStr);d.setHours(0,0,0,0);
   if(d.getTime()===today.getTime())renderHome();
@@ -1110,11 +1182,9 @@ function delAgendaTask(key,i){
   const dateStr=key.replace('agenda_','');
   const date=new Date(dateStr);
   const tasks=getAgendaDay(date);
-  tasks.splice(i,1);
-  setAgendaDay(date,tasks);
+  tasks.splice(i,1);setAgendaDay(date,tasks);
   renderAgenda();
 }
-
 
 function doSearch(q){
   const res=document.getElementById('srch-res');
@@ -1194,10 +1264,17 @@ function renderStatChart(id,color){
 // ── STD PROJECT ──────────────────────────────────────────
 function buildStd(p){
   const id=p.id;
+  const todayKey=new Date().toDateString();
+  // Task ricorrenti
+  const recur=ld('recur_'+id,[]);
+  const recurChecks=ld('recurChecks_'+id,{});
+  // Task giornalieri
   const dtasks=ld('dtasks_'+id,[]);
   const dchecks=ld('dchecks_'+id,[]);
-  const wtasks=ld('wtasks_'+id,[]);
-  const wchecks=ld('wchecks_'+id,[]);
+  // Obiettivi settimanali
+  const weekGoals=ld('weekGoals_'+id,[]);
+  const weekGoalChecks=ld('weekGoalChecks_'+id,[]);
+  // Obiettivi progetto
   const goals=ld('goals_'+id,p.goals0||[]);
   const gc=ld('gchecks_'+id,[]);
   const note=ld('note_'+id,p.note0||'');
@@ -1206,39 +1283,35 @@ function buildStd(p){
   const pctWeek=calcPctWeek(id);
   const pctGoal=calcPct(id);
 
-  // ── Mini calendario ──────────────────────────────────────
+  // ── Mini calendario ──
   const today=new Date();today.setHours(0,0,0,0);
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
   let h=`<div style="margin-bottom:1rem">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.1em">AGENDA PROGETTO</div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#aaa;letter-spacing:.1em">AGENDA PROGETTO</div>
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">`;
-
-  // 14 giorni: oggi + 13 futuri
   for(let i=0;i<14;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
     const key=agendaKey(d);
     const dayTasks=getAgendaDay(d).filter(t=>t.projId===id);
-    const done=dayTasks.filter(t=>t.done).length;
     const tot=dayTasks.length;
+    const done=dayTasks.filter(t=>t.done).length;
     const isToday=i===0;
     const isSelected=ld('miniCalSel_'+id,'')===key;
-    h+=`<div onclick="toggleMiniCalDay('${id}','${key}')" style="background:${isSelected?'#1a2e1a':isToday?'#141414':'#141414'};border:1px solid ${isSelected?'#4ade80':isToday?'#4ade80':'#2a2a2a'};border-radius:5px;padding:5px 3px;text-align:center;cursor:pointer;transition:all .15s">
+    h+=`<div onclick="toggleMiniCalDay('${id}','${key}')" style="background:${isSelected?'#1a2e1a':'#141414'};border:1px solid ${isSelected?'#4ade80':isToday?'#4ade80':'#2a2a2a'};border-radius:5px;padding:5px 3px;text-align:center;cursor:pointer">
       <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#444'}">${['L','M','M','G','V','S','D'][(d.getDay()+6)%7]}</div>
       <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${isSelected?'#4ade80':isToday?'#fff':'#666'}">${d.getDate()}</div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'#4ade80':'#2a2a2a'};min-height:12px">${tot?tot:''}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'#4ade80':'#2a2a2a'};min-height:12px">${tot||''}</div>
     </div>`;
   }
   h+=`</div>`;
-
-  // Dettaglio giorno selezionato
   const selKey=ld('miniCalSel_'+id,'');
   if(selKey){
     const selDate=new Date(selKey.replace('agenda_',''));
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
-    const allSelTasks=getAgendaDay(selDate); // tutti per indici corretti
+    const allSelTasks=getAgendaDay(selDate);
     const selDay=selDate.getDate()+' '+monthNames[selDate.getMonth()];
     h+=`<div class="card" style="margin-bottom:8px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e1e1e">
@@ -1247,45 +1320,61 @@ function buildStd(p){
       </div>`;
     if(selTasks.length){
       selTasks.forEach(t=>{
-        const globalIdx=allSelTasks.findIndex(x=>x.ts===t.ts&&x.text===t.text);
+        const gi=allSelTasks.findIndex(x=>x.ts===t.ts&&x.text===t.text);
         h+=`<div class="row${t.done?' done':''}">
-          <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${selKey}',${globalIdx})" style="margin:0;flex-shrink:0"></div>
-          <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${selKey}',${globalIdx},this.value)">
-          <button class="xb" onclick="delAgendaTaskAndRefresh('${selKey}',${globalIdx},'${id}')">×</button>
+          <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${selKey}',${gi})" style="margin:0;flex-shrink:0"></div>
+          <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${selKey}',${gi},this.value)">
+          <button class="xb" onclick="delAgendaTaskAndRefresh('${selKey}',${gi},'${id}')">×</button>
         </div>`;
       });
     } else {
       h+=`<div style="padding:10px 14px;font-size:12px;color:#444;font-family:Space Mono,monospace">niente per questo progetto</div>`;
     }
-    // Form aggiungi
-    h+=`<div class="arow">
-      <input class="ain" id="mcal-inp-${id}" placeholder="+ task per questo giorno…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${selKey}')">
-      <button class="abtn" onclick="addMiniCalTask('${id}','${selKey}')">+ ADD</button>
-    </div></div>`;
+    h+=`<div class="arow"><input class="ain" id="mcal-inp-${id}" placeholder="+ task per questo giorno…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${selKey}')"><button class="abtn" onclick="addMiniCalTask('${id}','${selKey}')">+ ADD</button></div></div>`;
   }
   h+=`</div>`;
+
+  // ── Header % tripla ──
   h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#1e1e1e;border-radius:8px;overflow:hidden;margin-bottom:1rem">
     <div style="background:#141414;padding:12px 14px;text-align:center">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.08em;margin-bottom:4px">OGGI</div>
-      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:${p.color}">${pctDay}%</div>
-      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div style="height:2px;border-radius:99px;background:${p.color};width:${pctDay}%;transition:width .3s"></div></div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#aaa;letter-spacing:.08em;margin-bottom:4px">OGGI</div>
+      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:${p.color}" id="pct-day-${id}">${pctDay}%</div>
+      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div id="bar-day-${id}" style="height:2px;border-radius:99px;background:${p.color};width:${pctDay}%"></div></div>
     </div>
     <div style="background:#141414;padding:12px 14px;text-align:center">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.08em;margin-bottom:4px">SETTIMANA</div>
-      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:${p.color}">${pctWeek}%</div>
-      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div style="height:2px;border-radius:99px;background:${p.color};width:${pctWeek}%;transition:width .3s"></div></div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#aaa;letter-spacing:.08em;margin-bottom:4px">SETTIMANA</div>
+      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:${p.color}" id="pct-week-${id}">${pctWeek}%</div>
+      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div id="bar-week-${id}" style="height:2px;border-radius:99px;background:${p.color};width:${pctWeek}%"></div></div>
     </div>
     <div style="background:#141414;padding:12px 14px;text-align:center">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.08em;margin-bottom:4px">OBIETTIVI</div>
-      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:#444">${pctGoal}%</div>
-      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div style="height:2px;border-radius:99px;background:#444;width:${pctGoal}%;transition:width .3s"></div></div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#aaa;letter-spacing:.08em;margin-bottom:4px">OBIETTIVI</div>
+      <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:#555">${pctGoal}%</div>
+      <div style="height:2px;background:#2a2a2a;border-radius:99px;margin-top:6px"><div style="height:2px;border-radius:99px;background:#555;width:${pctGoal}%"></div></div>
     </div>
   </div>`;
 
-  // ── Task giornalieri ──
+  // ── Task ricorrenti (si resettano automaticamente ogni giorno) ──
+  const recurDone=recur.filter((_,i)=>recurChecks[todayKey+'_'+i]).length;
+  h+=`<div class="slbl">Task ricorrenti
+    <span style="font-size:9px;color:#555">${recurDone}/${recur.length} oggi</span>
+  </div>
+  <div class="card" id="recur-${id}">`;
+  recur.forEach((t,i)=>{
+    const done=!!recurChecks[todayKey+'_'+i];
+    h+=`<div class="row${done?' done':''}">
+      <div class="hd${done?' on':''}" onclick="ckRecur(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'${id}',this.value)">
+      <span style="font-family:'Space Mono',monospace;font-size:8px;color:#555;padding:0 6px;flex-shrink:0">R</span>
+      <button class="xb" onclick="delRecur(${i},'${id}')">×</button>
+    </div>`;
+  });
+  h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div>`;
+
+  // ── Task giornalieri (non ricorrenti, per obiettivi settimanali) ──
+  const dtDone=dchecks.filter(Boolean).length;
   h+=`<div class="slbl">Task giornalieri
-    <div style="display:flex;gap:6px">
-      <span style="font-size:9px;color:#555">${dchecks.filter(Boolean).length}/${dtasks.length}</span>
+    <div style="display:flex;gap:8px">
+      <span style="font-size:9px;color:#555">${dtDone}/${dtasks.length}</span>
       <span style="color:#e8b04a;cursor:pointer;font-size:9px" onclick="resetDayTasks('${id}')">↺ RESET</span>
     </div>
   </div>
@@ -1297,24 +1386,25 @@ function buildStd(p){
       <button class="xb" onclick="delDayTask(${i},'${id}')">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="dti-${id}" placeholder="+ task di oggi…" onkeydown="if(event.key==='Enter')addDayTask('${id}')"><button class="abtn" onclick="addDayTask('${id}')">+ ADD</button></div></div>`;
+  h+=`<div class="arow"><input class="ain" id="dti-${id}" placeholder="+ task giornaliero…" onkeydown="if(event.key==='Enter')addDayTask('${id}')"><button class="abtn" onclick="addDayTask('${id}')">+ ADD</button></div></div>`;
 
-  // ── Task settimanali ──
-  h+=`<div class="slbl">Task settimanali
-    <div style="display:flex;gap:6px">
-      <span style="font-size:9px;color:#555">${wchecks.filter(Boolean).length}/${wtasks.length}</span>
-      <span style="color:#e8b04a;cursor:pointer;font-size:9px" onclick="resetWeekTasks('${id}')">↺ RESET</span>
+  // ── Obiettivi settimanali ──
+  const wDone=weekGoalChecks.filter(Boolean).length;
+  h+=`<div class="slbl">Obiettivi settimana
+    <div style="display:flex;gap:8px">
+      <span style="font-size:9px;color:#555">${wDone}/${weekGoals.length}</span>
+      <span style="color:#e8b04a;cursor:pointer;font-size:9px" onclick="resetWeekGoals('${id}')">↺ RESET</span>
     </div>
   </div>
-  <div class="card" id="wtg-${id}">`;
-  wtasks.forEach((t,i)=>{
-    h+=`<div class="row${wchecks[i]?' done':''}">
-      <div class="hd${wchecks[i]?' on':''}" onclick="ckWeekTask(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
-      <input class="rt" value="${esc(t)}" onchange="edWeekTask(${i},'${id}',this.value)">
-      <button class="xb" onclick="delWeekTask(${i},'${id}')">×</button>
+  <div class="card" id="wgoal-${id}">`;
+  weekGoals.forEach((g,i)=>{
+    h+=`<div class="row${weekGoalChecks[i]?' done':''}">
+      <div class="hd${weekGoalChecks[i]?' on':''}" onclick="ckWeekGoal(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(g)}" onchange="edWeekGoal(${i},'${id}',this.value)">
+      <button class="xb" onclick="delWeekGoal(${i},'${id}')">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="wti-${id}" placeholder="+ task settimana…" onkeydown="if(event.key==='Enter')addWeekTask('${id}')"><button class="abtn" onclick="addWeekTask('${id}')">+ ADD</button></div></div>`;
+  h+=`<div class="arow"><input class="ain" id="wgoal-inp-${id}" placeholder="+ obiettivo settimana…" onkeydown="if(event.key==='Enter')addWeekGoal('${id}')"><button class="abtn" onclick="addWeekGoal('${id}')">+ ADD</button></div></div>`;
 
   h+=goalsH(id,goals,gc,p.color)+speseH(id,sp);
   h+=`<div class="slbl">Statistiche % nel tempo</div><div class="card" style="padding:14px"><canvas id="stat-chart-${id}" width="500" height="120"></canvas></div>`;
@@ -1329,60 +1419,96 @@ function cycleTaskPri(i,id){
 }
 
 // ── MINI CALENDARIO PROGETTO ─────────────────────────────
-function toggleMiniCalDay(projId, key){
-  // Se già selezionato, deseleziona. Altrimenti seleziona.
+function toggleMiniCalDay(projId,key){
   const cur=ld('miniCalSel_'+projId,'');
-  sv('miniCalSel_'+projId, cur===key?'':key);
+  sv('miniCalSel_'+projId,cur===key?'':key);
   openProj(projId);
 }
-
-function addMiniCalTask(projId, key){
+function addMiniCalTask(projId,key){
   const inp=document.getElementById('mcal-inp-'+projId);
-  const text=inp?.value.trim();
-  if(!text)return;
+  const text=inp?.value.trim();if(!text)return;
   const dateStr=key.replace('agenda_','');
   const date=new Date(dateStr);
   const tasks=getAgendaDay(date);
-  tasks.push({text,projId,done:false,ts:Date.now()});
+  tasks.push({text,projId,done:false,ts:Date.now(),type:'day'});
   setAgendaDay(date,tasks);
   if(inp)inp.value='';
-  // Refresh progetto e agenda se aperta
-  openProj(projId);
-  toast();
+  openProj(projId);toast();
 }
-
 function delAgendaTaskAndRefresh(key,i,projId){
   const dateStr=key.replace('agenda_','');
   const date=new Date(dateStr);
   const tasks=getAgendaDay(date);
-  tasks.splice(i,1);
-  setAgendaDay(date,tasks);
+  tasks.splice(i,1);setAgendaDay(date,tasks);
   openProj(projId);
 }
 
+// ── TASK RICORRENTI (reset auto ogni giorno via todayKey) ─
+function ckRecur(i,id){
+  const todayKey=new Date().toDateString();
+  const ch=ld('recurChecks_'+id,{});
+  const k=todayKey+'_'+i;
+  ch[k]=!ch[k];sv('recurChecks_'+id,ch);
+  const dot=document.querySelector(`#recur-${id} .row:nth-child(${i+1}) .hd`);
+  const row=document.querySelector(`#recur-${id} .row:nth-child(${i+1})`);
+  if(dot)dot.classList.toggle('on',ch[k]);
+  if(row)row.classList.toggle('done',ch[k]);
+  // Aggiorna % OGGI
+  const recur=ld('recur_'+id,[]);
+  const dt=ld('dtasks_'+id,[]);
+  const dc=ld('dchecks_'+id,[]);
+  const tot=recur.length+dt.length;
+  const done=recur.filter((_,j)=>ch[todayKey+'_'+j]).length+dt.filter((_,j)=>dc[j]).length;
+  const pct=tot?Math.round(done/tot*100):0;
+  const el=document.getElementById('pct-day-'+id);
+  const bar=document.getElementById('bar-day-'+id);
+  if(el)el.textContent=pct+'%';
+  if(bar)bar.style.width=pct+'%';
+  renderHome();toast();
+}
+function edRecur(i,id,v){const t=ld('recur_'+id,[]);t[i]=v;sv('recur_'+id,t);toast();}
+function addRecur(id){
+  const inp=document.getElementById('recur-inp-'+id);
+  const v=inp?.value.trim();if(!v)return;
+  const t=ld('recur_'+id,[]);t.push(v);sv('recur_'+id,t);
+  if(inp)inp.value='';openProj(id);
+}
+function delRecur(i,id){
+  const t=ld('recur_'+id,[]);t.splice(i,1);sv('recur_'+id,t);
+  const ch=ld('recurChecks_'+id,{});
+  Object.keys(ch).forEach(k=>{if(k.endsWith('_'+i))delete ch[k];});
+  sv('recurChecks_'+id,ch);openProj(id);
+}
 
+// ── TASK GIORNALIERI (non ricorrenti) ────────────────────
 function ckDayTask(i,id){
   const ch=ld('dchecks_'+id,[]);
-  ch[i]=!ch[i];
-  sv('dchecks_'+id,ch);
-  // Aggiorna dot nella card
+  ch[i]=!ch[i];sv('dchecks_'+id,ch);
   const dot=document.querySelector(`#dtg-${id} .row:nth-child(${i+1}) .hd`);
   const row=document.querySelector(`#dtg-${id} .row:nth-child(${i+1})`);
-  if(dot){dot.classList.toggle('on',ch[i]);}
-  if(row){row.classList.toggle('done',ch[i]);}
-  // Aggiorna % nell'header
-  const t=ld('dtasks_'+id,[]);
-  const pct=t.length?Math.round(ch.filter(Boolean).length/t.length*100):0;
-  updateProjHeader(id,pct,'day');
+  if(dot)dot.classList.toggle('on',ch[i]);
+  if(row)row.classList.toggle('done',ch[i]);
+  // Aggiorna % OGGI
+  const todayKey=new Date().toDateString();
+  const recur=ld('recur_'+id,[]);
+  const recurCh=ld('recurChecks_'+id,{});
+  const dt=ld('dtasks_'+id,[]);
+  const tot=recur.length+dt.length;
+  const done=recur.filter((_,j)=>recurCh[todayKey+'_'+j]).length+ch.filter(Boolean).length;
+  const pct=tot?Math.round(done/tot*100):0;
+  const el=document.getElementById('pct-day-'+id);
+  const bar=document.getElementById('bar-day-'+id);
+  if(el)el.textContent=pct+'%';
+  if(bar)bar.style.width=pct+'%';
   renderHome();toast();
 }
 function edDayTask(i,id,v){const t=ld('dtasks_'+id,[]);t[i]=v;sv('dtasks_'+id,t);toast();}
 function addDayTask(id){
   const inp=document.getElementById('dti-'+id);
-  const v=inp.value.trim();if(!v)return;
+  const v=inp?.value.trim();if(!v)return;
   const t=ld('dtasks_'+id,[]);t.push(v);sv('dtasks_'+id,t);
   const ch=ld('dchecks_'+id,[]);ch.push(false);sv('dchecks_'+id,ch);
-  inp.value='';openProj(id);
+  if(inp)inp.value='';openProj(id);
 }
 function delDayTask(i,id){
   const t=ld('dtasks_'+id,[]);t.splice(i,1);sv('dtasks_'+id,t);
@@ -1390,68 +1516,60 @@ function delDayTask(i,id){
   openProj(id);
 }
 function resetDayTasks(id){
-  modal('confirm','Azzerare i task di oggi?',()=>{
-    const t=ld('dtasks_'+id,[]);
-    sv('dchecks_'+id,t.map(()=>false));
+  modal('confirm','Azzerare i task giornalieri?',()=>{
+    sv('dchecks_'+id,ld('dtasks_'+id,[]).map(()=>false));
     openProj(id);renderHome();toast('TASK GIORNALIERI AZZERATI');
   });
 }
 
-// ── TASK SETTIMANALI ─────────────────────────────────────
-function ckWeekTask(i,id){
-  const ch=ld('wchecks_'+id,[]);
-  ch[i]=!ch[i];
-  sv('wchecks_'+id,ch);
-  const dot=document.querySelector(`#wtg-${id} .row:nth-child(${i+1}) .hd`);
-  const row=document.querySelector(`#wtg-${id} .row:nth-child(${i+1})`);
-  if(dot){dot.classList.toggle('on',ch[i]);}
-  if(row){row.classList.toggle('done',ch[i]);}
-  const t=ld('wtasks_'+id,[]);
-  const pct=t.length?Math.round(ch.filter(Boolean).length/t.length*100):0;
-  updateProjHeader(id,pct,'week');
+// ── OBIETTIVI SETTIMANALI ─────────────────────────────────
+function ckWeekGoal(i,id){
+  const ch=ld('weekGoalChecks_'+id,[]);
+  ch[i]=!ch[i];sv('weekGoalChecks_'+id,ch);
+  const dot=document.querySelector(`#wgoal-${id} .row:nth-child(${i+1}) .hd`);
+  const row=document.querySelector(`#wgoal-${id} .row:nth-child(${i+1})`);
+  if(dot)dot.classList.toggle('on',ch[i]);
+  if(row)row.classList.toggle('done',ch[i]);
+  const goals=ld('weekGoals_'+id,[]);
+  const done=ch.filter(Boolean).length;
+  const pct=goals.length?Math.round(done/goals.length*100):0;
+  const el=document.getElementById('pct-week-'+id);
+  const bar=document.getElementById('bar-week-'+id);
+  if(el)el.textContent=pct+'%';
+  if(bar)bar.style.width=pct+'%';
   renderHome();toast();
 }
-function edWeekTask(i,id,v){const t=ld('wtasks_'+id,[]);t[i]=v;sv('wtasks_'+id,t);toast();}
-function addWeekTask(id){
-  const inp=document.getElementById('wti-'+id);
-  const v=inp.value.trim();if(!v)return;
-  const t=ld('wtasks_'+id,[]);t.push(v);sv('wtasks_'+id,t);
-  const ch=ld('wchecks_'+id,[]);ch.push(false);sv('wchecks_'+id,ch);
-  inp.value='';openProj(id);
+function edWeekGoal(i,id,v){const t=ld('weekGoals_'+id,[]);t[i]=v;sv('weekGoals_'+id,t);toast();}
+function addWeekGoal(id){
+  const inp=document.getElementById('wgoal-inp-'+id);
+  const v=inp?.value.trim();if(!v)return;
+  const t=ld('weekGoals_'+id,[]);t.push(v);sv('weekGoals_'+id,t);
+  const ch=ld('weekGoalChecks_'+id,[]);ch.push(false);sv('weekGoalChecks_'+id,ch);
+  if(inp)inp.value='';openProj(id);
 }
-function delWeekTask(i,id){
-  const t=ld('wtasks_'+id,[]);t.splice(i,1);sv('wtasks_'+id,t);
-  const ch=ld('wchecks_'+id,[]);ch.splice(i,1);sv('wchecks_'+id,ch);
+function delWeekGoal(i,id){
+  const t=ld('weekGoals_'+id,[]);t.splice(i,1);sv('weekGoals_'+id,t);
+  const ch=ld('weekGoalChecks_'+id,[]);ch.splice(i,1);sv('weekGoalChecks_'+id,ch);
   openProj(id);
 }
-function resetWeekTasks(id){
-  modal('confirm','Azzerare i task della settimana?',()=>{
-    const t=ld('wtasks_'+id,[]);
-    sv('wchecks_'+id,t.map(()=>false));
-    openProj(id);renderHome();toast('TASK SETTIMANALI AZZERATI');
+function resetWeekGoals(id){
+  modal('confirm','Azzerare gli obiettivi della settimana?',()=>{
+    sv('weekGoalChecks_'+id,ld('weekGoals_'+id,[]).map(()=>false));
+    openProj(id);toast('OBIETTIVI AZZERATI');
   });
 }
 
-// Aggiorna i valori % nell'header triplo senza riaprire il progetto
+// Aggiorna header % senza riaprire il progetto
 function updateProjHeader(id,pct,type){
   const idx=type==='day'?0:type==='week'?1:2;
   const cells=document.querySelectorAll(`#det [style*="grid-template-columns:1fr 1fr 1fr"] > div`);
   if(!cells[idx])return;
   const num=cells[idx].querySelector('[style*="font-size:26px"]');
-  const bar=cells[idx].querySelector('[style*="height:2px;border-radius:99px;background:#"]');
+  const bar=cells[idx].querySelector('div[style*="height:2px;border-radius:99px;background:"]');
   if(num)num.textContent=pct+'%';
   if(bar)bar.style.width=pct+'%';
-  // Aggiorna anche counter done/tot nel slbl
-  const slbl=type==='day'?document.querySelector(`#dtg-${id}`)?.previousElementSibling:document.querySelector(`#wtg-${id}`)?.previousElementSibling;
-  if(slbl){
-    const key=type==='day'?'dtasks_':'wtasks_';
-    const chKey=type==='day'?'dchecks_':'wchecks_';
-    const tot=ld(key+id,[]).length;
-    const done=ld(chKey+id,[]).filter(Boolean).length;
-    const span=slbl.querySelector('span[style*="color:#555"]');
-    if(span)span.textContent=done+'/'+tot;
-  }
 }
+
 function goalsH(id,goals,gc,color){
   let h=`<div class="slbl">Obiettivi <span style="font-size:9px;color:#555">spunta = completato</span></div><div class="card" id="gg-${id}">`;
   goals.forEach((g,i)=>h+=`<div class="row${gc[i]?' done':''}" draggable="true" ondragstart="dragStart(event,'g',${i},'${id}')" ondragover="dragOver(event)" ondrop="drop(event,'g','${id}')" ondragleave="dragLeave(event)"><span class="drag-handle">⠿</span><div class="chk${gc[i]?' on':''}" onclick="ckGoal(this,'${id}')"></div><input class="rt" value="${g}" onchange="edGoal(${i},'${id}',this.value)"><button class="xb" onclick="delGoal(${i},'${id}')">×</button></div>`);
@@ -1669,8 +1787,9 @@ function renderAssets(){
   if(!el)return;
   el.innerHTML=a.map((x,i)=>{
     const isSpecial=!!x.special;
-    return `<div class="ar">
+    return `<div class="ar" style="${x.hidden?'opacity:.45':''}">
       <div class="ad" style="background:${AC[i%AC.length]}"></div>
+      <button class="xb" title="Mostra/Nascondi" onclick="toggleAssetHidden(${i})">${x.hidden?'🚫':'👁️'}</button>
       <input class="al" value="${esc(x.l)}" ${isSpecial?'readonly style="color:#666"':''} onchange="edAsset(${i},'l',this.value)">
       <input class="av" value="€${x.v.toFixed(0)}" onchange="edAsset(${i},'v',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
       ${isSpecial?'<span style="width:18px"></span>':`<button class="xb" style="color:#555" onclick="delAsset(${i})">×</button>`}
@@ -1680,8 +1799,10 @@ function renderAssets(){
   populateAssetSelects();
 }
 
+function toggleAssetHidden(i){const a=ld('assets',[]);a[i].hidden=!a[i].hidden;sv('assets',a);renderAssets();updateOv();toast();}
+
 function populateAssetSelects(){
-  const a=ld('assets',[]);
+  const a=ld('assets',[]).filter(x=>x.special==='liquidity'||x.special==='savings');
   const opts=a.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
   ['reg-asset','reg-out-asset'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1731,7 +1852,7 @@ function updateOv(){
   const a=ld('assets',[]);
   const liq=(a.find(x=>x.special==='liquidity')||{v:0}).v;
   const sav=(a.find(x=>x.special==='savings')||{v:0}).v;
-  const pat=a.reduce((s,x)=>s+x.v,0);
+  const pat=a.filter(x=>!x.hidden).reduce((s,x)=>s+x.v,0);
   const net=nettoMese();
   const $=id=>document.getElementById(id);
   if($('ov-liq'))$('ov-liq').textContent='\u20ac'+liq.toLocaleString('it-IT',{maximumFractionDigits:0});
