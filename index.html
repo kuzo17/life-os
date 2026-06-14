@@ -1910,8 +1910,22 @@ function bootApp(){
   renderTxMonth();
   renderSpese();
   renderSpeseGen();
-  setTimeout(()=>{renderCharts();renderPatTarget();renderPatChart();updateOv();if(window._fbListen)window._fbListen();setTimeout(autoWeeklyBackup,3000);},1000);
   document.getElementById('quicknote').value=ld('quicknote','');
+  setTimeout(()=>{
+    renderCharts();renderPatTarget();renderPatChart();updateOv();
+    if(window._fbListen) window._fbListen();
+    setTimeout(autoWeeklyBackup,3000);
+    // Se folders è ancora null dopo il boot, Firebase non aveva ancora caricato
+    // Riprova il sync e ri-renderizza tutto
+    if(!localStorage.getItem('g_folders')&&window._fbLoadAll){
+      window._fbLoadAll(()=>{
+        renderHome();renderTopbar();renderHab();renderAssets();
+        renderTxMonth();renderSpese();renderSpeseGen();renderCharts();
+        renderPatTarget();renderPatChart();updateOv();
+        document.getElementById('quicknote').value=ld('quicknote','');
+      });
+    }
+  },1500);
 }
 
 // Avvia con Firebase se disponibile, altrimenti parte offline
