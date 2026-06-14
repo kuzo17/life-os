@@ -1096,7 +1096,7 @@ function renderAgenda(){
     h+=`<div onclick="scrollToAgendaDay('${key}')" style="background:${isToday?'#1a2e1a':'#1a1a1a'};border:1px solid ${isToday?'#4ade80':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
       <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#555'};margin-bottom:3px">${['L','M','M','G','V','S','D'][i]}</div>
       <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${isToday?'#4ade80':isPast?'#333':'#888'}">${d.getDate()}</div>
-      ${tasks.length?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${done}/${tasks.length}</div>`:'<div style="height:14px"></div>'}
+      ${tasks.length?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:${isPast?'#333':'#4ade80'};margin-top:2px">${isToday?done+'/'+tasks.length:tasks.length}</div>`:'<div style="height:14px"></div>'}
     </div>`;
   }
   h+='</div>';
@@ -1379,7 +1379,7 @@ function buildStd(p){
     h+=`<div onclick="toggleMiniCalDay('${id}','${key}')" style="background:${isSelected?'#1a2e1a':'#141414'};border:1px solid ${isSelected?'#4ade80':isToday?'#4ade80':'#2a2a2a'};border-radius:5px;padding:5px 3px;text-align:center;cursor:pointer">
       <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#444'}">${['L','M','M','G','V','S','D'][(d.getDay()+6)%7]}</div>
       <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${isSelected?'#4ade80':isToday?'#fff':'#666'}">${d.getDate()}</div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'#4ade80':'#2a2a2a'};min-height:12px">${tot||''}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'#4ade80':'#2a2a2a'};min-height:12px">${isSelected&&tot?done+'/'+tot:tot||''}</div>
     </div>`;
   }
   h+=`</div>`;
