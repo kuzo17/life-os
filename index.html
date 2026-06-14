@@ -13,28 +13,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script type="module">
-// ── FIREBASE SDK ─────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBwcdUR6jo9yWIJFguZ-XpKmmlLUr5sitk",
-  authDomain: "life-os-giovanni.firebaseapp.com",
-  databaseURL: "https://life-os-giovanni-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "life-os-giovanni",
-  storageBucket: "life-os-giovanni.firebasestorage.app",
-  messagingSenderId: "282020360629",
-  appId: "1:282020360629:web:611b3fa5215ac08624a9fc"
+const firebaseConfig={apiKey:"AIzaSyBwcdUR6jo9yWIJFguZ-XpKmmlLUr5sitk",authDomain:"life-os-giovanni.firebaseapp.com",databaseURL:"https://life-os-giovanni-default-rtdb.europe-west1.firebasedatabase.app",projectId:"life-os-giovanni",storageBucket:"life-os-giovanni.firebasestorage.app",messagingSenderId:"282020360629",appId:"1:282020360629:web:611b3fa5215ac08624a9fc"};
+const fbApp=initializeApp(firebaseConfig);
+const db=getDatabase(fbApp);
+const ROOT='lifeOS';
+window._fbWrite=(key,value)=>set(ref(db,ROOT+'/'+key),value).catch(e=>console.warn('FB:',e));
+window._fbLoadAll=function(cb){
+  get(ref(db,ROOT)).then(s=>{
+    if(s.exists()){
+      const d=s.val();
+      Object.keys(d).forEach(k=>{try{localStorage.setItem('g_'+k,JSON.stringify(d[k]));}catch(e){}});
+      console.log('Dati caricati da Firebase');
+    } else {
+      Object.keys(localStorage).forEach(lk=>{
+        if(lk.startsWith('g_')){try{window._fbWrite(lk.slice(2),JSON.parse(localStorage.getItem(lk)));}catch(e){}}
+      });
+    }
+    if(cb)cb();
+  }).catch(e=>{console.warn('FB read:',e);if(cb)cb();});
 };
-
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
-
-// Espone le funzioni Firebase al scope globale
-window._fbSet = (key, value) => set(ref(db, 'lifeOS/'+key), value);
-window._fbGet = (key) => get(ref(db, 'lifeOS/'+key)).then(s => s.exists() ? s.val() : null);
-window._fbOnValue = (key, cb) => onValue(ref(db, 'lifeOS/'+key), s => cb(s.exists() ? s.val() : null));
-window._fbReady = true;
+const _sent={};
+window._fbMarkSent=function(k,v){_sent[k]=JSON.stringify(v);setTimeout(()=>delete _sent[k],5000);};
+window._fbListen=function(){
+  onValue(ref(db,ROOT+'/txLog'),s=>{
+    const fbVal=s.exists()?s.val():[];
+    const fbJson=JSON.stringify(fbVal);
+    if(fbJson!==localStorage.getItem('g_txLog')){
+      try{localStorage.setItem('g_txLog',fbJson);}catch(e){}
+    }
+    if(window._refreshTxLog)window._refreshTxLog();
+  });
+  onValue(ref(db,ROOT),s=>{
+    if(!s.exists())return;
+    const data=s.val();const changed=[];
+    Object.keys(data).forEach(k=>{
+      if(k==='txLog')return;
+      const fbJson=JSON.stringify(data[k]);
+      if(_sent[k]===fbJson)return;
+      if(fbJson!==localStorage.getItem('g_'+k)){
+        try{localStorage.setItem('g_'+k,fbJson);}catch(e){}
+        changed.push(k);
+      }
+    });
+    if(changed.length&&window._refreshAll)window._refreshAll(changed);
+  });
+};
+window._fbReady=true;
 console.log('Firebase connesso');
 </script>
 
@@ -45,7 +71,7 @@ h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;}
 .motto{font-size:11px;color:#444;font-style:italic;}
 .divider{height:1px;background:#1e1e1e;margin:1rem 0;}
-.flbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#444;margin:12px 0 6px;}
+.flbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#ccc;margin:12px 0 6px;}
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .pc{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s;}
 .pc:hover{border-color:#444;}
@@ -79,7 +105,7 @@ h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;
 .dh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;}
 .dn{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;text-transform:uppercase;}
 .dpct{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;}
-.slbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#444;margin:1rem 0 6px;display:flex;justify-content:space-between;align-items:center;}
+.slbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#ccc;margin:1rem 0 6px;display:flex;justify-content:space-between;align-items:center;}
 .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;}
 .row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #1e1e1e;}
 .row:last-child{border-bottom:none;}
@@ -118,7 +144,7 @@ td select{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Sp
 .loadmore:hover{background:#1e1e1e;}
 .isg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e1e1e;}
 .ist{background:#1a1a1a;padding:12px 14px;}
-.istl{font-size:9px;color:#555;margin-bottom:3px;font-family:'Space Mono',monospace;}
+.istl{font-size:9px;color:#ccc;margin-bottom:3px;font-family:'Space Mono',monospace;}
 .istv{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;}
 .hw{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;}
 .hh,.hr{display:grid;grid-template-columns:1fr repeat(7,24px) 30px 18px;gap:3px;padding:8px 12px;align-items:center;}
@@ -135,11 +161,11 @@ td select{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Sp
 .hx:hover{color:#f87171;}
 .ovg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e1e1e;border-radius:8px;overflow:hidden;border:1px solid #2a2a2a;margin-bottom:10px;}
 .ovc{background:#1a1a1a;padding:13px 14px;}
-.ovl{font-size:9px;color:#555;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;font-family:'Space Mono',monospace;}
+.ovl{font-size:9px;color:#ccc;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;font-family:'Space Mono',monospace;}
 .ovv{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .fc{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;}
-.fct{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:10px;}
+.fct{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#ccc;margin-bottom:10px;}
 .fr2{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e1e1e;}
 .fr2:last-child{border-bottom:none;}
 .fl{flex:1;background:transparent;border:none;color:#666;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;}
@@ -151,7 +177,7 @@ td select{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Sp
 .af:hover{color:#666;}
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .cc{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;}
-.cct{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:12px;}
+.cct{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#ccc;margin-bottom:12px;}
 .ar{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #1e1e1e;}
 .ar:last-child{border-bottom:none;}
 .ad{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
@@ -205,8 +231,6 @@ textarea::placeholder{color:#333;}
   canvas{max-width:100%;}
   .pat-target-vals{flex-wrap:wrap;gap:4px;}
 }
-/* Prevent zoom iOS */
-@media screen{input,select,textarea{font-size:max(16px,1em)!important;}}
 @media(max-width:480px){
   .pgrid{grid-template-columns:1fr 1fr;}
   .ovg{grid-template-columns:repeat(2,1fr);}
@@ -232,6 +256,7 @@ textarea::placeholder{color:#333;}
 .pat-eta{font-family:'Space Mono',monospace;font-size:10px;color:#555;}
 .snap-btn{font-family:'Space Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid #2a2a2a;background:transparent;color:#a78bfa;}
 .snap-btn:hover{border-color:#a78bfa;}
+@media screen and (max-width:768px){input,select,textarea{font-size:16px!important;}}
 </style>
 </head>
 <body>
@@ -379,9 +404,8 @@ textarea::placeholder{color:#333;}
 <script>
 const sv=(k,v)=>{
   try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
-  // Sync su Firebase se disponibile
   if(window._fbReady){
-    try{window._fbSet(k,v);}catch(e){}
+    try{if(k!=='txLog')window._fbMarkSent(k,v);window._fbWrite(k,v);}catch(e){}
   }
 };
 const ld=(k,d)=>{
@@ -390,9 +414,7 @@ const ld=(k,d)=>{
 
 // Sincronizza Firebase → localStorage al primo carico
 function syncFromFirebase(cb){
-  if(!window._fbReady||!window._fbLoadAll){
-    setTimeout(()=>syncFromFirebase(cb),300);return;
-  }
+  if(!window._fbReady||!window._fbLoadAll){setTimeout(()=>syncFromFirebase(cb),300);return;}
   window._fbLoadAll(cb);
 }
 const AC=['#4ade80','#fb923c','#a78bfa','#60a5fa','#f472b6','#e8b04a','#38bdf8','#fff'];
@@ -952,9 +974,6 @@ function agendaKey(date){
 function getAgendaDay(date){return ld(agendaKey(date),[]);}
 function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
 
-let _agendaFilter='';
-function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
-
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
@@ -985,16 +1004,7 @@ function renderAgenda(){
   }
   h+='</div></div>';
 
-  // ── Filtro progetto ──
-  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <span style="font-family:Space Mono,monospace;font-size:9px;color:#555">FILTRA:</span>
-    <select onchange="setAgendaFilter(this.value)" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:Space Mono,monospace;font-size:9px;padding:4px 8px;border-radius:6px;outline:none;flex:1">
-      <option value="">Tutti</option>
-      ${allProjs.map(p=>`<option value="${esc(p.id)}"${_agendaFilter===p.id?' selected':''}>${esc(p.tag)}</option>`).join('')}
-    </select>
-  </div>`;
-
-  // ── Lista giorni ──
+  // ── Lista giorni dettagliata: 2 ieri + oggi + 13 futuri ──
   const days=[];
   for(let i=-1;i<=13;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
@@ -1351,7 +1361,78 @@ function delAgendaTaskAndRefresh(key,i,projId){
 }
 
 
-// ── AGGIORNA HEADER PROGETTO ─────────────────────────────
+function ckDayTask(i,id){
+  const ch=ld('dchecks_'+id,[]);
+  ch[i]=!ch[i];
+  sv('dchecks_'+id,ch);
+  // Aggiorna dot nella card
+  const dot=document.querySelector(`#dtg-${id} .row:nth-child(${i+1}) .hd`);
+  const row=document.querySelector(`#dtg-${id} .row:nth-child(${i+1})`);
+  if(dot){dot.classList.toggle('on',ch[i]);}
+  if(row){row.classList.toggle('done',ch[i]);}
+  // Aggiorna % nell'header
+  const t=ld('dtasks_'+id,[]);
+  const pct=t.length?Math.round(ch.filter(Boolean).length/t.length*100):0;
+  updateProjHeader(id,pct,'day');
+  renderHome();toast();
+}
+function edDayTask(i,id,v){const t=ld('dtasks_'+id,[]);t[i]=v;sv('dtasks_'+id,t);toast();}
+function addDayTask(id){
+  const inp=document.getElementById('dti-'+id);
+  const v=inp.value.trim();if(!v)return;
+  const t=ld('dtasks_'+id,[]);t.push(v);sv('dtasks_'+id,t);
+  const ch=ld('dchecks_'+id,[]);ch.push(false);sv('dchecks_'+id,ch);
+  inp.value='';openProj(id);
+}
+function delDayTask(i,id){
+  const t=ld('dtasks_'+id,[]);t.splice(i,1);sv('dtasks_'+id,t);
+  const ch=ld('dchecks_'+id,[]);ch.splice(i,1);sv('dchecks_'+id,ch);
+  openProj(id);
+}
+function resetDayTasks(id){
+  modal('confirm','Azzerare i task di oggi?',()=>{
+    const t=ld('dtasks_'+id,[]);
+    sv('dchecks_'+id,t.map(()=>false));
+    openProj(id);renderHome();toast('TASK GIORNALIERI AZZERATI');
+  });
+}
+
+// ── TASK SETTIMANALI ─────────────────────────────────────
+function ckWeekTask(i,id){
+  const ch=ld('wchecks_'+id,[]);
+  ch[i]=!ch[i];
+  sv('wchecks_'+id,ch);
+  const dot=document.querySelector(`#wtg-${id} .row:nth-child(${i+1}) .hd`);
+  const row=document.querySelector(`#wtg-${id} .row:nth-child(${i+1})`);
+  if(dot){dot.classList.toggle('on',ch[i]);}
+  if(row){row.classList.toggle('done',ch[i]);}
+  const t=ld('wtasks_'+id,[]);
+  const pct=t.length?Math.round(ch.filter(Boolean).length/t.length*100):0;
+  updateProjHeader(id,pct,'week');
+  renderHome();toast();
+}
+function edWeekTask(i,id,v){const t=ld('wtasks_'+id,[]);t[i]=v;sv('wtasks_'+id,t);toast();}
+function addWeekTask(id){
+  const inp=document.getElementById('wti-'+id);
+  const v=inp.value.trim();if(!v)return;
+  const t=ld('wtasks_'+id,[]);t.push(v);sv('wtasks_'+id,t);
+  const ch=ld('wchecks_'+id,[]);ch.push(false);sv('wchecks_'+id,ch);
+  inp.value='';openProj(id);
+}
+function delWeekTask(i,id){
+  const t=ld('wtasks_'+id,[]);t.splice(i,1);sv('wtasks_'+id,t);
+  const ch=ld('wchecks_'+id,[]);ch.splice(i,1);sv('wchecks_'+id,ch);
+  openProj(id);
+}
+function resetWeekTasks(id){
+  modal('confirm','Azzerare i task della settimana?',()=>{
+    const t=ld('wtasks_'+id,[]);
+    sv('wchecks_'+id,t.map(()=>false));
+    openProj(id);renderHome();toast('TASK SETTIMANALI AZZERATI');
+  });
+}
+
+// Aggiorna i valori % nell'header triplo senza riaprire il progetto
 function updateProjHeader(id,pct,type){
   const idx=type==='day'?0:type==='week'?1:2;
   const cells=document.querySelectorAll(`#det [style*="grid-template-columns:1fr 1fr 1fr"] > div`);
@@ -1600,17 +1681,15 @@ function renderAssets(){
 }
 
 function populateAssetSelects(){
-  const allA=ld('assets',[]);
-  const a=allA.filter(x=>x.special||x.l==='Liquidità'||x.l==='Risparmi');
-  const list=a.length?a:allA;
-  const opts=list.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
+  const a=ld('assets',[]);
+  const opts=a.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
   ['reg-asset','reg-out-asset'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     const cur=el.value;
     el.innerHTML=opts;
-    if(cur&&list.find(x=>x.l===cur))el.value=cur;
-    else if(list.length)el.value=list[0].l;
+    if(cur&&a.find(x=>x.l===cur))el.value=cur;
+    else if(a.length)el.value=a[0].l;
   });
 }
 function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();renderAssets();renderCharts();updateOv();renderPatTarget();toast();}
@@ -1891,66 +1970,42 @@ window._refreshAll=function(changedKeys){
 };
 function autoWeeklyBackup(){
   if(!window._fbReady)return;
-  const lastBackup=ld('lastWeeklyBackup','');
-  const weekKey=getWeekKey();
-  if(lastBackup===weekKey)return;
+  const last=ld('lastWeeklyBackup','');const wk=getWeekKey();
+  if(last===wk)return;
   const data={};
   Object.keys(localStorage).forEach(k=>{if(k.startsWith('g_')){try{data[k.slice(2)]=JSON.parse(localStorage.getItem(k));}catch(e){}}});
-  window._fbWrite('backups/'+weekKey,data);
-  sv('lastWeeklyBackup',weekKey);
-  console.log('Backup settimanale: '+weekKey);
+  window._fbWrite('backups/'+wk,data);sv('lastWeeklyBackup',wk);
+  console.log('Backup settimanale: '+wk);
 }
 function bootApp(){
-  initData();
-  autoSnapOnce();
-  renderHome();
-  renderTopbar();
-  renderHab();
-  renderAssets();
-  renderTxMonth();
-  renderSpese();
-  renderSpeseGen();
+  initData();autoSnapOnce();
+  renderHome();renderTopbar();renderHab();renderAssets();
+  renderTxMonth();renderSpese();renderSpeseGen();
   document.getElementById('quicknote').value=ld('quicknote','');
   setTimeout(()=>{
     renderCharts();renderPatTarget();renderPatChart();updateOv();
-    if(window._fbListen) window._fbListen();
+    if(window._fbListen)window._fbListen();
     setTimeout(autoWeeklyBackup,3000);
-    // Se folders è ancora null dopo il boot, Firebase non aveva ancora caricato
-    // Riprova il sync e ri-renderizza tutto
     if(!localStorage.getItem('g_folders')&&window._fbLoadAll){
       window._fbLoadAll(()=>{
         renderHome();renderTopbar();renderHab();renderAssets();
-        renderTxMonth();renderSpese();renderSpeseGen();renderCharts();
-        renderPatTarget();renderPatChart();updateOv();
+        renderTxMonth();renderSpese();renderSpeseGen();
+        renderCharts();renderPatTarget();renderPatChart();updateOv();
         document.getElementById('quicknote').value=ld('quicknote','');
       });
     }
   },1500);
 }
-
-// Avvia con Firebase se disponibile, altrimenti parte offline
 let _booted=false;
-function safeBoot(){
-  if(_booted)return;
-  _booted=true;
-  bootApp();
-}
-
+function safeBoot(){if(_booted)return;_booted=true;bootApp();}
 function tryFirebaseBoot(){
-  if(window._fbReady){
-    syncFromFirebase(safeBoot);
-  } else {
+  if(window._fbReady&&window._fbLoadAll){syncFromFirebase(safeBoot);}
+  else{
     let attempts=0;
-    const waitFb=setInterval(()=>{
+    const t=setInterval(()=>{
       attempts++;
-      if(window._fbReady){
-        clearInterval(waitFb);
-        syncFromFirebase(safeBoot);
-      } else if(attempts>=15){
-        clearInterval(waitFb);
-        console.warn('Firebase offline, avvio da localStorage');
-        safeBoot();
-      }
+      if(window._fbReady&&window._fbLoadAll){clearInterval(t);syncFromFirebase(safeBoot);}
+      else if(attempts>=15){clearInterval(t);console.warn('Firebase offline');safeBoot();}
     },200);
   }
 }
@@ -1958,8 +2013,3 @@ tryFirebaseBoot();
 </script>
 </body>
 </html>
-// Legacy bridge — ckDayTask richiamato dall'agenda
-function ckDayTask(i,id){ckRecur(i,id);}
-function addDayTask(id){addRecur(id);}
-function delDayTask(i,id){delRecur(i,id);}
-
