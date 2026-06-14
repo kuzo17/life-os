@@ -231,6 +231,7 @@ textarea::placeholder{color:#333;}
 .foot-btns{display:flex;gap:8px;justify-content:center;margin-top:1rem;}
 .foot-btn{font-family:'Space Mono',monospace;font-size:10px;padding:8px 16px;border-radius:6px;cursor:pointer;border:1px solid #2a2a2a;background:transparent;}
 .foot{text-align:center;margin-top:1rem;font-family:'Space Mono',monospace;font-size:9px;color:#2a2a2a;letter-spacing:.1em;}
+body.light-mode{filter:invert(1);}
 .tabs{display:flex;gap:6px;margin-bottom:1rem;}
 .tab{font-family:'Space Mono',monospace;font-size:10px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px solid #2a2a2a;background:transparent;color:#555;}
 .tab.on{background:#fff;color:#0f0f0f;border-color:#fff;}
@@ -291,15 +292,35 @@ textarea::placeholder{color:#333;}
 </head>
 <body>
 <div id="toast"></div>
+
+<!-- QUICK CAPTURE -->
+<button id="qc-fab" onclick="openQC()" title="Quick Capture (Ctrl+Space)" style="position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:#1a1a1a;border:1px solid #4ade80;color:#4ade80;font-size:20px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">⚡</button>
+
+<div id="qc-overlay" style="display:none;position:fixed;inset:0;background:#000a;z-index:9000;align-items:center;justify-content:center">
+  <div style="background:#141414;border:1px solid #2a2a2a;border-radius:12px;padding:20px;width:min(560px,95vw);max-height:80vh;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:#4ade80;letter-spacing:.1em">⚡ QUICK CAPTURE</div>
+      <button onclick="closeQC()" style="font-size:16px;color:#555;background:none;border:none;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:11px;color:#444;font-family:'Space Mono',monospace">Una task per riga · usa <span style="color:#e8b04a">#PROGETTO</span> per assegnare · es: <span style="color:#888">fare post #QUARTZICA</span></div>
+    <textarea id="qc-input" rows="8" placeholder="fare post TikTok #QUARTZICA&#10;call con cliente&#10;studiare copywriting #KDP" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:12px;font-size:13px;color:#ccc;font-family:'Space Grotesk',sans-serif;resize:vertical;line-height:1.7" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();submitQC()}"></textarea>
+    <select id="qc-date" style="display:none"></select>
+    <button onclick="submitQC()" style="font-family:'Space Mono',monospace;font-size:11px;padding:8px 20px;border-radius:6px;border:1px solid #4ade80;background:transparent;color:#4ade80;cursor:pointer;align-self:flex-end">+ AGGIUNGI</button>
+    <div id="qc-preview" style="font-family:'Space Mono',monospace;font-size:10px;color:#555"></div>
+  </div>
+</div>
 <div id="home">
   <div class="topbar">
     <div>
       <h1>Giovanni</h1>
       <div style="font-size:11px;color:#555;margin-top:3px;letter-spacing:.06em;text-transform:uppercase" id="tdate"></div>
     </div>
-    <div style="text-align:right">
-      <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#a78bfa" id="tb-pat">€0</div>
-      <div style="font-size:10px;color:#444;margin-top:2px;font-family:'Space Mono',monospace" id="tb-tasks"></div>
+    <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="toggleTheme()" id="theme-btn" style="font-family:'Space Mono',monospace;font-size:13px;background:none;border:none;cursor:pointer;color:#444;padding:0;line-height:1" title="Light/Dark">🌙</button>
+        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#a78bfa" id="tb-pat">€0</div>
+      </div>
+      <div style="font-size:10px;color:#444;font-family:'Space Mono',monospace" id="tb-tasks"></div>
       <div class="overdue-badge" id="tb-overdue" style="display:none"></div>
     </div>
   </div>
@@ -480,6 +501,20 @@ function modal(type,msg,cb){
     box.querySelector('#_mc').onclick=()=>document.body.removeChild(ov);
   }
 }
+
+function toggleTheme(){
+  const light=document.body.classList.toggle('light-mode');
+  document.getElementById('theme-btn').textContent=light?'☀':'🌙';
+  sv('theme',light?'light':'dark');
+}
+function applyTheme(){
+  if(ld('theme','dark')==='light'){
+    document.body.classList.add('light-mode');
+    const btn=document.getElementById('theme-btn');
+    if(btn)btn.textContent='☀';
+  }
+}
+applyTheme();
 
 function toast(msg='SALVATO'){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1300);}
 
@@ -1310,11 +1345,13 @@ document.addEventListener('touchend',e=>{
   _swipeTracking=false;
   if(dx>=70&&Math.abs(dx)>Math.abs(dy)*1.5)closeProj();
 },{passive:true});
+const _statCharts={};
 function renderStatChart(id,color){
   const hist=ld('pct_hist_'+id,[]);
   const el=document.getElementById('stat-chart-'+id);
   if(!el||hist.length<2)return;
-  new Chart(el,{type:'line',data:{labels:hist.map(h=>{const d=new Date(h.t);return d.getDate()+'/'+(d.getMonth()+1);}),datasets:[{data:hist.map(h=>h.v),borderColor:color,backgroundColor:color+'22',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:color}]},options:{responsive:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},y:{min:0,max:100,ticks:{color:'#555',font:{size:9},callback:v=>v+'%'},grid:{color:'#1e1e1e'}}}}});
+  if(_statCharts[id]){_statCharts[id].destroy();delete _statCharts[id];}
+  _statCharts[id]=new Chart(el,{type:'line',data:{labels:hist.map(h=>{const d=new Date(h.t);return d.getDate()+'/'+(d.getMonth()+1);}),datasets:[{data:hist.map(h=>h.v),borderColor:color,backgroundColor:color+'22',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:color}]},options:{responsive:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},y:{min:0,max:100,ticks:{color:'#555',font:{size:9},callback:v=>v+'%'},grid:{color:'#1e1e1e'}}}}});
 }
 
 function updateTaskHistory(id,type,index,text,done,scope=''){
@@ -1510,11 +1547,11 @@ function ckRecur(i,id){
   ch[k]=!ch[k];sv('recurChecks_'+id,ch);
   const recur=ld('recur_'+id,[]);
   updateTaskHistory(id,'recur',i,recur[i]||'',ch[k],todayKey);
-  const dot=document.querySelector(`#recur-${id} .row:nth-child(${i+1}) .hd`);
-  const row=document.querySelector(`#recur-${id} .row:nth-child(${i+1})`);
+  const rows=document.querySelectorAll(`#recur-${id} .row`);
+  const row=rows[i];
+  const dot=row?.querySelector('.hd');
   if(dot)dot.classList.toggle('on',ch[k]);
   if(row)row.classList.toggle('done',ch[k]);
-  // Aggiorna % OGGI
   const pct=calcPctDay(id);
   const el=document.getElementById('pct-day-'+id);
   const bar=document.getElementById('bar-day-'+id);
@@ -1540,8 +1577,9 @@ function delRecur(i,id){
 function ckWeekGoal(i,id){
   const ch=ld('weekGoalChecks_'+id,[]);
   ch[i]=!ch[i];sv('weekGoalChecks_'+id,ch);
-  const dot=document.querySelector(`#wgoal-${id} .row:nth-child(${i+1}) .hd`);
-  const row=document.querySelector(`#wgoal-${id} .row:nth-child(${i+1})`);
+  const rows=document.querySelectorAll(`#wgoal-${id} .row`);
+  const row=rows[i];
+  const dot=row?.querySelector('.hd');
   if(dot)dot.classList.toggle('on',ch[i]);
   if(row)row.classList.toggle('done',ch[i]);
   const goals=ld('weekGoals_'+id,[]);
@@ -1672,17 +1710,17 @@ function ckSpesa(i,id){
 function edSpesa(i,id,k,v){const s=ld('spese_'+id,[]);s[i][k]=v;sv('spese_'+id,s);renderTopbar();toast();}
 function delSpesa(i,id){const s=ld('spese_'+id,[]);s.splice(i,1);sv('spese_'+id,s);renderTopbar();openProj(id);}
 function addSpesa(id){const n=document.getElementById('si-'+id).value.trim();const v=parseFloat(document.getElementById('sv-'+id).value)||0;const d=document.getElementById('sd-'+id).value||'—';if(!n)return;const s=ld('spese_'+id,[]);s.push({nome:n,v,data:d,paid:false});sv('spese_'+id,s);renderTopbar();openProj(id);toast();}
-function isScaduta(data){if(!data||data==='—')return false;const p=data.split('/');if(p.length===3){const d=new Date(p[2],p[1]-1,p[0]);return d<new Date();}return false;}
-function isExpenseOverdue(data){
+function isScaduta(data){
   if(!data||data==='—')return false;
   let d=null;
   const p=String(data).split('/');
   if(p.length===3)d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]));
   else if(/^\d{4}-\d{2}-\d{2}$/.test(data)){const q=data.split('-');d=new Date(Number(q[0]),Number(q[1])-1,Number(q[2]));}
-  if(!d||Number.isNaN(d.getTime()))return false;
+  if(!d||isNaN(d.getTime()))return false;
   const today=new Date();today.setHours(0,0,0,0);
   return d<today;
 }
+const isExpenseOverdue=isScaduta;
 function countOverdueExpenses(){
   const allProjs=[...PD,...ld('customProjs',[])];
   let total=0;
@@ -2182,6 +2220,198 @@ function tryFirebaseBoot(){
   }
 }
 tryFirebaseBoot();
+
+// ── QUICK CAPTURE ──
+const QC_MONTHS={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};
+const QC_DAYS={lunedì:1,lun:1,martedì:2,mar:2,mercoledì:3,mer:3,giovedì:4,gio:4,venerdì:5,ven:5,sabato:6,sab:6,domenica:0,dom:0};
+const QC_MONTH_NAMES=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const QC_DAY_NAMES=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+
+function _escRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function parseQCLine(line,allProjs){
+  let text=line.trim();
+  let projId='',proj=null,targetDate=null,isRecur=false;
+
+  // 1. RICORRENTE — parole chiave: ricorrente, ricorr, ogni giorno, /r
+  if(/\bricorr\w*\b/i.test(text)||/\bogni\s+giorno\b/i.test(text)||/\/r\b/i.test(text)){
+    isRecur=true;
+    text=text.replace(/\bricorr\w*\b/gi,'').replace(/\bogni\s+giorno\b/gi,'').replace(/\/r\b/gi,'').trim();
+  }
+
+  // 2. DATA — solo se non ricorrente
+  if(!isRecur){
+    const today=new Date();today.setHours(0,0,0,0);
+    let matched='';
+
+    // dopodomani
+    if(/\bdopodomani\b/i.test(text)){
+      targetDate=new Date(today);targetDate.setDate(today.getDate()+2);
+      matched='dopodomani';
+    }
+    // domani
+    else if(/\bdomani\b/i.test(text)){
+      targetDate=new Date(today);targetDate.setDate(today.getDate()+1);
+      matched='domani';
+    }
+    // oggi
+    else if(/\boggi\b/i.test(text)){
+      targetDate=new Date(today);
+      matched='oggi';
+    }
+    // tra N giorni
+    else{
+      const traN=text.match(/\btra\s+(\d+)\s+giorni?\b/i);
+      if(traN){
+        targetDate=new Date(today);targetDate.setDate(today.getDate()+parseInt(traN[1]));
+        matched=traN[0];
+      }
+    }
+
+    if(!matched){
+      // DD/MM o DD/MM/YYYY
+      const ddmm=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?\b/);
+      if(ddmm){
+        const yr=ddmm[3]?parseInt(ddmm[3]):today.getFullYear();
+        targetDate=new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));
+        matched=ddmm[0];
+      } else {
+        // DD mese (es. "15 giu")
+        const ddmon=text.match(/\b(\d{1,2})\s+(gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic)\b/i);
+        if(ddmon){
+          targetDate=new Date(today.getFullYear(),QC_MONTHS[ddmon[2].toLowerCase()],parseInt(ddmon[1]));
+          matched=ddmon[0];
+        } else {
+          // giorno della settimana (prossimo)
+          for(const [name,num] of Object.entries(QC_DAYS)){
+            const re=new RegExp('\\b'+_escRe(name)+'\\b','i');
+            if(re.test(text)){
+              const d=new Date(today);
+              const diff=(num-d.getDay()+7)%7||7;
+              d.setDate(d.getDate()+diff);
+              targetDate=d;matched=name;break;
+            }
+          }
+        }
+      }
+    }
+    if(matched) text=text.replace(new RegExp(_escRe(matched),'i'),'').trim();
+  }
+
+  // 3. PROGETTO — match su id, tag, folder (min 3 chars, caso insensitivo)
+  let bestProj=null,bestLen=0;
+  allProjs.forEach(p=>{
+    const candidates=[p.id,p.tag,p.folder,...(p.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=3);
+    candidates.forEach(tok=>{
+      const re=new RegExp('\\b'+_escRe(tok)+'\\b','i');
+      if(re.test(text)&&tok.length>bestLen){bestProj=p;bestLen=tok.length;}
+    });
+  });
+  if(bestProj){
+    proj=bestProj;projId=bestProj.id;
+    const toks=[bestProj.id,bestProj.tag,bestProj.folder,...(bestProj.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=3);
+    toks.sort((a,b)=>b.length-a.length);
+    toks.forEach(tok=>{text=text.replace(new RegExp('\\b'+_escRe(tok)+'\\b','gi'),'');});
+    text=text.replace(/\s+/g,' ').trim();
+  }
+
+  return{text:text||line.trim(),projId,proj,targetDate,isRecur};
+}
+
+function _qcDateLabel(d){
+  const today=new Date();today.setHours(0,0,0,0);
+  const diff=Math.round((d-today)/86400000);
+  if(diff===0)return'oggi';
+  if(diff===1)return'domani';
+  return QC_DAY_NAMES[d.getDay()]+' '+d.getDate()+' '+QC_MONTH_NAMES[d.getMonth()];
+}
+
+function openQC(){
+  const overlay=document.getElementById('qc-overlay');
+  overlay.style.display='flex';
+  const sel=document.getElementById('qc-date');
+  sel.innerHTML='';
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let i=0;i<8;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const key='agenda_'+d.toISOString().slice(0,10);
+    const opt=document.createElement('option');
+    opt.value=key;opt.textContent=(i===0?'Default: oggi — ':'')+_qcDateLabel(d);
+    sel.appendChild(opt);
+  }
+  const inp=document.getElementById('qc-input');
+  inp.value='';
+  document.getElementById('qc-preview').innerHTML='';
+  setTimeout(()=>inp.focus(),50);
+  inp.oninput=updateQCPreview;
+}
+
+function closeQC(){document.getElementById('qc-overlay').style.display='none';}
+
+function updateQCPreview(){
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
+  const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
+  const fallbackKey=document.getElementById('qc-date').value;
+  const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
+  if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
+  const rows=lines.map(l=>{
+    const p=parseQCLine(l,allProjs);
+    const dateLabel=p.isRecur?'ricorrente':_qcDateLabel(p.targetDate||fallbackDate);
+    const projLabel=p.proj?`<span style="color:${p.proj.color};font-weight:700">${p.proj.tag}</span>`:`<span style="color:#444">nessun progetto</span>`;
+    const typeIcon=p.isRecur?'↺':'📅';
+    return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+      <span style="color:#888;min-width:80px;flex-shrink:0">${typeIcon} ${dateLabel}</span>
+      ${projLabel}
+      <span style="color:#ccc;flex:1">${p.text}</span>
+    </div>`;
+  });
+  document.getElementById('qc-preview').innerHTML=rows.join('');
+}
+
+function submitQC(){
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
+  const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
+  if(!lines.length)return;
+  const fallbackKey=document.getElementById('qc-date').value;
+  const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
+  let added=0,recurs=0;
+  const byDate={};
+  lines.forEach(line=>{
+    const{text,projId,isRecur,targetDate}=parseQCLine(line,allProjs);
+    if(!text)return;
+    if(isRecur&&projId){
+      // aggiunge alle task ricorrenti del progetto
+      const arr=ld('recur_'+projId,[]);
+      if(!arr.includes(text)){arr.push(text);sv('recur_'+projId,arr);}
+      recurs++;
+    } else {
+      const d=targetDate||fallbackDate;
+      const key='agenda_'+d.toISOString().slice(0,10);
+      if(!byDate[key]){byDate[key]={date:d,tasks:[]};}
+      byDate[key].tasks.push({text,projId,done:false,ts:Date.now()+Math.random(),type:'day'});
+      added++;
+    }
+  });
+  Object.values(byDate).forEach(({date,tasks})=>{
+    const existing=getAgendaDay(date);
+    setAgendaDay(date,[...existing,...tasks]);
+  });
+  closeQC();
+  const agendaTab=document.getElementById('tab-agenda');
+  if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
+  const msg=[added?`⚡ ${added} in agenda`:'',recurs?`↺ ${recurs} ricorrenti`:''].filter(Boolean).join(' · ');
+  toast(msg||'⚡ fatto');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.code==='Space'){e.preventDefault();const o=document.getElementById('qc-overlay');if(o.style.display==='flex')closeQC();else openQC();}
+  if(e.key==='Escape'){const o=document.getElementById('qc-overlay');if(o.style.display==='flex')closeQC();}
+});
+document.getElementById('qc-overlay').addEventListener('click',function(e){if(e.target===this)closeQC();});
+// Chiudi cliccando fuori
+document.getElementById('qc-overlay').addEventListener('click',function(e){
+  if(e.target===this)closeQC();
+});
 </script>
 </body>
 </html>
