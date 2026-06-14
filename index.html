@@ -67,6 +67,8 @@ console.log('Firebase connesso');
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#0f0f0f;color:#e8e8e8;font-family:'Space Grotesk',sans-serif;padding:1.5rem;}
+button{font-family:'Space Mono',monospace;}
+input,select,textarea,button{max-width:100%;}
 h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;text-transform:uppercase;}
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;}
 .motto{font-size:11px;color:#444;font-style:italic;}
@@ -114,7 +116,7 @@ h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;
 .chk{width:15px;height:15px;border:1.5px solid #333;border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .chk.on{background:#fff;border-color:#fff;}
 .chk.on::after{content:'✓';font-size:9px;color:#0f0f0f;font-weight:700;}
-.rt{flex:1;font-size:13px;color:#ccc;background:transparent;border:none;outline:none;font-family:'Space Grotesk',sans-serif;}
+.rt{flex:1;min-width:0;font-size:13px;color:#ccc;background:transparent;border:none;outline:none;font-family:'Space Grotesk',sans-serif;}
 .rt:focus{border-bottom:1px solid #333;}
 .drag-handle{cursor:grab;color:#2a2a2a;font-size:14px;padding:0 4px;user-select:none;}
 .drag-handle:hover{color:#555;}
@@ -186,7 +188,7 @@ td select{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Sp
 .asset-chart{display:flex;align-items:center;justify-content:center;min-width:0;}
 .asset-editor{min-width:0;border-left:1px solid #2a2a2a;padding-left:22px;}
 .movement-fields{display:grid;grid-template-columns:120px minmax(180px,1fr) 100px minmax(160px,.7fr);gap:6px;}
-.movement-control{background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;color:#ccc;outline:none;min-width:0;}
+.movement-control{background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;color:#ccc;outline:none;min-width:0;font-family:'Space Mono',monospace;font-size:12px;}
 .expense-section-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#555;padding:10px 0 6px;}
 .expense-section-title:first-child{padding-top:0;}
 .expense-divider{height:1px;background:#2a2a2a;margin:12px 0 0;}
@@ -256,6 +258,15 @@ textarea::placeholder{color:#333;}
   h1{font-size:18px;}
   .ppct{font-size:18px;}
   .cg{grid-template-columns:1fr;}
+  body{overflow-x:hidden;}
+  .row{gap:6px;padding:9px 10px;min-width:0;}
+  .arow{gap:6px;padding:8px 10px;}
+  .tabs{gap:4px;overflow-x:auto;padding-bottom:2px;}
+  .tab{padding:6px 10px;flex-shrink:0;}
+  .pc-meta{align-items:flex-start;flex-direction:column;gap:3px;}
+  .sv{width:52px;}
+  .sd{width:64px;}
+  .movement-fields{grid-template-columns:1fr;}
 }
 /* PATRIMONIO TARGET */
 .pat-target-wrap{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;margin-bottom:10px;}
@@ -408,7 +419,11 @@ textarea::placeholder{color:#333;}
 
 <script>
 const sv=(k,v)=>{
-  try{localStorage.setItem('g_'+k,JSON.stringify(v));}catch(e){}
+  const json=JSON.stringify(v);
+  try{
+    if(localStorage.getItem('g_'+k)===json)return;
+    localStorage.setItem('g_'+k,json);
+  }catch(e){}
   if(window._fbReady){
     try{if(k!=='txLog')window._fbMarkSent(k,v);window._fbWrite(k,v);}catch(e){}
   }
@@ -615,16 +630,16 @@ const carteEbay=()=>ld('carteInv',[]).filter(c=>c.stato!=='Venduta').reduce((a,c
 const carteSoldTot=()=>ld('carteInv',[]).filter(c=>c.stato==='Venduta').reduce((a,c)=>a+(c.vendita||0),0);
 const calcPct=id=>{const p=PD.find(x=>x.id===id);const g=ld('goals_'+id,p?p.goals0||[]:[]);const c=ld('gchecks_'+id,[]);return g.length?Math.round(g.filter((_,i)=>c[i]).length/g.length*100):0;};
 const calcPctDay=id=>{
-  // % oggi = (ricorrenti completati oggi + task giornalieri completati) / totale
+  // % oggi = ricorrenti di oggi + task giornaliere inserite manualmente nell'agenda di oggi
   const todayKey=new Date().toDateString();
   const recur=ld('recur_'+id,[]);
   const recurCh=ld('recurChecks_'+id,{});
-  const dtasks=ld('dtasks_'+id,[]);
-  const dchecks=ld('dchecks_'+id,[]);
-  const tot=recur.length+dtasks.length;
+  const today=new Date();today.setHours(0,0,0,0);
+  const dayTasks=getAgendaDay(today).filter(t=>t.projId===id);
+  const tot=recur.length+dayTasks.length;
   if(!tot)return 0;
   const done=recur.filter((_,i)=>recurCh[todayKey+'_'+i]).length
-            +dtasks.filter((_,i)=>dchecks[i]).length;
+            +dayTasks.filter(t=>t.done).length;
   return Math.round(done/tot*100);
 };
 const calcPctWeek=id=>{
@@ -848,11 +863,11 @@ function renderHome(){
       const _todayKey=new Date().toDateString();
       const _recur=p.hasInv?[]:ld('recur_'+p.id,[]);
       const _recurCh=p.hasInv?{}:ld('recurChecks_'+p.id,{});
-      const _dt=p.hasInv?[]:ld('dtasks_'+p.id,[]);
-      const _dc=p.hasInv?[]:ld('dchecks_'+p.id,[]);
-      const dtasks_tot=_recur.length+_dt.length;
-      const dtasks_done=_recur.filter((_,i)=>_recurCh[_todayKey+'_'+i]).length
-                       +_dt.filter((_,i)=>_dc[i]).length;
+      const _today=new Date();_today.setHours(0,0,0,0);
+      const _dayTasks=p.hasInv?[]:getAgendaDay(_today).filter(t=>t.projId===p.id);
+      const today_tot=_recur.length+_dayTasks.length;
+      const today_done=_recur.filter((_,i)=>_recurCh[_todayKey+'_'+i]).length
+                       +_dayTasks.filter(t=>t.done).length;
       const td=p.hasInv?null:tasksDone(p.id);
       const age=getAge(p.id);
       const pri=getPri(p.id);
@@ -877,7 +892,7 @@ function renderHome(){
         </div>
         <div class="pb"><div class="pbf" style="width:${pctDay}%;background:${p.color}"></div></div>
         <div class="pc-meta">
-          <span class="pc-tasks" style="color:#555">${dtasks_done}/${dtasks_tot} oggi</span>
+          <span class="pc-tasks" style="color:#555">${today_done}/${today_tot} oggi</span>
           ${age?`<span class="pc-age">${age}</span>`:''}
         </div>
       </div>`;
@@ -1037,13 +1052,14 @@ function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
 let _agendaFilter='';
 function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
 
-// Ritorna task per un giorno: agenda libere + ricorrenti/giornalieri dei progetti (solo per oggi)
+// Ritorna task per un giorno: agenda libere + ricorrenti dei progetti (solo per oggi)
 function getAgendaDayFull(day,allProjs){
   const today=new Date();today.setHours(0,0,0,0);
   const isToday=day.getTime()===today.getTime();
   const agendaTasks=getAgendaDay(day).map(t=>({...t,_src:'agenda'}));
   if(!isToday) return agendaTasks;
-  // Aggiungi ricorrenti e task giornalieri dei progetti
+  // Aggiungi solo le ricorrenti dei progetti.
+  // Le task giornaliere inserite manualmente restano salvate nel giorno specifico dell'agenda.
   const todayKey=new Date().toDateString();
   const projTasks=[];
   allProjs.forEach(p=>{
@@ -1053,13 +1069,6 @@ function getAgendaDayFull(day,allProjs){
     recur.forEach((text,i)=>{
       if(!agendaTasks.find(t=>t.projId===p.id&&t.text===text&&t.type==='recur'))
         projTasks.push({text,projId:p.id,done:!!recurCh[todayKey+'_'+i],_src:'proj',_type:'recur',_projIdx:i});
-    });
-    // Task giornalieri
-    const dt=ld('dtasks_'+p.id,[]);
-    const dc=ld('dchecks_'+p.id,[]);
-    dt.forEach((text,i)=>{
-      if(!agendaTasks.find(t=>t.projId===p.id&&t.text===text&&t.type==='day'))
-        projTasks.push({text,projId:p.id,done:!!dc[i],_src:'proj',_type:'day',_projIdx:i});
     });
   });
   return [...agendaTasks,...projTasks];
@@ -1136,7 +1145,6 @@ function renderAgenda(){
         const isProjTask=t._src==='proj';
         const isRecur=t._type==='recur';
         const ckFn=isRecur?`ckRecur(${t._projIdx},'${t.projId}')`:
-                   isProjTask&&t._type==='day'?`ckDayTask(${t._projIdx},'${t.projId}')`:
                    `ckAgendaTask('${key}',${idx})`;
         const typeLabel=isRecur?'R':isProjTask?'G':'';
         const typeColor=isRecur?'#4ade80':'#e8b04a';
@@ -1202,6 +1210,7 @@ function ckAgendaTask(key,i){
   const today=new Date();today.setHours(0,0,0,0);
   const d=new Date(dateStr);d.setHours(0,0,0,0);
   if(d.getTime()===today.getTime())renderHome();
+  if(document.getElementById('det')?.style.display==='block'&&tasks[i].projId)openProj(tasks[i].projId);
   toast();
 }
 
@@ -1250,7 +1259,6 @@ function openProj(id){
   _lastScrollY=window.scrollY;
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
-  sv('updated_'+id,Date.now());
   document.getElementById('home').style.display='none';
   const dv=document.getElementById('det');dv.style.display='block';
   cPage=20;cFilter='tutti';
@@ -1277,7 +1285,7 @@ function openProj(id){
     hist.push({t:Date.now(),d:todayStr,v:pct});
     if(hist.length>60)hist.shift();
     sv('pct_hist_'+id,hist);
-  } else {
+  } else if(hist[hist.length-1].v!==pct) {
     hist[hist.length-1].v=pct;
     sv('pct_hist_'+id,hist);
   }
@@ -1339,9 +1347,6 @@ function buildStd(p){
   // Task ricorrenti
   const recur=ld('recur_'+id,[]);
   const recurChecks=ld('recurChecks_'+id,{});
-  // Task giornalieri
-  const dtasks=ld('dtasks_'+id,[]);
-  const dchecks=ld('dchecks_'+id,[]);
   // Obiettivi settimanali
   const weekGoals=ld('weekGoals_'+id,[]);
   const weekGoalChecks=ld('weekGoalChecks_'+id,[]);
@@ -1386,7 +1391,7 @@ function buildStd(p){
     const selDay=selDate.getDate()+' '+monthNames[selDate.getMonth()];
     h+=`<div class="card" style="margin-bottom:8px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e1e1e">
-        <span style="font-family:'Space Mono',monospace;font-size:10px;color:#888">${selDay}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:#888">TASK GIORNALIERE · ${selDay}</span>
         <span style="font-family:'Space Mono',monospace;font-size:9px;color:#555">${selTasks.filter(t=>t.done).length}/${selTasks.length}</span>
       </div>`;
     if(selTasks.length){
@@ -1401,7 +1406,7 @@ function buildStd(p){
     } else {
       h+=`<div style="padding:10px 14px;font-size:12px;color:#444;font-family:Space Mono,monospace">niente per questo progetto</div>`;
     }
-    h+=`<div class="arow"><input class="ain" id="mcal-inp-${id}" placeholder="+ task per questo giorno…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${selKey}')"><button class="abtn" onclick="addMiniCalTask('${id}','${selKey}')">+ ADD</button></div></div>`;
+    h+=`<div class="arow"><input class="ain" id="mcal-inp-${id}" placeholder="+ task giornaliera…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${selKey}')"><button class="abtn" onclick="addMiniCalTask('${id}','${selKey}')">+ ADD</button></div></div>`;
   }
   h+=`</div>`;
 
@@ -1441,23 +1446,6 @@ function buildStd(p){
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div>`;
 
-  // ── Task giornalieri (non ricorrenti, per obiettivi settimanali) ──
-  const dtDone=dchecks.filter(Boolean).length;
-  h+=`<div class="slbl">Task giornalieri
-    <div style="display:flex;gap:8px">
-      <span style="font-size:9px;color:#555">${dtDone}/${dtasks.length}</span>
-      <span style="color:#e8b04a;cursor:pointer;font-size:9px" onclick="resetDayTasks('${id}')">↺ RESET</span>
-    </div>
-  </div>
-  <div class="card" id="dtg-${id}">`;
-  dtasks.forEach((t,i)=>{
-    h+=`<div class="row${dchecks[i]?' done':''}">
-      <div class="hd${dchecks[i]?' on':''}" onclick="ckDayTask(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
-      <input class="rt" value="${esc(t)}" onchange="edDayTask(${i},'${id}',this.value)">
-      <button class="xb" onclick="delDayTask(${i},'${id}')">×</button>
-    </div>`;
-  });
-  h+=`<div class="arow"><input class="ain" id="dti-${id}" placeholder="+ task giornaliero…" onkeydown="if(event.key==='Enter')addDayTask('${id}')"><button class="abtn" onclick="addDayTask('${id}')">+ ADD</button></div></div>`;
 
   // ── Obiettivi settimanali ──
   const wDone=weekGoalChecks.filter(Boolean).length;
@@ -1527,11 +1515,7 @@ function ckRecur(i,id){
   if(dot)dot.classList.toggle('on',ch[k]);
   if(row)row.classList.toggle('done',ch[k]);
   // Aggiorna % OGGI
-  const dt=ld('dtasks_'+id,[]);
-  const dc=ld('dchecks_'+id,[]);
-  const tot=recur.length+dt.length;
-  const done=recur.filter((_,j)=>ch[todayKey+'_'+j]).length+dt.filter((_,j)=>dc[j]).length;
-  const pct=tot?Math.round(done/tot*100):0;
+  const pct=calcPctDay(id);
   const el=document.getElementById('pct-day-'+id);
   const bar=document.getElementById('bar-day-'+id);
   if(el)el.textContent=pct+'%';
@@ -1550,49 +1534,6 @@ function delRecur(i,id){
   const ch=ld('recurChecks_'+id,{});
   Object.keys(ch).forEach(k=>{if(k.endsWith('_'+i))delete ch[k];});
   sv('recurChecks_'+id,ch);openProj(id);
-}
-
-// ── TASK GIORNALIERI (non ricorrenti) ────────────────────
-function ckDayTask(i,id){
-  const ch=ld('dchecks_'+id,[]);
-  ch[i]=!ch[i];sv('dchecks_'+id,ch);
-  const dt=ld('dtasks_'+id,[]);
-  updateTaskHistory(id,'day',i,dt[i]||'',ch[i]);
-  const dot=document.querySelector(`#dtg-${id} .row:nth-child(${i+1}) .hd`);
-  const row=document.querySelector(`#dtg-${id} .row:nth-child(${i+1})`);
-  if(dot)dot.classList.toggle('on',ch[i]);
-  if(row)row.classList.toggle('done',ch[i]);
-  // Aggiorna % OGGI
-  const todayKey=new Date().toDateString();
-  const recur=ld('recur_'+id,[]);
-  const recurCh=ld('recurChecks_'+id,{});
-  const tot=recur.length+dt.length;
-  const done=recur.filter((_,j)=>recurCh[todayKey+'_'+j]).length+ch.filter(Boolean).length;
-  const pct=tot?Math.round(done/tot*100):0;
-  const el=document.getElementById('pct-day-'+id);
-  const bar=document.getElementById('bar-day-'+id);
-  if(el)el.textContent=pct+'%';
-  if(bar)bar.style.width=pct+'%';
-  renderHome();toast();
-}
-function edDayTask(i,id,v){const t=ld('dtasks_'+id,[]);t[i]=v;sv('dtasks_'+id,t);toast();}
-function addDayTask(id){
-  const inp=document.getElementById('dti-'+id);
-  const v=inp?.value.trim();if(!v)return;
-  const t=ld('dtasks_'+id,[]);t.push(v);sv('dtasks_'+id,t);
-  const ch=ld('dchecks_'+id,[]);ch.push(false);sv('dchecks_'+id,ch);
-  if(inp)inp.value='';openProj(id);
-}
-function delDayTask(i,id){
-  const t=ld('dtasks_'+id,[]);t.splice(i,1);sv('dtasks_'+id,t);
-  const ch=ld('dchecks_'+id,[]);ch.splice(i,1);sv('dchecks_'+id,ch);
-  openProj(id);
-}
-function resetDayTasks(id){
-  modal('confirm','Azzerare i task giornalieri?',()=>{
-    sv('dchecks_'+id,ld('dtasks_'+id,[]).map(()=>false));
-    openProj(id);renderHome();toast('TASK GIORNALIERI AZZERATI');
-  });
 }
 
 // ── OBIETTIVI SETTIMANALI ─────────────────────────────────
@@ -2169,23 +2110,34 @@ window._refreshTxLog=function(){
     setTimeout(()=>toggleTxLog(),50);
   }
 };
+let _syncRefreshTimer=null,_syncRefreshKeys=new Set(),_lastSyncToast=0;
 window._refreshAll=function(changedKeys){
-  changedKeys=changedKeys||[];
-  renderHome();renderTopbar();
-  const detEl=document.getElementById('det');
-  const inDet=detEl?.style.display!=='none';
-  if(inDet){
-    const t=detEl?.querySelector('.dn');
-    if(t){const allP=[...PD,...ld('customProjs',[])];const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
-  }
-  renderHab();renderAssets();
-  if(!changedKeys.length||changedKeys.includes('txLog'))window._refreshTxLog();
-  if(!changedKeys.length||changedKeys.includes('assets')){renderCharts();renderPatTarget();renderPatChart();}
-  if(!changedKeys.length||changedKeys.some(k=>k.startsWith('spese')||k==='speseGen')){renderSpese();renderSpeseGen();}
-  updateOv();
-  const qn=document.getElementById('quicknote');
-  if(qn&&document.activeElement!==qn)qn.value=ld('quicknote','');
-  toast('↕ sync');
+  (changedKeys||[]).forEach(k=>_syncRefreshKeys.add(k));
+  clearTimeout(_syncRefreshTimer);
+  _syncRefreshTimer=setTimeout(()=>{
+    const keys=[..._syncRefreshKeys];_syncRefreshKeys.clear();
+    const active=document.activeElement;
+    const editing=active&&['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
+    const onlyMeta=keys.length&&keys.every(k=>k.startsWith('updated_')||k.startsWith('pct_hist_')||k==='lastWeeklyBackup'||k==='pat_last_snap');
+    if(onlyMeta)return;
+    renderTopbar();
+    if(!editing)renderHome();
+    const detEl=document.getElementById('det');
+    const inDet=detEl?.style.display!=='none';
+    if(inDet&&!editing){
+      const t=detEl?.querySelector('.dn');
+      if(t){const allP=[...PD,...ld('customProjs',[])];const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
+    }
+    if(!editing)renderHab();
+    renderAssets();
+    if(!keys.length||keys.includes('txLog'))window._refreshTxLog();
+    if(!keys.length||keys.includes('assets')){renderCharts();renderPatTarget();renderPatChart();}
+    if(!keys.length||keys.some(k=>k.startsWith('spese')||k==='speseGen')){renderSpese();renderSpeseGen();}
+    updateOv();
+    const qn=document.getElementById('quicknote');
+    if(qn&&document.activeElement!==qn)qn.value=ld('quicknote','');
+    if(Date.now()-_lastSyncToast>5000){_lastSyncToast=Date.now();toast('↕ sync');}
+  },400);
 };
 function autoWeeklyBackup(){
   if(!window._fbReady)return;
