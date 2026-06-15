@@ -876,7 +876,7 @@ function renderPatChart(){
 // ── HOME ─────────────────────────────────────────────────
 function renderHome(){
   syncAssets();
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const archived=ld('archived',[]);
   const customProjs=ld('customProjs',[]);
   const allProjs=[...PD,...customProjs];
@@ -966,13 +966,13 @@ function renderHome(){
 // ── FOLDER OPS ───────────────────────────────────────────
 function addFolder(){
   modal('prompt','Nome folder:',name=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     folders.push(name.trim().toUpperCase());sv('folders',folders);renderHome();toast('FOLDER CREATA');
   });
 }
 function renameFolder(fi,name){
   if(!name||!name.trim())return;
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const old=folders[fi];folders[fi]=name.trim().toUpperCase();sv('folders',folders);
   const orders=ld('projOrders',{});if(orders[old]){orders[folders[fi]]=orders[old];delete orders[old];sv('projOrders',orders);}
   const allProjs=[...PD,...ld('customProjs',[])];
@@ -981,7 +981,7 @@ function renameFolder(fi,name){
 }
 function delFolder(fi){
   modal('confirm','Eliminare la folder? I progetti verranno archiviati.',()=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     const f=folders[fi];
     const allProjs=[...PD,...ld('customProjs',[])];
     const archived=ld('archived',[]);
@@ -2323,12 +2323,21 @@ function delSpeseGen(i){const s=ld('speseGen',[]);s.splice(i,1);sv('speseGen',s)
 // ── CHARTS ───────────────────────────────────────────────
 function renderCharts(){
   syncAssets();
-  const a=visibleAssets();
+  const allA=ld('assets',[]);
+  const a=allA.filter(x=>!x.hidden);
   const ac=document.getElementById('ac');
   if(!ac)return;
-  if(_ac){_ac.destroy();_ac=null;}
-  // Doughnut asset
-  _ac=new Chart(ac,{type:'doughnut',data:{labels:a.map(x=>x.l),datasets:[{data:a.map(x=>x.v),backgroundColor:a.map((_,i)=>AC[i%AC.length]),borderColor:'#0f0f0f',borderWidth:3}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString()}}},cutout:'65%'}});
+  const labels=a.map(x=>x.l);
+  const data=a.map(x=>x.v);
+  const colors=a.map(x=>AC[allA.indexOf(x)%AC.length]);
+  if(_ac){
+    _ac.data.labels=labels;
+    _ac.data.datasets[0].data=data;
+    _ac.data.datasets[0].backgroundColor=colors;
+    _ac.update('none');
+    return;
+  }
+  _ac=new Chart(ac,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:'#0f0f0f',borderWidth:3}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString()}}},cutout:'65%'}});
 }
 
 // ── EXPORT / IMPORT ──────────────────────────────────────
@@ -2383,8 +2392,12 @@ function autoWeeklyBackup(){
   window._fbWrite('backups/'+wk,data);sv('lastWeeklyBackup',wk);
   console.log('Backup settimanale: '+wk);
 }
+function migrateData(){
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+  if(!folders.includes('FINANZA & TRADING')){folders.push('FINANZA & TRADING');sv('folders',folders);}
+}
 function bootApp(){
-  initData();autoSnapOnce();
+  initData();migrateData();autoSnapOnce();
   renderHome();renderTopbar();renderHab();renderAssets();
   renderTxMonth();renderSpese();renderSpeseGen();
   document.getElementById('quicknote').value=ld('quicknote','');
