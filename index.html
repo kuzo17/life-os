@@ -87,9 +87,9 @@ h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;
 .pc-tasks{font-family:'Space Mono',monospace;font-size:10px;color:#555;}
 .pc-age{font-size:10px;color:#333;}
 .folder-hdr{display:flex;align-items:center;justify-content:space-between;margin:12px 0 6px;}
-.folder-name{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#444;outline:none;background:transparent;border:none;cursor:text;}
+.folder-name{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#444;outline:none;background:transparent;border:none;cursor:text;flex:1;min-width:0;}
 .folder-name:focus{border-bottom:1px solid #333;color:#888;}
-.folder-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s;}
+.folder-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s;flex-shrink:0;}
 .folder-hdr:hover .folder-actions{opacity:1;}
 .fla-btn{font-family:'Space Mono',monospace;font-size:9px;padding:2px 8px;border-radius:4px;cursor:pointer;border:1px solid #2a2a2a;background:transparent;}
 .pc-actions{position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:0;transition:opacity .15s;z-index:2;}
@@ -97,7 +97,10 @@ h1{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;
 .pca{font-size:11px;color:#333;background:none;border:none;cursor:pointer;padding:2px;}
 .pca:hover{color:#f87171;}
 .pca.arch:hover{color:#e8b04a;}
-.pri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1px solid #333;}
+.pri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1px dashed #333;cursor:pointer;}
+.pc-qadd{position:absolute;bottom:8px;right:8px;font-size:18px;color:#555;background:none;border:none;cursor:pointer;padding:0;opacity:0;transition:opacity .15s;z-index:2;line-height:1;font-family:'Space Mono',monospace;}
+.pc:hover .pc-qadd{opacity:1;}
+.color-picker-pop{position:fixed;z-index:9999;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:8px;display:grid;grid-template-columns:repeat(5,22px);gap:4px;box-shadow:0 4px 20px #0008;}
 .arch-section{margin-top:14px;}
 .arch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;}
 .pc-archived{opacity:.45;}
@@ -149,7 +152,7 @@ td select{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-family:'Sp
 .istl{font-size:9px;color:#ccc;margin-bottom:3px;font-family:'Space Mono',monospace;}
 .istv{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;}
 .hw{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;}
-.hh,.hr{display:grid;grid-template-columns:1fr repeat(7,24px) 30px 18px;gap:3px;padding:8px 12px;align-items:center;}
+.hh,.hr{display:grid;grid-template-columns:1fr repeat(7,24px) 46px 18px;gap:3px;padding:8px 12px;align-items:center;}
 .hh{border-bottom:1px solid #1e1e1e;}
 .hr{border-bottom:1px solid #1e1e1e;}
 .hr:last-child{border-bottom:none;}
@@ -244,7 +247,7 @@ body.light-mode{filter:invert(1);}
   .ovg{grid-template-columns:repeat(2,1fr);}
   .isg{grid-template-columns:repeat(2,1fr);}
   .week-grid{grid-template-columns:repeat(4,1fr);}
-  .hh,.hr{grid-template-columns:1fr repeat(7,20px) 28px 18px;gap:2px;padding:6px 8px;}
+  .hh,.hr{grid-template-columns:1fr repeat(7,20px) 40px 18px;gap:2px;padding:6px 8px;}
   canvas{max-width:100%;}
   .pat-target-vals{flex-wrap:wrap;gap:4px;}
   .asset-panel-body{grid-template-columns:1fr;gap:14px;}
@@ -332,9 +335,11 @@ body.light-mode{filter:invert(1);}
   </div>
   <div class="tabs">
     <button class="tab on" onclick="showTab('progetti',this)">PROGETTI</button>
+    <button class="tab" id="tab-oggi-btn" onclick="showTab('oggi',this)">OGGI</button>
     <button class="tab" onclick="showTab('agenda',this)">AGENDA</button>
   </div>
   <div id="tab-progetti"><div id="ph"></div></div>
+  <div id="tab-oggi" style="display:none"></div>
   <div id="tab-agenda" style="display:none"><div id="agenda-view"></div></div>
   <div class="divider"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -719,6 +724,7 @@ function showTab(name,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
+  document.getElementById('tab-oggi').style.display=name==='oggi'?'block':'none';
   document.getElementById('tab-agenda').style.display=name==='agenda'?'block':'none';
   if(name==='agenda'){
     renderAgenda();
@@ -728,7 +734,9 @@ function showTab(name,btn){
       if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
     },100);
   }
+  if(name==='oggi')renderTodayFocus();
 }
+const isTodayTabActive=()=>document.getElementById('tab-oggi')?.style.display!=='none';
 
 // ── PATRIMONIO SNAPSHOT & TREND ──────────────────────────
 function getWeekKey(){
@@ -895,6 +903,7 @@ function renderHome(){
     </div>
     <div class="pgrid" ondragover="event.preventDefault()" ondrop="dropProjToFolder(event,'${f}')">`;
     fps.forEach(p=>{
+      const color=ld('proj_color_'+p.id,p.color);
       const pct=p.hasInv?ld('pct_'+p.id,0):calcPct(p.id);
       const pctDay=p.hasInv?ld('pct_'+p.id,0):calcPctDay(p.id);
       const pctWeek=p.hasInv?ld('pct_'+p.id,0):calcPctWeek(p.id);
@@ -910,29 +919,30 @@ function renderHome(){
       const age=getAge(p.id);
       const pri=getPri(p.id);
       h+=`<div class="pc" draggable="true" ondragstart="dragProjStart(event,'${p.id}')" ondragover="event.preventDefault()" ondrop="dropProjOnCard(event,'${p.id}')" onclick="openProj('${p.id}')">
-        <div class="acc" style="background:${p.color}"></div>
+        <div class="acc" style="background:${color};cursor:pointer" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)" title="Cambia colore"></div>
         <div class="pc-actions">
           <button class="pca arch" onclick="event.stopPropagation();archiveProj('${p.id}')" title="Archivia">⬇</button>
           <button class="pca" onclick="event.stopPropagation();deleteProj('${p.id}')" title="Elimina">×</button>
         </div>
-        <div class="ptag" style="color:${p.color};padding-right:36px">${p.tag}</div>
+        <div class="ptag" style="color:${color};padding-right:36px">${p.tag}</div>
         <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:4px">
           <div>
             <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.06em;margin-bottom:2px">OGGI</div>
-            <div class="ppct" style="color:${p.color};margin-bottom:0">${pctDay}%</div>
+            <div class="ppct" style="color:${color};margin-bottom:0">${pctDay}%</div>
           </div>
           <div style="width:1px;height:32px;background:#2a2a2a;margin-bottom:4px"></div>
           <div>
             <div style="font-family:'Space Mono',monospace;font-size:9px;color:#444;letter-spacing:.06em;margin-bottom:2px">SETT.</div>
-            <div class="ppct" style="color:${p.color};margin-bottom:0;opacity:.6">${pctWeek}%</div>
+            <div class="ppct" style="color:${color};margin-bottom:0;opacity:.6">${pctWeek}%</div>
           </div>
-          ${pri.dot!=='transparent'?`<div class="pri-dot" style="background:${pri.dot};border-color:${pri.dot};margin-bottom:6px;margin-left:auto" title="Priorità ${pri.label}" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`:`<div class="pri-dot" style="background:transparent;cursor:pointer;margin-bottom:6px;margin-left:auto" onclick="event.stopPropagation();cyclePri('${p.id}')" title="Imposta priorità"></div>`}
+          ${pri.dot!=='transparent'?`<div class="pri-dot" style="background:${pri.dot};border:1px solid ${pri.dot};margin-bottom:6px;margin-left:auto" title="Priorità ${pri.label}" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`:`<div class="pri-dot" style="margin-bottom:6px;margin-left:auto" onclick="event.stopPropagation();cyclePri('${p.id}')" title="Imposta priorità"></div>`}
         </div>
-        <div class="pb"><div class="pbf" style="width:${pctDay}%;background:${p.color}"></div></div>
+        <div class="pb"><div class="pbf" style="width:${pctDay}%;background:${color}"></div></div>
         <div class="pc-meta">
-          <span class="pc-tasks" style="color:#555">${today_done}/${today_tot} oggi</span>
+          <span class="pc-tasks" style="color:#555">${today_tot?today_done+'/'+today_tot+' oggi':'—'}</span>
           ${age?`<span class="pc-age">${age}</span>`:''}
         </div>
+        ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')" title="Aggiungi task ricorrente">+</button>`:''}
       </div>`;
     });
     h+='</div>';
@@ -961,6 +971,23 @@ function renderHome(){
     h+='</div></div>';
   }
   document.getElementById('ph').innerHTML=h;
+  updateTodayBadge();
+}
+
+function updateTodayBadge(){
+  const btn=document.getElementById('tab-oggi-btn');if(!btn)return;
+  const todayKey=new Date().toDateString();
+  const today=new Date();today.setHours(0,0,0,0);
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
+  let open=0;
+  allProjs.forEach(p=>{
+    const recur=ld('recur_'+p.id,[]);
+    const recurCh=ld('recurChecks_'+p.id,{});
+    open+=recur.filter((_,i)=>!recurCh[todayKey+'_'+i]).length;
+    open+=getAgendaDay(today).filter(t=>t.projId===p.id&&!t.done).length;
+  });
+  open+=getAgendaDay(today).filter(t=>!t.projId&&!t.done).length;
+  btn.textContent=open?`OGGI (${open})`:'OGGI ✓';
 }
 
 // ── FOLDER OPS ───────────────────────────────────────────
@@ -1248,6 +1275,7 @@ function ckAgendaTask(key,i){
   const today=new Date();today.setHours(0,0,0,0);
   const d=new Date(dateStr);d.setHours(0,0,0,0);
   if(d.getTime()===today.getTime())renderHome();
+  if(isTodayTabActive())renderTodayFocus();
   if(document.getElementById('det')?.style.display==='block'&&tasks[i].projId)openProj(tasks[i].projId);
   toast();
 }
@@ -1285,8 +1313,9 @@ function doSearch(q){
   });
   ld('carteInv',[]).forEach(c=>{if(c.nome.toLowerCase().includes(ql))results.push({type:'CARTA',proj:'CARTE',color:'#fb923c',text:c.nome,id:'carte'});});
   ld('vinInv',[]).forEach(v=>{if(v.nome.toLowerCase().includes(ql))results.push({type:'VINTED',proj:'VINTED',color:'#f472b6',text:v.nome,id:'vinted'});});
+  ld('txLog',[]).forEach(t=>{if(t.desc&&t.desc.toLowerCase().includes(ql)){const col=t.tipo==='entrata'?'#4ade80':'#f87171';results.push({type:'TX',proj:t.tipo.toUpperCase(),color:col,text:t.desc+' — '+(t.tipo==='entrata'?'+':'−')+'€'+t.importo+' ('+t.data+')',id:null});}});
   if(!results.length){res.innerHTML='<div class="sr-item" style="color:#444">Nessun risultato.</div>';res.style.display='block';return;}
-  res.innerHTML='<div class="search-results">'+results.slice(0,10).map(r=>`<div class="sr-item" onclick="openProj('${r.id}');document.getElementById('srch').value='';document.getElementById('srch-res').style.display='none'"><span class="sr-tag" style="color:${r.color}">${r.type}</span><span class="sr-tag">${r.proj}</span><span>${highlight(r.text,q)}</span></div>`).join('')+'</div>';
+  res.innerHTML='<div class="search-results">'+results.slice(0,10).map(r=>`<div class="sr-item" onclick="${r.id?`openProj('${r.id}')`:''};document.getElementById('srch').value='';document.getElementById('srch-res').style.display='none'"><span class="sr-tag" style="color:${r.color}">${r.type}</span><span class="sr-tag">${r.proj}</span><span>${highlight(r.text,q)}</span></div>`).join('')+'</div>';
   res.style.display='block';
 }
 function highlight(text,q){const i=text.toLowerCase().indexOf(q.toLowerCase());if(i<0)return text;return text.slice(0,i)+`<span class="sr-match">${text.slice(i,i+q.length)}</span>`+text.slice(i+q.length);}
@@ -1572,7 +1601,9 @@ function ckRecur(i,id){
   const bar=document.getElementById('bar-day-'+id);
   if(el)el.textContent=pct+'%';
   if(bar)bar.style.width=pct+'%';
-  renderHome();toast();
+  renderHome();
+  if(isTodayTabActive())renderTodayFocus();
+  toast();
 }
 function edRecur(i,id,v){const t=ld('recur_'+id,[]);t[i]=v;sv('recur_'+id,t);toast();}
 function addRecur(id){
@@ -2032,11 +2063,35 @@ function cryptoSyncAsset(){
 }
 
 // ── HABITS ───────────────────────────────────────────────
+function calcHabStreak(hi){
+  const habits=ld('habits',[]);
+  const dots=ld('habitDots',[]);
+  const hist=ld('habHist',[]);
+  const curDots=dots[hi]||Array(7).fill(false);
+  let streak=curDots.some(Boolean)?1:0;
+  for(let w=0;w<hist.length;w++){
+    const entry=hist[w];
+    const habitName=habits[hi];
+    const histIdx=entry.habits?entry.habits.indexOf(habitName):hi;
+    if(histIdx<0)break;
+    const weekDots=entry.data[histIdx]||Array(7).fill(false);
+    if(weekDots.some(Boolean))streak++;
+    else break;
+  }
+  return streak;
+}
 function renderHab(){
   const hw=document.getElementById('hw');if(!hw)return;
   const habits=ld('habits',[]),dots=ld('habitDots',[]);
   let h=`<div class="hh"><div></div><div class="hdl">L</div><div class="hdl">M</div><div class="hdl">M</div><div class="hdl">G</div><div class="hdl">V</div><div class="hdl">S</div><div class="hdl">D</div><div class="hdl">%</div><div></div></div>`;
-  habits.forEach((hb,hi)=>{const d=dots[hi]||Array(7).fill(false);const pct=Math.round(d.filter(Boolean).length/7*100);h+=`<div class="hr"><input class="hn" value="${hb}" onchange="edHab(${hi},this.value)">`;d.forEach((on,di)=>h+=`<div class="hd${on?' on':''}" onclick="tDot(${hi},${di})"></div>`);h+=`<span class="hp">${pct}%</span><button class="hx" onclick="delHab(${hi})">×</button></div>`;});
+  habits.forEach((hb,hi)=>{
+    const d=dots[hi]||Array(7).fill(false);
+    const pct=Math.round(d.filter(Boolean).length/7*100);
+    const streak=calcHabStreak(hi);
+    h+=`<div class="hr"><input class="hn" value="${hb}" onchange="edHab(${hi},this.value)">`;
+    d.forEach((on,di)=>h+=`<div class="hd${on?' on':''}" onclick="tDot(${hi},${di})"></div>`);
+    h+=`<span class="hp" style="line-height:1.2">${pct}%${streak>1?`<br><span style="font-size:8px;color:#e8b04a">🔥${streak}w</span>`:''}</span><button class="hx" onclick="delHab(${hi})">×</button></div>`;
+  });
   hw.innerHTML=h;
 }
 function edHab(i,v){const h=ld('habits',[]);h[i]=v;sv('habits',h);toast();}
@@ -2392,6 +2447,129 @@ function autoWeeklyBackup(){
   window._fbWrite('backups/'+wk,data);sv('lastWeeklyBackup',wk);
   console.log('Backup settimanale: '+wk);
 }
+// ── TAB OGGI ─────────────────────────────────────────────
+function renderTodayFocus(){
+  const el=document.getElementById('tab-oggi');if(!el)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayKey=new Date().toDateString();
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
+  const agendaKey_today='agenda_'+today.toISOString().slice(0,10);
+  let h='<div style="margin-bottom:1rem">';
+  let totalOpen=0,totalDone=0;
+  allProjs.forEach(p=>{
+    const color=ld('proj_color_'+p.id,p.color);
+    const recur=ld('recur_'+p.id,[]);
+    const recurCh=ld('recurChecks_'+p.id,{});
+    const agTasks=getAgendaDay(today).filter(t=>t.projId===p.id);
+    if(!recur.length&&!agTasks.length)return;
+    const allT=[...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i})),...agTasks.map((t,i)=>({text:t.text,done:t.done,_type:'agenda',_i:allProjs.indexOf(p),_ai:i}))];
+    const done=allT.filter(t=>t.done).length;
+    totalOpen+=allT.filter(t=>!t.done).length;
+    totalDone+=done;
+    const pct=allT.length?Math.round(done/allT.length*100):0;
+    h+=`<div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:${color};letter-spacing:.08em">${p.tag}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#444">${done}/${allT.length} · ${pct}%</span>
+        <div style="flex:1;height:1px;background:#1e1e1e"></div>
+      </div>
+      <div class="card">`;
+    allT.forEach(t=>{
+      const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${p.id}')`:`ckAgendaFocus('${agendaKey_today}',${t._ai})`;
+      h+=`<div class="row${t.done?' done':''}">
+        <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0"></div>
+        <span class="rt" style="color:${t.done?'#444':'#ccc'}">${t.text}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:8px;color:#333">${t._type==='recur'?'R':'G'}</span>
+      </div>`;
+    });
+    h+='</div></div>';
+  });
+  // Task agenda libere di oggi
+  const freeTasks=getAgendaDay(today).filter(t=>!t.projId);
+  if(freeTasks.length){
+    h+=`<div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#555;letter-spacing:.08em">ALTRO</span>
+        <div style="flex:1;height:1px;background:#1e1e1e"></div>
+      </div>
+      <div class="card">`;
+    freeTasks.forEach((t,i)=>{
+      totalOpen+=t.done?0:1;totalDone+=t.done?1:0;
+      h+=`<div class="row${t.done?' done':''}">
+        <div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0"></div>
+        <span class="rt" style="color:${t.done?'#444':'#ccc'}">${t.text}</span>
+      </div>`;
+    });
+    h+='</div></div>';
+  }
+  if(totalOpen===0&&totalDone===0){
+    h+='<div style="text-align:center;padding:40px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:#333">NIENTE PER OGGI ✓</div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+function ckRecurFocus(i,id){
+  const todayKey=new Date().toDateString();
+  const ch=ld('recurChecks_'+id,{});
+  const k=todayKey+'_'+i;
+  ch[k]=!ch[k];sv('recurChecks_'+id,ch);
+  renderTodayFocus();renderHome();toast();
+}
+function ckAgendaFocus(key,i){
+  const dateStr=key.replace('agenda_','');
+  const date=new Date(dateStr);
+  const tasks=getAgendaDay(date);
+  if(!tasks[i])return;
+  tasks[i].done=!tasks[i].done;
+  setAgendaDay(date,tasks);
+  renderTodayFocus();renderHome();toast();
+}
+
+// ── COLOR PICKER ──────────────────────────────────────────
+const PICK_COLORS=['#4ade80','#22c55e','#34d399','#60a5fa','#3b82f6','#818cf8','#a855f7','#f472b6','#f87171','#fb923c','#e8b04a','#f59e0b','#06b6d4','#38bdf8','#fff'];
+function showProjColorPicker(id,e){
+  document.querySelectorAll('.color-picker-pop').forEach(x=>x.remove());
+  const pop=document.createElement('div');
+  pop.className='color-picker-pop';
+  const rect=e.currentTarget.getBoundingClientRect();
+  pop.style.top=(rect.bottom+4)+'px';
+  pop.style.left=rect.left+'px';
+  PICK_COLORS.forEach(c=>{
+    const sw=document.createElement('div');
+    sw.style.cssText=`width:22px;height:22px;border-radius:4px;background:${c};cursor:pointer;border:2px solid transparent;`;
+    sw.title=c;
+    sw.onmouseenter=()=>sw.style.borderColor='#fff';
+    sw.onmouseleave=()=>sw.style.borderColor='transparent';
+    sw.onclick=()=>{changeProjectColor(id,c);pop.remove();};
+    pop.appendChild(sw);
+  });
+  document.body.appendChild(pop);
+  setTimeout(()=>document.addEventListener('click',function rm(){pop.remove();document.removeEventListener('click',rm);},{once:true}),0);
+}
+function changeProjectColor(id,color){
+  sv('proj_color_'+id,color);
+  const custom=ld('customProjs',[]);
+  const cp=custom.find(x=>x.id===id);
+  if(cp){cp.color=color;sv('customProjs',custom);}
+  renderHome();
+}
+
+// ── QUICK ADD FROM CARD ───────────────────────────────────
+function quickAddToCard(id){
+  const allProjs=[...PD,...ld('customProjs',[])];
+  const p=allProjs.find(x=>x.id===id);
+  modal('prompt','Task ricorrente per '+(p?p.tag:id)+':',text=>{
+    if(!text.trim())return;
+    const arr=ld('recur_'+id,[]);
+    arr.push(text.trim());
+    sv('recur_'+id,arr);
+    renderHome();
+    if(isTodayTabActive())renderTodayFocus();
+    toast('AGGIUNTA');
+  });
+}
+
 function migrateData(){
   const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   if(!folders.includes('FINANZA & TRADING')){folders.push('FINANZA & TRADING');sv('folders',folders);}
