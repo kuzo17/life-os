@@ -640,7 +640,7 @@ function initData(){
   sv('habitDots',[0,1,2,3,4].map(()=>Array(7).fill(false)));
   sv('finIn',[{l:'Paghetta famiglia',v:200},{l:'Lavoro negozio STOSA',v:400},{l:'Variabili',v:0}]);
   sv('finOut',[{l:'Spese personali',v:0},{l:'Strumenti & software',v:0},{l:'RunPod / compute',v:0}]);
-  sv('assets',[{l:'Liquidità',v:0,special:'liquidity'},{l:'Risparmi',v:750,special:'savings'},{l:'Carte eBay (val. mercato)',v:0},{l:'Vinted (potenziale)',v:0}]);
+  sv('assets',[{l:'Liquidità',v:0,special:'liquidity'},{l:'Risparmi',v:750,special:'savings'},{l:'Carte eBay (val. mercato)',v:0},{l:'Vinted (potenziale)',v:0},{l:'Conto Risparmio',v:0},{l:'Crypto Portfolio',v:0}]);
   sv('modelli',[{l:'STOSA Messina',v:400,freq:'mensile'},{l:'Paghetta famiglia',v:50,freq:'settimanale'}]);
   sv('txLog',[]);
   sv('dataInit',true);
@@ -654,7 +654,10 @@ const PD=[
   {id:'nami',tag:'NAMI MORETTI',color:'#a855f7',sub:'Avatar pronto · in pausa',folder:'Z & JPC',tasks0:['Nuovo telefono + configurazione','Setup profilo Instagram','Pipeline ComfyUI + RunPod','Batch contenuti'],goals0:['Profilo attivo 10 post','1.000 follower','Prima monetizzazione'],note0:'Blocco = telefono nuovo.'},
   {id:'youtube',tag:'YOUTUBE ASIA',color:'#06b6d4',sub:'Every X Explained · sviluppo',folder:'Z & JPC',tasks0:['Definire primo argomento','Scrivere primo script','Stile thumbnail','Setup canale'],goals0:['Primo video pubblicato','10 video','1.000 iscritti'],note0:'Da aggiornare.'},
   {id:'vinted',tag:'VINTED',color:'#f472b6',sub:'reselling abiti & accessori',folder:'RESELLING & COLLEZIONE',hasInv:'vinted'},
-  {id:'carte',tag:'CARTE EBAY',color:'#fb923c',sub:'Pokémon / One Piece / DBZ',folder:'RESELLING & COLLEZIONE',hasInv:'carte'}
+  {id:'carte',tag:'CARTE EBAY',color:'#fb923c',sub:'Pokémon / One Piece / DBZ',folder:'RESELLING & COLLEZIONE',hasInv:'carte'},
+  {id:'risparmio',tag:'CONTO RISPARMIO',color:'#34d399',sub:'7% compound · versamento mensile',folder:'FINANZA & TRADING',hasInv:'risparmio'},
+  {id:'crypto',tag:'CRYPTO',color:'#f59e0b',sub:'Portfolio crypto',folder:'FINANZA & TRADING',hasInv:'crypto'},
+  {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
 PD.forEach(p=>{const ov=ld('proj_folder_'+p.id,null);if(ov)p.folder=ov;});
@@ -1306,11 +1309,13 @@ function openProj(id){
   <div class="pb" style="margin-bottom:1.5rem"><div class="pbf" id="dbar" style="width:${pct}%;background:${p.color};height:3px"></div></div>`;
   if(p.hasInv==='vinted')h+=buildVinted(p);
   else if(p.hasInv==='carte')h+=buildCarte(p);
+  else if(p.hasInv==='risparmio')h+=buildRisparmio(p);
+  else if(p.hasInv==='crypto')h+=buildCrypto(p);
   else h+=buildStd(p);
   h+=buildTaskHistory(id);
   dv.innerHTML=h;
   if(p.hasInv){
-    const key=p.hasInv==='carte'?'cpct':'vpct';
+    const key=p.hasInv==='carte'?'cpct':p.hasInv==='vinted'?'vpct':p.hasInv==='risparmio'?'rpct':p.hasInv==='crypto'?'crpct':null;
     const pi=document.getElementById(key);
     if(pi)pi.onchange=function(){const n=Math.min(100,Math.max(0,parseInt(this.value)||0));sv('pct_'+id,n);this.value=n+'%';document.getElementById('dbar').style.width=n+'%';document.getElementById('dpct').textContent=n+'%';toast();};
   }
@@ -1843,6 +1848,188 @@ function cDel(i){const inv=ld('carteInv',[]);inv.splice(i,1);sv('carteInv',inv);
 function addCarta(){const inv=ld('carteInv',[]);inv.unshift({nome:'Nuova carta',serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:0,stato:'In Stock'});sv('carteInv',inv);openProj('carte');}
 function fC(v,b){cFilter=v;cPage=20;document.querySelectorAll('.ifil .ib').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderCarteRows();}
 function sortCarte(by){const inv=ld('carteInv',[]);inv.sort((a,b)=>b[by]-a[by]);sv('carteInv',inv);renderCarteRows();toast('ORDINATE PER '+by.toUpperCase());}
+
+// ── CONTO RISPARMIO ──────────────────────────────────────
+function buildRisparmio(p){
+  const saldo=ld('risp_saldo',0);
+  const mensile=ld('risp_mensile',100);
+  const tasso=ld('risp_tasso',7);
+  const anni=ld('risp_anni',5);
+  const versamenti=ld('risp_versamenti',[]);
+  const r=tasso/100;
+  const n=anni;
+  const fv=n>0?(saldo*Math.pow(1+r,n)+mensile*12*(Math.pow(1+r,n)-1)/r):saldo;
+  const totVersato=versamenti.reduce((a,v)=>a+v.importo,0);
+  const interessiMaturati=Math.max(0,saldo-totVersato);
+  let h=`<div class="slbl">💰 SITUAZIONE ATTUALE</div>
+  <div class="ist-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+    <div class="ist"><div class="istl">Saldo attuale</div><div class="istv pos" id="risp-saldo-disp">€${saldo.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">Interessi maturati</div><div class="istv pos">€${interessiMaturati.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">Tasso annuo</div><div class="istv">${tasso}%</div></div>
+    <div class="ist"><div class="istl">Versamento mensile</div><div class="istv">€${mensile}</div></div>
+  </div>
+  <div class="slbl">✏️ AGGIORNA</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:4px;font-family:'Space Mono',monospace">SALDO ATTUALE (€)</div>
+      <input type="number" id="risp-inp-saldo" value="${saldo}" style="width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;outline:none;font-family:'Space Grotesk',sans-serif" onchange="rispSave()">
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:4px;font-family:'Space Mono',monospace">VERSAMENTO MENSILE (€)</div>
+      <input type="number" id="risp-inp-mensile" value="${mensile}" style="width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;outline:none;font-family:'Space Grotesk',sans-serif" onchange="rispSave()">
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:4px;font-family:'Space Mono',monospace">TASSO % ANNUO</div>
+      <input type="number" id="risp-inp-tasso" value="${tasso}" step="0.1" style="width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;outline:none;font-family:'Space Grotesk',sans-serif" onchange="rispSave()">
+    </div>
+    <div style="display:flex;align-items:flex-end">
+      <button class="ib" style="color:${p.color};border-color:${p.color}33;width:100%" onclick="rispAddVersamento()">+ VERSAMENTO</button>
+    </div>
+  </div>
+  <div class="slbl">📈 PROIEZIONE</div>
+  <div style="margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:11px;color:#555;font-family:'Space Mono',monospace">ANNI:</span>
+      <input type="range" id="risp-slider" min="1" max="30" value="${anni}" style="flex:1;accent-color:${p.color}" oninput="rispSlider(this.value)">
+      <span id="risp-anni-label" style="font-size:13px;color:${p.color};font-family:'Space Mono',monospace;min-width:24px">${anni}</span>
+    </div>
+    <div class="ist" style="background:#0a1a0a;border-color:#1a3a1a">
+      <div class="istl">Valore tra <span id="risp-proj-anni">${anni}</span> anni</div>
+      <div class="istv pos" id="risp-proj-val" style="color:${p.color};font-size:18px">€${fv.toFixed(0)}</div>
+    </div>
+    <div style="font-size:10px;color:#444;margin-top:6px;font-family:'Space Mono',monospace">Compound annuale · €${mensile}/mese · ${tasso}% tasso</div>
+  </div>`;
+  if(versamenti.length){
+    h+=`<div class="slbl">📋 STORICO VERSAMENTI</div><div style="max-height:200px;overflow-y:auto">`;
+    versamenti.slice().reverse().forEach((v,ri)=>{
+      const i=versamenti.length-1-ri;
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a1a">
+        <span style="font-size:12px;color:#888">${v.data}</span>
+        <span style="font-size:13px;color:#34d399">+€${v.importo.toFixed(2)}</span>
+        <button class="xb" style="color:#555" onclick="rispDelVers(${i})">×</button>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=goalsH('risparmio',ld('goals_risparmio',[]),ld('gchecks_risparmio',[]),p.color);
+  h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_risparmio',this.value);toast()">${ld('note_risparmio','')}</textarea>`;
+  return h;
+}
+function rispSave(){
+  const saldo=parseFloat(document.getElementById('risp-inp-saldo')?.value)||0;
+  const mensile=parseFloat(document.getElementById('risp-inp-mensile')?.value)||100;
+  const tasso=parseFloat(document.getElementById('risp-inp-tasso')?.value)||7;
+  sv('risp_saldo',saldo);sv('risp_mensile',mensile);sv('risp_tasso',tasso);
+  rispUpdateProj();
+  const a=ld('assets',[]);
+  const ai=a.findIndex(x=>x.l==='Conto Risparmio');
+  if(ai>=0){a[ai].v=saldo;sv('assets',a);}
+  toast();
+}
+function rispSlider(v){
+  sv('risp_anni',parseInt(v));
+  document.getElementById('risp-anni-label').textContent=v;
+  document.getElementById('risp-proj-anni').textContent=v;
+  rispUpdateProj();
+}
+function rispUpdateProj(){
+  const saldo=parseFloat(document.getElementById('risp-inp-saldo')?.value)||ld('risp_saldo',0);
+  const mensile=parseFloat(document.getElementById('risp-inp-mensile')?.value)||ld('risp_mensile',100);
+  const tasso=parseFloat(document.getElementById('risp-inp-tasso')?.value)||ld('risp_tasso',7);
+  const anni=parseInt(document.getElementById('risp-slider')?.value)||ld('risp_anni',5);
+  const r=tasso/100,n=anni;
+  const fv=n>0?(saldo*Math.pow(1+r,n)+mensile*12*(Math.pow(1+r,n)-1)/r):saldo;
+  const el=document.getElementById('risp-proj-val');
+  if(el)el.textContent='€'+fv.toFixed(0);
+}
+function rispAddVersamento(){
+  modal('prompt','Importo versamento (€):',v=>{
+    const imp=parseFloat(v);if(!imp||imp<=0)return;
+    const vs=ld('risp_versamenti',[]);
+    vs.push({data:new Date().toLocaleDateString('it-IT'),importo:imp});
+    sv('risp_versamenti',vs);
+    const saldo=ld('risp_saldo',0)+imp;
+    sv('risp_saldo',saldo);
+    openProj('risparmio');toast('VERSAMENTO AGGIUNTO');
+  });
+}
+function rispDelVers(i){
+  const vs=ld('risp_versamenti',[]);
+  const imp=vs[i].importo;
+  vs.splice(i,1);sv('risp_versamenti',vs);
+  const saldo=Math.max(0,ld('risp_saldo',0)-imp);
+  sv('risp_saldo',saldo);
+  openProj('risparmio');toast();
+}
+
+// ── CRYPTO ───────────────────────────────────────────────
+function buildCrypto(p){
+  const inv=ld('cryptoInv',[]);
+  const totCarico=inv.reduce((a,c)=>a+c.carico*c.qty,0);
+  const totVal=inv.reduce((a,c)=>a+(c.valAttuale||0)*c.qty,0);
+  const pnl=totVal-totCarico;
+  const pnlPct=totCarico>0?((pnl/totCarico)*100):0;
+  let h=`<div class="ist-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+    <div class="ist"><div class="istl">Valore portafoglio</div><div class="istv pos">€${totVal.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">Investito</div><div class="istv">€${totCarico.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">P&L</div><div class="istv ${pnl>=0?'pos':'neg'}">${pnl>=0?'+':''}€${pnl.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">P&L %</div><div class="istv ${pnlPct>=0?'pos':'neg'}">${pnlPct>=0?'+':''}${pnlPct.toFixed(1)}%</div></div>
+  </div>
+  <div class="slbl">COIN <span style="color:${p.color};cursor:pointer;font-size:10px" onclick="addCoin()">+ ADD</span></div>`;
+  if(inv.length){
+    h+=`<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:#555;font-family:'Space Mono',monospace;font-size:10px"><th style="text-align:left;padding:4px 0">COIN</th><th style="text-align:right;padding:4px">QTÀ</th><th style="text-align:right;padding:4px">CARICO</th><th style="text-align:right;padding:4px">ATTUALE</th><th style="text-align:right;padding:4px">P&L</th><th></th></tr></thead><tbody>`;
+    inv.forEach((c,i)=>{
+      const pl=(c.valAttuale||0)*c.qty - c.carico*c.qty;
+      h+=`<tr style="border-top:1px solid #1a1a1a">
+        <td style="padding:6px 0;font-weight:600;color:#fff">${c.nome}</td>
+        <td style="text-align:right;padding:4px;color:#aaa">${c.qty}</td>
+        <td style="text-align:right;padding:4px;color:#aaa">€${(c.carico*c.qty).toFixed(0)}</td>
+        <td style="text-align:right;padding:4px"><input type="number" value="${(c.valAttuale||0)}" style="width:64px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:3px 5px;font-size:11px;color:#fff;text-align:right" onchange="cryptoUpd(${i},this.value)" placeholder="0"></td>
+        <td style="text-align:right;padding:4px;color:${pl>=0?'#4ade80':'#f87171'}">${pl>=0?'+':''}€${pl.toFixed(0)}</td>
+        <td style="text-align:right;padding:4px"><button class="xb" style="color:#555" onclick="cryptoDel(${i})">×</button></td>
+      </tr>`;
+    });
+    h+=`</tbody></table>`;
+  } else {
+    h+=`<div style="color:#333;font-size:12px;padding:12px 0">Nessuna coin. Premi + ADD per aggiungere.</div>`;
+  }
+  h+=goalsH('crypto',ld('goals_crypto',[]),ld('gchecks_crypto',[]),p.color);
+  h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_crypto',this.value);toast()">${ld('note_crypto','')}</textarea>`;
+  return h;
+}
+function addCoin(){
+  modal('prompt','Nome coin (es. BTC):',nome=>{
+    if(!nome)return;
+    modal('prompt','Quantità:',qtyS=>{
+      const qty=parseFloat(qtyS);if(!qty||qty<=0)return;
+      modal('prompt','Prezzo medio di carico (€ per coin):',caricoS=>{
+        const carico=parseFloat(caricoS)||0;
+        const inv=ld('cryptoInv',[]);
+        inv.push({nome:nome.toUpperCase(),qty,carico,valAttuale:carico});
+        sv('cryptoInv',inv);
+        cryptoSyncAsset();
+        openProj('crypto');toast('COIN AGGIUNTA');
+      });
+    });
+  });
+}
+function cryptoUpd(i,val){
+  const inv=ld('cryptoInv',[]);
+  inv[i].valAttuale=parseFloat(val)||0;
+  sv('cryptoInv',inv);
+  cryptoSyncAsset();
+  toast();
+}
+function cryptoDel(i){
+  const inv=ld('cryptoInv',[]);inv.splice(i,1);sv('cryptoInv',inv);cryptoSyncAsset();openProj('crypto');toast();
+}
+function cryptoSyncAsset(){
+  const inv=ld('cryptoInv',[]);
+  const totVal=inv.reduce((a,c)=>a+(c.valAttuale||0)*c.qty,0);
+  const a=ld('assets',[]);
+  const ai=a.findIndex(x=>x.l==='Crypto Portfolio');
+  if(ai>=0){a[ai].v=totVal;sv('assets',a);}
+}
 
 // ── HABITS ───────────────────────────────────────────────
 function renderHab(){
