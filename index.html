@@ -2243,6 +2243,56 @@ function parseQCLine(line,allProjs){
   let text=line.trim();
   let projId='',proj=null,targetDate=null,isRecur=false;
 
+  // 0. FORMATO STRUTTURATO: "task ; progetto ; data|ricorrente"
+  if(line.includes(';')){
+    const parts=line.split(';').map(s=>s.trim());
+    text=parts[0]||'';
+    const projRaw=parts[1]||'';
+    const third=parts[2]||'';
+
+    // Cerca progetto nel secondo campo
+    let bestProj=null,bestLen=0;
+    allProjs.forEach(p=>{
+      const candidates=[p.id,p.tag,p.folder,...(p.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=2);
+      candidates.forEach(tok=>{
+        const re=new RegExp('(?:^|\\b)'+_escRe(tok)+'(?:\\b|$)','i');
+        if(re.test(projRaw)&&tok.length>bestLen){bestProj=p;bestLen=tok.length;}
+      });
+    });
+    if(!bestProj&&projRaw){
+      // fallback: match diretto su id/folder/tag
+      allProjs.forEach(p=>{
+        if([p.id,p.tag,p.folder].some(v=>v&&v.toLowerCase()===projRaw.toLowerCase()))bestProj=p;
+      });
+    }
+    if(bestProj){proj=bestProj;projId=bestProj.id;}
+
+    // Analizza il terzo campo
+    if(third){
+      if(/\bricorr\w*\b/i.test(third)||/\/r\b/i.test(third)){
+        isRecur=true;
+      } else {
+        // DD MM YY o DD MM YYYY (es. "18 06 26" o "18 06 2026")
+        const ddmmyy=third.match(/^(\d{1,2})\s+(\d{1,2})\s+(\d{2,4})$/);
+        if(ddmmyy){
+          let yr=parseInt(ddmmyy[3]);
+          if(yr<100)yr+=2000;
+          targetDate=new Date(yr,parseInt(ddmmyy[2])-1,parseInt(ddmmyy[1]));
+        } else {
+          // DD/MM o DD/MM/YYYY
+          const ddmm=third.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+          if(ddmm){
+            let yr=ddmm[3]?parseInt(ddmm[3]):new Date().getFullYear();
+            if(yr<100)yr+=2000;
+            targetDate=new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));
+          }
+        }
+      }
+    }
+
+    return{text:text||line.trim(),projId,proj,targetDate,isRecur};
+  }
+
   // 1. RICORRENTE — parole chiave: ricorrente, ricorr, ogni giorno, /r
   if(/\bricorr\w*\b/i.test(text)||/\bogni\s+giorno\b/i.test(text)||/\/r\b/i.test(text)){
     isRecur=true;
@@ -2359,7 +2409,7 @@ function openQC(){
 function closeQC(){document.getElementById('qc-overlay').style.display='none';}
 
 function updateQCPreview(){
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
+  const allProjs=[...PD,...ld('customProjs',[])];
   const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
   const fallbackKey=document.getElementById('qc-date').value;
   const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
@@ -2379,7 +2429,7 @@ function updateQCPreview(){
 }
 
 function submitQC(){
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
+  const allProjs=[...PD,...ld('customProjs',[])];
   const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
   if(!lines.length)return;
   const fallbackKey=document.getElementById('qc-date').value;
