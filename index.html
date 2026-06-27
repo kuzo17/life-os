@@ -665,7 +665,14 @@ const PD=[
   {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
-PD.forEach(p=>{const ov=ld('proj_folder_'+p.id,null);if(ov)p.folder=ov;});
+PD.forEach(p=>{
+  const ov=ld('proj_folder_'+p.id,null);
+  if(ov){
+    const validFolders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    if(validFolders.includes(ov))p.folder=ov;
+    // se l'override non corrisponde a nessuna folder esistente (es. typo/corruzione), lo ignora e tiene il folder di default
+  }
+});
 
 const vinPot=()=>ld('vinInv',[]).filter(i=>i.stato!=='Venduto').reduce((a,i)=>a+(i.prezzo*i.qty),0);
 const vinSoldTot=()=>ld('vinSold',[]).reduce((a,i)=>a+i.prezzo,0);
