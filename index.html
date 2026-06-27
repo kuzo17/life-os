@@ -641,7 +641,7 @@ function initData(){
     {nome:'PFL 013 Mega Charizard Ex',serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:17,stato:'Venduta'},
     {nome:'Mystery Pack One Piece',serie:'One Piece',lingua:'—',acquisto:0,ebay:0,vendita:15,stato:'Venduta'}
   ]);
-  sv('habits',['Allenamento','Lettura / studio','Deep work','Acqua & alimentazione','Sonno regolare']);
+  sv('habits',['Lettura / studio','Deep work','Acqua & alimentazione','Sonno regolare']);
   sv('habitDots',[0,1,2,3,4].map(()=>Array(7).fill(false)));
   sv('finIn',[{l:'Paghetta famiglia',v:200},{l:'Lavoro negozio STOSA',v:400},{l:'Variabili',v:0}]);
   sv('finOut',[{l:'Spese personali',v:0},{l:'Strumenti & software',v:0},{l:'RunPod / compute',v:0}]);
@@ -662,13 +662,14 @@ const PD=[
   {id:'carte',tag:'CARTE EBAY',color:'#fb923c',sub:'Pokémon / One Piece / DBZ',folder:'RESELLING & COLLEZIONE',hasInv:'carte'},
   {id:'risparmio',tag:'CONTO RISPARMIO',color:'#34d399',sub:'7% compound · versamento mensile',folder:'FINANZA & TRADING',hasInv:'risparmio'},
   {id:'crypto',tag:'CRYPTO',color:'#f59e0b',sub:'Portfolio crypto',folder:'FINANZA & TRADING',hasInv:'crypto'},
-  {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'}
+  {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'},
+  {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'allenamento'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
 PD.forEach(p=>{
   const ov=ld('proj_folder_'+p.id,null);
   if(ov){
-    const validFolders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    const validFolders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
     if(validFolders.includes(ov))p.folder=ov;
     // se l'override non corrisponde a nessuna folder esistente (es. typo/corruzione), lo ignora e tiene il folder di default
   }
@@ -891,7 +892,7 @@ function renderPatChart(){
 // ── HOME ─────────────────────────────────────────────────
 function renderHome(){
   syncAssets();
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
   const archived=ld('archived',[]);
   const customProjs=ld('customProjs',[]);
   const allProjs=[...PD,...customProjs];
@@ -1000,13 +1001,13 @@ function updateTodayBadge(){
 // ── FOLDER OPS ───────────────────────────────────────────
 function addFolder(){
   modal('prompt','Nome folder:',name=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
     folders.push(name.trim().toUpperCase());sv('folders',folders);renderHome();toast('FOLDER CREATA');
   });
 }
 function renameFolder(fi,name){
   if(!name||!name.trim())return;
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
   const old=folders[fi];folders[fi]=name.trim().toUpperCase();sv('folders',folders);
   const orders=ld('projOrders',{});if(orders[old]){orders[folders[fi]]=orders[old];delete orders[old];sv('projOrders',orders);}
   const allProjs=[...PD,...ld('customProjs',[])];
@@ -1015,7 +1016,7 @@ function renameFolder(fi,name){
 }
 function delFolder(fi){
   modal('confirm','Eliminare la folder? I progetti verranno archiviati.',()=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
     const f=folders[fi];
     const allProjs=[...PD,...ld('customProjs',[])];
     const archived=ld('archived',[]);
@@ -1347,6 +1348,7 @@ function openProj(id){
   else if(p.hasInv==='carte')h+=buildCarte(p);
   else if(p.hasInv==='risparmio')h+=buildRisparmio(p);
   else if(p.hasInv==='crypto')h+=buildCrypto(p);
+  else if(p.hasInv==='allenamento')h+=buildAllenamento(p);
   else h+=buildStd(p);
   h+=buildTaskHistory(id);
   dv.innerHTML=h;
@@ -1886,6 +1888,160 @@ function cDel(i){const inv=ld('carteInv',[]);inv.splice(i,1);sv('carteInv',inv);
 function addCarta(){const inv=ld('carteInv',[]);inv.unshift({nome:'Nuova carta',serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:0,stato:'In Stock'});sv('carteInv',inv);openProj('carte');}
 function fC(v,b){cFilter=v;cPage=20;document.querySelectorAll('.ifil .ib').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderCarteRows();}
 function sortCarte(by){const inv=ld('carteInv',[]);inv.sort((a,b)=>b[by]-a[by]);sv('carteInv',inv);renderCarteRows();toast('ORDINATE PER '+by.toUpperCase());}
+
+// ── ALLENAMENTO ──────────────────────────────────────────
+const ALL_GG=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+function allWeekdayIdx(date){return (date.getDay()+6)%7;} // 0=Lun .. 6=Dom
+
+function buildAllenamento(p){
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  const todayKey=today.toDateString();
+  const doneLog=ld('all_doneLog',{}); // {dateString: true}
+  const storia=ld('all_storia',{}); // {esId: [{data,peso,reps,serie}]}
+  const selIdx=ld('all_selSchedaIdx',todayIdx);
+
+  let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
+  schede.forEach((s,i)=>{
+    const isToday=i===todayIdx;
+    const isSel=i===selIdx;
+    h+=`<div onclick="allSelectScheda(${i})" style="background:${isSel?'#1a2e1a':'#141414'};border:1px solid ${isSel?'#4ade80':isToday?'#4ade8055':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#666'}">${s.nome.slice(0,3).toUpperCase()}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${s.esercizi.length?'#4ade80':'#333'};margin-top:2px">${s.esercizi.length||'—'}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  const scheda=schede[selIdx];
+  const isSelToday=selIdx===todayIdx;
+  const sessDone=!!doneLog[todayKey];
+
+  h+=`<div class="slbl">
+    <input id="all-nome-scheda" value="${esc(scheda.nome)}" onchange="allRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:#ccc;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed #333">
+    ${isSelToday?`<span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:${sessDone?'#4ade80':'#555'}">${sessDone?'✓ FATTO OGGI':'da fare oggi'}</span></span>`:''}
+  </div>
+  <div class="card" id="all-esercizi">`;
+
+  scheda.esercizi.forEach((es,i)=>{
+    const hist=storia[es.id]||[];
+    const last=hist[hist.length-1];
+    const curPeso=es._peso??(last?last.peso:es.peso||0);
+    const curReps=es._reps??(last?last.reps:es.reps||0);
+    const curSerie=es._serie??(last?last.serie:es.serie||0);
+    h+=`<div class="row" style="flex-wrap:wrap;align-items:center">
+      <input class="rt" value="${esc(es.nome)}" onchange="allEdEsercizio(${selIdx},${i},'nome',this.value)" style="flex:1 1 140px;min-width:120px">
+      <input type="number" value="${curSerie}" placeholder="serie" onchange="allEdEsercizio(${selIdx},${i},'serie',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
+      <span style="color:#444;font-size:11px">×</span>
+      <input type="number" value="${curReps}" placeholder="reps" onchange="allEdEsercizio(${selIdx},${i},'reps',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
+      <input type="number" value="${curPeso}" placeholder="kg" onchange="allEdEsercizio(${selIdx},${i},'peso',this.value)" style="width:54px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#4ade80;text-align:center;font-family:'Space Mono',monospace">
+      <span style="font-size:9px;color:#444;font-family:'Space Mono',monospace">kg</span>
+      <button class="xb" onclick="allDelEsercizio(${selIdx},${i})">×</button>
+      ${hist.length?`<button onclick="allToggleHist('${es.id}')" style="font-family:'Space Mono',monospace;font-size:9px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:0 4px" title="Storico pesi">📈</button>`:''}
+      <div id="all-hist-${es.id}" style="display:none;width:100%;font-family:'Space Mono',monospace;font-size:9px;color:#555;padding-top:4px">
+        ${hist.slice(-8).map(h2=>`<span style="margin-right:8px">${h2.data}: ${h2.peso}kg×${h2.reps}×${h2.serie}</span>`).join('')||'nessuno storico'}
+      </div>
+    </div>`;
+  });
+  h+=`<div class="arow"><input class="ain" id="all-ex-inp" placeholder="+ esercizio…" onkeydown="if(event.key==='Enter')allAddEsercizio(${selIdx})"><button class="abtn" onclick="allAddEsercizio(${selIdx})">+ ADD</button></div></div>`;
+
+  if(isSelToday&&scheda.esercizi.length){
+    h+=`<div style="margin-top:10px">
+      <button onclick="allMarkSessionDone()" style="font-family:'Space Mono',monospace;font-size:11px;padding:10px;border-radius:6px;border:1px solid ${sessDone?'#4ade80':'#2a2a2a'};background:${sessDone?'#1a2e1a':'transparent'};color:${sessDone?'#4ade80':'#888'};cursor:pointer;width:100%">
+        ${sessDone?'✓ ALLENAMENTO COMPLETATO OGGI — CLICCA PER ANNULLARE':'SEGNA ALLENAMENTO DI OGGI COME FATTO'}
+      </button>
+    </div>`;
+  }
+
+  // Streak / settimana
+  const weekDone=Object.keys(doneLog).filter(d=>{
+    const dd=new Date(d);
+    const diff=(today-dd)/86400000;
+    return diff>=0&&diff<7;
+  }).length;
+  h+=`<div class="slbl">QUESTA SETTIMANA</div>
+  <div class="card" style="padding:14px;text-align:center">
+    <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:${p.color}">${weekDone}/7</div>
+    <div style="font-size:11px;color:#555;margin-top:4px">allenamenti completati</div>
+  </div>`;
+
+  h+=goalsH('allenamento',ld('goals_allenamento',[]),ld('gchecks_allenamento',[]),p.color);
+  h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_allenamento',this.value);toast()">${ld('note_allenamento','')}</textarea>`;
+  return h;
+}
+
+function allSelectScheda(i){sv('all_selSchedaIdx',i);openProj('allenamento');}
+function allRenameScheda(i,v){
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  schede[i].nome=v;sv('all_schede',schede);toast();
+}
+function allAddEsercizio(schedaIdx){
+  const inp=document.getElementById('all-ex-inp');
+  const nome=inp?.value.trim();if(!nome)return;
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  schede[schedaIdx].esercizi.push({id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome,peso:0,reps:0,serie:0});
+  sv('all_schede',schede);
+  if(inp)inp.value='';
+  openProj('allenamento');
+}
+function allEdEsercizio(schedaIdx,i,k,v){
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  const es=schede[schedaIdx].esercizi[i];
+  if(k==='nome')es.nome=v;
+  else es[k]=parseFloat(v)||0;
+  sv('all_schede',schede);toast();
+}
+function allDelEsercizio(schedaIdx,i){
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  schede[schedaIdx].esercizi.splice(i,1);
+  sv('all_schede',schede);openProj('allenamento');
+}
+function allToggleHist(esId){
+  const el=document.getElementById('all-hist-'+esId);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+function allMarkSessionDone(){
+  const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
+  const todayIdx=allWeekdayIdx(new Date());
+  const scheda=schede[todayIdx];
+  const todayKey=new Date().toDateString();
+  const doneLog=ld('all_doneLog',{});
+  const storia=ld('all_storia',{});
+  const dataLabel=new Date().toLocaleDateString('it-IT');
+
+  if(doneLog[todayKey]){
+    // Annulla: rimuove l'ultima entry di storico per ogni esercizio di oggi
+    delete doneLog[todayKey];
+    scheda.esercizi.forEach(es=>{
+      const hist=storia[es.id]||[];
+      if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
+      storia[es.id]=hist;
+    });
+    sv('all_doneLog',doneLog);sv('all_storia',storia);
+    toast('ANNULLATO');
+  } else {
+    // Legge i valori attuali dai campi input nel DOM (peso/reps/serie modificati prima di salvare)
+    const rows=[...document.querySelectorAll('#all-esercizi .row')];
+    doneLog[todayKey]=true;
+    scheda.esercizi.forEach((es,i)=>{
+      const row=rows[i];
+      const nums=row?row.querySelectorAll('input[type="number"]'):null;
+      const serie=nums&&nums[0]?parseFloat(nums[0].value)||0:es.peso||0;
+      const reps=nums&&nums[1]?parseFloat(nums[1].value)||0:0;
+      const peso=nums&&nums[2]?parseFloat(nums[2].value)||0:0;
+      // Salva i valori correnti anche come default dell'esercizio per la prossima volta
+      es.serie=serie;es.reps=reps;es.peso=peso;
+      const hist=storia[es.id]||[];
+      hist.push({dataKey:todayKey,data:dataLabel,peso,reps,serie});
+      storia[es.id]=hist;
+    });
+    sv('all_schede',schede);
+    sv('all_doneLog',doneLog);sv('all_storia',storia);
+    toast('🎉 ALLENAMENTO SEGNATO');
+  }
+  openProj('allenamento');renderHome();
+}
 
 // ── CONTO RISPARMIO ──────────────────────────────────────
 function buildRisparmio(p){
@@ -2578,8 +2734,19 @@ function quickAddToCard(id){
 }
 
 function migrateData(){
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
   if(!folders.includes('FINANZA & TRADING')){folders.push('FINANZA & TRADING');sv('folders',folders);}
+  if(!folders.includes('ALIMENTAZIONE & ALLENAMENTO')){folders.push('ALIMENTAZIONE & ALLENAMENTO');sv('folders',folders);}
+  // Rimuove "Allenamento" dalle abitudini se presente (ora è un progetto a parte)
+  if(!ld('all_habitMigrated',false)){
+    const habits=ld('habits',[]);
+    const idx=habits.indexOf('Allenamento');
+    if(idx>=0){
+      habits.splice(idx,1);sv('habits',habits);
+      const dots=ld('habitDots',[]);dots.splice(idx,1);sv('habitDots',dots);
+    }
+    sv('all_habitMigrated',true);
+  }
 }
 function bootApp(){
   initData();migrateData();autoSnapOnce();
