@@ -663,7 +663,8 @@ const PD=[
   {id:'risparmio',tag:'CONTO RISPARMIO',color:'#34d399',sub:'7% compound · versamento mensile',folder:'FINANZA & TRADING',hasInv:'risparmio'},
   {id:'crypto',tag:'CRYPTO',color:'#f59e0b',sub:'Portfolio crypto',folder:'FINANZA & TRADING',hasInv:'crypto'},
   {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'},
-  {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'allenamento'}
+  {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'allenamento'},
+  {id:'alimentazione',tag:'ALIMENTAZIONE',color:'#fb923c',sub:'Piano settimanale · peso corporeo',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'alimentazione'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
 PD.forEach(p=>{
@@ -1349,6 +1350,7 @@ function openProj(id){
   else if(p.hasInv==='risparmio')h+=buildRisparmio(p);
   else if(p.hasInv==='crypto')h+=buildCrypto(p);
   else if(p.hasInv==='allenamento')h+=buildAllenamento(p);
+  else if(p.hasInv==='alimentazione')h+=buildAlimentazione(p);
   else h+=buildStd(p);
   h+=buildTaskHistory(id);
   dv.innerHTML=h;
@@ -1892,14 +1894,15 @@ function sortCarte(by){const inv=ld('carteInv',[]);inv.sort((a,b)=>b[by]-a[by]);
 // ── ALLENAMENTO ──────────────────────────────────────────
 const ALL_GG=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
 function allWeekdayIdx(date){return (date.getDay()+6)%7;} // 0=Lun .. 6=Dom
+const allNormName=s=>String(s||'').trim().toLowerCase();
 
 function buildAllenamento(p){
   const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
   const today=new Date();
   const todayIdx=allWeekdayIdx(today);
   const todayKey=today.toDateString();
-  const doneLog=ld('all_doneLog',{}); // {dateString: true}
-  const storia=ld('all_storia',{}); // {esId: [{data,peso,reps,serie}]}
+  const storia=ld('all_storia',{}); // {nomeNormalizzato: [{dataKey,data,peso,reps,serie}]}
+  const checksOggi=ld('all_checksOggi',{}); // {todayKey: {schedaIdx_esIdx: true}}
   const selIdx=ld('all_selSchedaIdx',todayIdx);
 
   let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
@@ -1916,51 +1919,52 @@ function buildAllenamento(p){
 
   const scheda=schede[selIdx];
   const isSelToday=selIdx===todayIdx;
-  const sessDone=!!doneLog[todayKey];
+  const todayChecks=checksOggi[todayKey]||{};
+  const doneCount=isSelToday?scheda.esercizi.filter((_,i)=>todayChecks[selIdx+'_'+i]).length:0;
+  const allDone=isSelToday&&scheda.esercizi.length>0&&doneCount===scheda.esercizi.length;
 
   h+=`<div class="slbl">
     <input id="all-nome-scheda" value="${esc(scheda.nome)}" onchange="allRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:#ccc;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed #333">
-    ${isSelToday?`<span style="display:flex;gap:8px;align-items:center"><span style="font-size:9px;color:${sessDone?'#4ade80':'#555'}">${sessDone?'✓ FATTO OGGI':'da fare oggi'}</span></span>`:''}
+    ${isSelToday?`<span style="font-size:9px;color:${allDone?'#4ade80':'#555'}">${doneCount}/${scheda.esercizi.length} oggi${allDone?' ✓':''}</span>`:''}
   </div>
   <div class="card" id="all-esercizi">`;
 
   scheda.esercizi.forEach((es,i)=>{
-    const hist=storia[es.id]||[];
+    const key=allNormName(es.nome);
+    const hist=storia[key]||[];
     const last=hist[hist.length-1];
-    const curPeso=es._peso??(last?last.peso:es.peso||0);
-    const curReps=es._reps??(last?last.reps:es.reps||0);
-    const curSerie=es._serie??(last?last.serie:es.serie||0);
-    h+=`<div class="row" style="flex-wrap:wrap;align-items:center">
+    const curPeso=last?last.peso:es.peso||0;
+    const curReps=last?last.reps:es.reps||0;
+    const curSerie=last?last.serie:es.serie||0;
+    const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
+    h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:center">
+      ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
       <input class="rt" value="${esc(es.nome)}" onchange="allEdEsercizio(${selIdx},${i},'nome',this.value)" style="flex:1 1 140px;min-width:120px">
-      <input type="number" value="${curSerie}" placeholder="serie" onchange="allEdEsercizio(${selIdx},${i},'serie',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
+      <input type="number" value="${curSerie}" placeholder="serie" id="all-serie-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'serie',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
       <span style="color:#444;font-size:11px">×</span>
-      <input type="number" value="${curReps}" placeholder="reps" onchange="allEdEsercizio(${selIdx},${i},'reps',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
-      <input type="number" value="${curPeso}" placeholder="kg" onchange="allEdEsercizio(${selIdx},${i},'peso',this.value)" style="width:54px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#4ade80;text-align:center;font-family:'Space Mono',monospace">
+      <input type="number" value="${curReps}" placeholder="reps" id="all-reps-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'reps',this.value)" style="width:48px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#ccc;text-align:center;font-family:'Space Mono',monospace">
+      <input type="number" value="${curPeso}" placeholder="kg" id="all-peso-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'peso',this.value)" style="width:54px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:4px;padding:4px;font-size:11px;color:#4ade80;text-align:center;font-family:'Space Mono',monospace">
       <span style="font-size:9px;color:#444;font-family:'Space Mono',monospace">kg</span>
       <button class="xb" onclick="allDelEsercizio(${selIdx},${i})">×</button>
-      ${hist.length?`<button onclick="allToggleHist('${es.id}')" style="font-family:'Space Mono',monospace;font-size:9px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:0 4px" title="Storico pesi">📈</button>`:''}
-      <div id="all-hist-${es.id}" style="display:none;width:100%;font-family:'Space Mono',monospace;font-size:9px;color:#555;padding-top:4px">
+      ${hist.length?`<button onclick="allToggleHist('${key.replace(/'/g,"\\'")}')" style="font-family:'Space Mono',monospace;font-size:9px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:0 4px" title="Storico pesi">📈</button>`:''}
+      <div id="all-hist-${i}" style="display:none;width:100%;font-family:'Space Mono',monospace;font-size:9px;color:#555;padding-top:4px">
         ${hist.slice(-8).map(h2=>`<span style="margin-right:8px">${h2.data}: ${h2.peso}kg×${h2.reps}×${h2.serie}</span>`).join('')||'nessuno storico'}
       </div>
     </div>`;
   });
   h+=`<div class="arow"><input class="ain" id="all-ex-inp" placeholder="+ esercizio…" onkeydown="if(event.key==='Enter')allAddEsercizio(${selIdx})"><button class="abtn" onclick="allAddEsercizio(${selIdx})">+ ADD</button></div></div>`;
 
-  if(isSelToday&&scheda.esercizi.length){
-    h+=`<div style="margin-top:10px">
-      <button onclick="allMarkSessionDone()" style="font-family:'Space Mono',monospace;font-size:11px;padding:10px;border-radius:6px;border:1px solid ${sessDone?'#4ade80':'#2a2a2a'};background:${sessDone?'#1a2e1a':'transparent'};color:${sessDone?'#4ade80':'#888'};cursor:pointer;width:100%">
-        ${sessDone?'✓ ALLENAMENTO COMPLETATO OGGI — CLICCA PER ANNULLARE':'SEGNA ALLENAMENTO DI OGGI COME FATTO'}
-      </button>
-    </div>`;
+  // Streak / settimana — conta i giorni in cui TUTTI gli esercizi della scheda del giorno sono stati completati
+  let weekDone=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dKey=d.toDateString();
+    const dIdx=allWeekdayIdx(d);
+    const dScheda=schede[dIdx];
+    const dChecks=checksOggi[dKey]||{};
+    if(dScheda.esercizi.length&&dScheda.esercizi.every((_,j)=>dChecks[dIdx+'_'+j]))weekDone++;
   }
-
-  // Streak / settimana
-  const weekDone=Object.keys(doneLog).filter(d=>{
-    const dd=new Date(d);
-    const diff=(today-dd)/86400000;
-    return diff>=0&&diff<7;
-  }).length;
-  h+=`<div class="slbl">QUESTA SETTIMANA</div>
+  h+=`<div class="slbl">ULTIMI 7 GIORNI</div>
   <div class="card" style="padding:14px;text-align:center">
     <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:${p.color}">${weekDone}/7</div>
     <div style="font-size:11px;color:#555;margin-top:4px">allenamenti completati</div>
@@ -1980,7 +1984,7 @@ function allAddEsercizio(schedaIdx){
   const inp=document.getElementById('all-ex-inp');
   const nome=inp?.value.trim();if(!nome)return;
   const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
-  schede[schedaIdx].esercizi.push({id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome,peso:0,reps:0,serie:0});
+  schede[schedaIdx].esercizi.push({nome,peso:0,reps:0,serie:0});
   sv('all_schede',schede);
   if(inp)inp.value='';
   openProj('allenamento');
@@ -1995,52 +1999,190 @@ function allEdEsercizio(schedaIdx,i,k,v){
 function allDelEsercizio(schedaIdx,i){
   const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
   schede[schedaIdx].esercizi.splice(i,1);
-  sv('all_schede',schede);openProj('allenamento');
+  sv('all_schede',schede);
+  // Pulisce i check di oggi per questo esercizio e shifta gli indici successivi
+  const checksOggi=ld('all_checksOggi',{});
+  Object.keys(checksOggi).forEach(dateKey=>{
+    const day=checksOggi[dateKey];
+    const newDay={};
+    Object.keys(day).forEach(k=>{
+      const [sIdx,eIdx]=k.split('_').map(Number);
+      if(sIdx!==schedaIdx)newDay[k]=day[k];
+      else if(eIdx<i)newDay[k]=day[k];
+      else if(eIdx>i)newDay[sIdx+'_'+(eIdx-1)]=day[k];
+      // eIdx===i: scartato (era l'esercizio eliminato)
+    });
+    checksOggi[dateKey]=newDay;
+  });
+  sv('all_checksOggi',checksOggi);
+  openProj('allenamento');
 }
-function allToggleHist(esId){
-  const el=document.getElementById('all-hist-'+esId);
-  if(el)el.style.display=el.style.display==='none'?'block':'none';
+function allToggleHist(key){
+  // Trova l'indice riga corrispondente al nome corrente per mostrare/nascondere
+  document.querySelectorAll('[id^="all-hist-"]').forEach(el=>{
+    const row=el.closest('.row');
+    const nameInput=row?.querySelector('.rt');
+    if(nameInput&&allNormName(nameInput.value)===key){
+      el.style.display=el.style.display==='none'?'block':'none';
+    }
+  });
 }
-function allMarkSessionDone(){
+function allToggleCheck(schedaIdx,i){
   const schede=ld('all_schede',ALL_GG.map(g=>({nome:g,esercizi:[]})));
-  const todayIdx=allWeekdayIdx(new Date());
-  const scheda=schede[todayIdx];
+  const es=schede[schedaIdx].esercizi[i];
   const todayKey=new Date().toDateString();
-  const doneLog=ld('all_doneLog',{});
-  const storia=ld('all_storia',{});
-  const dataLabel=new Date().toLocaleDateString('it-IT');
+  const checksOggi=ld('all_checksOggi',{});
+  if(!checksOggi[todayKey])checksOggi[todayKey]={};
+  const ck=todayKey+'';
+  const isChecked=!!checksOggi[todayKey][schedaIdx+'_'+i];
 
-  if(doneLog[todayKey]){
-    // Annulla: rimuove l'ultima entry di storico per ogni esercizio di oggi
-    delete doneLog[todayKey];
-    scheda.esercizi.forEach(es=>{
-      const hist=storia[es.id]||[];
-      if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
-      storia[es.id]=hist;
-    });
-    sv('all_doneLog',doneLog);sv('all_storia',storia);
-    toast('ANNULLATO');
+  if(isChecked){
+    // Annulla: rimuove l'ultima entry di storico per questo esercizio di oggi
+    delete checksOggi[todayKey][schedaIdx+'_'+i];
+    const key=allNormName(es.nome);
+    const storia=ld('all_storia',{});
+    const hist=storia[key]||[];
+    if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
+    storia[key]=hist;
+    sv('all_storia',storia);
   } else {
-    // Legge i valori attuali dai campi input nel DOM (peso/reps/serie modificati prima di salvare)
-    const rows=[...document.querySelectorAll('#all-esercizi .row')];
-    doneLog[todayKey]=true;
-    scheda.esercizi.forEach((es,i)=>{
-      const row=rows[i];
-      const nums=row?row.querySelectorAll('input[type="number"]'):null;
-      const serie=nums&&nums[0]?parseFloat(nums[0].value)||0:es.peso||0;
-      const reps=nums&&nums[1]?parseFloat(nums[1].value)||0:0;
-      const peso=nums&&nums[2]?parseFloat(nums[2].value)||0:0;
-      // Salva i valori correnti anche come default dell'esercizio per la prossima volta
-      es.serie=serie;es.reps=reps;es.peso=peso;
-      const hist=storia[es.id]||[];
-      hist.push({dataKey:todayKey,data:dataLabel,peso,reps,serie});
-      storia[es.id]=hist;
-    });
+    // Legge i valori attuali dai campi input nel DOM
+    const serieEl=document.getElementById(`all-serie-${schedaIdx}-${i}`);
+    const repsEl=document.getElementById(`all-reps-${schedaIdx}-${i}`);
+    const pesoEl=document.getElementById(`all-peso-${schedaIdx}-${i}`);
+    const serie=serieEl?parseFloat(serieEl.value)||0:es.serie||0;
+    const reps=repsEl?parseFloat(repsEl.value)||0:es.reps||0;
+    const peso=pesoEl?parseFloat(pesoEl.value)||0:es.peso||0;
+    es.serie=serie;es.reps=reps;es.peso=peso;
     sv('all_schede',schede);
-    sv('all_doneLog',doneLog);sv('all_storia',storia);
-    toast('🎉 ALLENAMENTO SEGNATO');
+
+    const key=allNormName(es.nome);
+    const storia=ld('all_storia',{});
+    const hist=storia[key]||[];
+    hist.push({dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso,reps,serie});
+    storia[key]=hist;
+    sv('all_storia',storia);
+    checksOggi[todayKey][schedaIdx+'_'+i]=true;
   }
+  sv('all_checksOggi',checksOggi);
   openProj('allenamento');renderHome();
+  const allDone=schede[schedaIdx].esercizi.every((_,j)=>checksOggi[todayKey]&&checksOggi[todayKey][schedaIdx+'_'+j]);
+  if(allDone&&!isChecked)toast('🎉 ALLENAMENTO COMPLETATO');
+}
+
+// ── ALIMENTAZIONE ────────────────────────────────────────
+const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
+
+function buildAlimentazione(p){
+  const schede=ld('alim_schede',ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))})));
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  const todayKey=today.toDateString();
+  const checksOggi=ld('alim_checksOggi',{}); // {dateKey: {schedaIdx_pastoIdx: true}}
+  const selIdx=ld('alim_selSchedaIdx',todayIdx);
+  const pesoStoria=ld('alim_pesoStoria',[]); // [{dataKey,data,peso}]
+
+  let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
+  schede.forEach((s,i)=>{
+    const isToday=i===todayIdx;
+    const isSel=i===selIdx;
+    const filled=s.pasti.filter(x=>x.testo.trim()).length;
+    h+=`<div onclick="alimSelectScheda(${i})" style="background:${isSel?'#1a2e1a':'#141414'};border:1px solid ${isSel?'#4ade80':isToday?'#4ade8055':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
+      <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#666'}">${s.nome.slice(0,3).toUpperCase()}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${filled?'#fb923c':'#333'};margin-top:2px">${filled||'—'}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  const scheda=schede[selIdx];
+  const isSelToday=selIdx===todayIdx;
+  const todayChecks=checksOggi[todayKey]||{};
+  const doneCount=isSelToday?scheda.pasti.filter((_,i)=>todayChecks[selIdx+'_'+i]).length:0;
+  const allDone=isSelToday&&doneCount===scheda.pasti.length;
+
+  h+=`<div class="slbl">
+    <input value="${esc(scheda.nome)}" onchange="alimRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:#ccc;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed #333">
+    ${isSelToday?`<span style="font-size:9px;color:${allDone?'#4ade80':'#555'}">${doneCount}/${scheda.pasti.length} oggi${allDone?' ✓':''}</span>`:''}
+  </div>
+  <div class="card" id="alim-pasti">`;
+
+  scheda.pasti.forEach((pasto,i)=>{
+    const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
+    h+=`<div class="row${isChecked?' done':''}">
+      ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#666;width:70px;flex-shrink:0">${esc(pasto.slot)}</span>
+      <input class="rt" value="${esc(pasto.testo)}" placeholder="cosa mangiare…" onchange="alimEdPasto(${selIdx},${i},this.value)">
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Streak settimanale: giorni con tutti i pasti completati
+  let weekDone=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dKey=d.toDateString();
+    const dIdx=allWeekdayIdx(d);
+    const dScheda=schede[dIdx];
+    const dChecks=checksOggi[dKey]||{};
+    if(dScheda.pasti.every((_,j)=>dChecks[dIdx+'_'+j]))weekDone++;
+  }
+  h+=`<div class="slbl">ULTIMI 7 GIORNI</div>
+  <div class="card" style="padding:14px;text-align:center">
+    <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:${p.color}">${weekDone}/7</div>
+    <div style="font-size:11px;color:#555;margin-top:4px">giorni con piano seguito al 100%</div>
+  </div>`;
+
+  // ── Peso corporeo settimanale ──
+  const lastPeso=pesoStoria[pesoStoria.length-1];
+  h+=`<div class="slbl">PESO CORPOREO</div>
+  <div class="card" style="padding:14px">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <input type="number" step="0.1" id="alim-peso-inp" placeholder="${lastPeso?lastPeso.peso:'peso'} kg" style="flex:1;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;outline:none;font-family:'Space Mono',monospace">
+      <button onclick="alimAddPeso()" style="font-family:'Space Mono',monospace;font-size:10px;padding:8px 14px;border-radius:6px;border:1px solid ${p.color};background:transparent;color:${p.color};cursor:pointer">+ REGISTRA</button>
+    </div>
+    ${pesoStoria.length?`<div style="font-family:'Space Mono',monospace;font-size:9px;color:#555">
+      ${pesoStoria.slice(-8).map(x=>`<span style="margin-right:10px">${x.data}: <span style="color:#ccc">${x.peso}kg</span></span>`).join('')}
+    </div>`:`<div style="font-size:12px;color:#444">Nessuna registrazione ancora.</div>`}
+  </div>`;
+
+  h+=goalsH('alimentazione',ld('goals_alimentazione',[]),ld('gchecks_alimentazione',[]),p.color);
+  h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_alimentazione',this.value);toast()">${ld('note_alimentazione','')}</textarea>`;
+  return h;
+}
+
+function alimSelectScheda(i){sv('alim_selSchedaIdx',i);openProj('alimentazione');}
+function alimRenameScheda(i,v){
+  const schede=ld('alim_schede',ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))})));
+  schede[i].nome=v;sv('alim_schede',schede);toast();
+}
+function alimEdPasto(schedaIdx,i,v){
+  const schede=ld('alim_schede',ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))})));
+  schede[schedaIdx].pasti[i].testo=v;
+  sv('alim_schede',schede);toast();
+}
+function alimToggleCheck(schedaIdx,i){
+  const todayKey=new Date().toDateString();
+  const checksOggi=ld('alim_checksOggi',{});
+  if(!checksOggi[todayKey])checksOggi[todayKey]={};
+  const isChecked=!!checksOggi[todayKey][schedaIdx+'_'+i];
+  if(isChecked)delete checksOggi[todayKey][schedaIdx+'_'+i];
+  else checksOggi[todayKey][schedaIdx+'_'+i]=true;
+  sv('alim_checksOggi',checksOggi);
+  openProj('alimentazione');renderHome();
+  const schede=ld('alim_schede',ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))})));
+  const allDone=schede[schedaIdx].pasti.every((_,j)=>checksOggi[todayKey]&&checksOggi[todayKey][schedaIdx+'_'+j]);
+  if(allDone&&!isChecked)toast('🎉 PIANO ALIMENTARE SEGUITO');
+}
+function alimAddPeso(){
+  const inp=document.getElementById('alim-peso-inp');
+  const val=parseFloat(inp?.value);
+  if(!val||val<=0)return toast('Inserisci un peso valido');
+  const storia=ld('alim_pesoStoria',[]);
+  storia.push({dataKey:new Date().toDateString(),data:new Date().toLocaleDateString('it-IT'),peso:val});
+  sv('alim_pesoStoria',storia);
+  if(inp)inp.value='';
+  openProj('alimentazione');toast('PESO REGISTRATO');
 }
 
 // ── CONTO RISPARMIO ──────────────────────────────────────
