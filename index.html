@@ -338,9 +338,11 @@ textarea::placeholder{color:var(--text-ghost);}
 
 /* ── STICKY TABS — pill nav con glow ── */
 .tabs{
-  display:flex;gap:7px;margin-bottom:1.1rem;position:sticky;top:0;z-index:100;
+  display:flex;gap:7px;margin-bottom:1.1rem;position:sticky;
+  top:0;top:env(safe-area-inset-top,0px);
+  z-index:100;
   background:var(--glass);backdrop-filter:blur(16px);
-  padding:11px 0;margin-top:-11px;margin-left:-2px;padding-left:2px;
+  padding:11px 0 11px 2px;margin:-11px -2px 1.1rem;
 }
 .tab{
   font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 17px;border-radius:10px;
@@ -353,6 +355,12 @@ textarea::placeholder{color:var(--text-ghost);}
   box-shadow:var(--sh-2);
 }
 
+@media(hover:none){
+  .pc-actions{opacity:.55;}
+  .pc-qadd{opacity:.45;}
+  .folder-actions{opacity:1;}
+  .row:hover{padding-left:14px;}
+}
 @media(max-width:768px){
   body{padding:1rem;}
   .pgrid{grid-template-columns:repeat(2,1fr);}
@@ -1372,10 +1380,10 @@ function renderAgenda(){
         h+=`<div class="row${t.done?' done':''}">
           <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
           ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
-          <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''}">
+          <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
           ${typeLabel?`<span style="font-family:var(--mono);font-size:8px;color:${typeColor};padding:0 4px;flex-shrink:0">${typeLabel}</span>`:''}
-          <span style="font-family:var(--mono);font-size:9px;color:${proj?proj.color:'var(--text-faint)'};margin-right:4px;flex-shrink:0">${proj?proj.tag:'ALTRO'}</span>
-          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${idx})">×</button>`:''}
+          <span style="font-family:var(--mono);font-size:9px;color:${proj?proj.color:'var(--text-faint)'};margin-right:4px;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${proj?esc(proj.tag):'ALTRO'}">${proj?proj.tag:'ALTRO'}</span>
+          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${idx})" style="flex-shrink:0">×</button>`:''}
         </div>`;
       });
       h+='</div>';
@@ -1384,15 +1392,15 @@ function renderAgenda(){
     }
 
     if(!isPast){
-      h+=`<div style="display:flex;gap:6px;align-items:center;margin-top:6px">
-        <input class="ain" id="ag-inp-${key}" placeholder="+ aggiungi task…"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;flex:1"
+      h+=`<div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap" class="ag-add-row">
+        <input class="ain ag-add-input" id="ag-inp-${key}" placeholder="+ aggiungi task…"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;flex:1 1 140px;min-width:0"
           onkeydown="if(event.key==='Enter')addAgendaTask('${key}')">
-        <select id="ag-proj-${key}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:7px;border-radius:8px;outline:none">
+        <select id="ag-proj-${key}" class="ag-add-select" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:7px;border-radius:8px;outline:none;flex:1 1 110px;min-width:0">
           <option value="">— nessun progetto</option>
           ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
         </select>
-        <button class="abtn" onclick="addAgendaTask('${key}')" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px">+ ADD</button>
+        <button class="abtn" onclick="addAgendaTask('${key}')" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px;flex-shrink:0">+ ADD</button>
       </div>`;
     }
     h+='</div>';
@@ -2627,7 +2635,7 @@ function renderAssets(){
     return `<div class="ar" draggable="false" ondragstart="assetDragStart(event,${i})" ondragover="assetDragOver(event)" ondragleave="assetDragLeave(event)" ondrop="assetDrop(event,${i})" ondragend="assetDragEnd(event)" style="${x.hidden?'opacity:.45':''}">
       <span class="drag-handle" title="Trascina per riordinare" onpointerdown="armAssetDrag(event,${i})">⠿</span>
       <div class="ad" style="background:${AC[i%AC.length]};color:${AC[i%AC.length]}"></div>
-      <button class="xb" title="Mostra/Nascondi" onclick="toggleAssetHidden(${i})">${x.hidden?'🚫':'👁️'}</button>
+      <button class="xb" title="Mostra/Nascondi" onclick="toggleAssetHidden(${i})" style="color:${x.hidden?'var(--text-ghost)':'var(--text-faint)'}">${x.hidden?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.58 10.58a2 2 0 002.83 2.83M9.88 4.24A9.12 9.12 0 0112 4c5 0 9 4 10 8a13.16 13.16 0 01-1.67 3.19M6.61 6.61C4.7 8.06 3.18 10.06 2 12c1 4 5 8 10 8a9.74 9.74 0 005.39-1.61"/></svg>':'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>'}</button>
       <input class="al" value="${esc(x.l)}" ${isSpecial?'readonly style="color:var(--text-faint)"':''} onchange="edAsset(${i},'l',this.value)">
       <input class="av" value="€${x.v.toFixed(0)}" onchange="edAsset(${i},'v',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
       ${isSpecial?'<span style="width:18px"></span>':`<button class="xb" style="color:var(--text-faint)" onclick="delAsset(${i})">×</button>`}
