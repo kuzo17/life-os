@@ -520,6 +520,7 @@ textarea::placeholder{color:var(--text-ghost);}
     <div id="spg"></div>
     <div class="expense-divider"></div>
     <div class="expense-section-title">Generali</div>
+    <div id="spese-gen-plans"></div>
     <div id="spese-gen-list"></div>
     <div class="arow" style="border-top:1px solid #1e1e1e">
       <input class="ain" id="sg-nome" placeholder="+ spesa…">
@@ -527,6 +528,7 @@ textarea::placeholder{color:var(--text-ghost);}
       <input class="ain" id="sg-data" placeholder="data" style="width:70px">
       <button class="abtn" onclick="addSpeseGen()">+ ADD</button>
     </div>
+    <div class="af" onclick="openRatePlanModal()" style="margin-top:6px">+ CREA PIANO RATE (es. prestito, abbonamento)</div>
   </div>
 
   <!-- PATRIMONIO TARGET (sostituisce savings goal) -->
@@ -865,6 +867,88 @@ const tasksDone=id=>{const p=PD.find(x=>x.id===id);const t=ld('tasks_'+id,p?p.ta
 const getAge=id=>{const ts=ld('updated_'+id,null);if(!ts)return null;const d=Math.floor((Date.now()-ts)/86400000);return d===0?'oggi':d===1?'ieri':d+'gg fa';};
 const getPri=id=>{const p=ld('proj_pri_'+id,'none');return p==='high'?{dot:'#f87171',label:'ALTA'}:p==='medium'?{dot:'#e8b04a',label:'MEDIA'}:{dot:'transparent',label:''};};
 
+// ── SISTEMA DEBITI ──────────────────────────────────────────
+// Una ricorrente saltata 2+ giorni consecutivi inizia ad accumulare debito (1 per ogni giorno saltato dopo la soglia).
+// Un obiettivo settimanale non completato a fine settimana aggiunge 1 debito.
+// Il debito si perdona esplicitamente o si recupera con un'azione dedicata.
+const DEBT_THRESHOLD=2; // giorni consecutivi prima che inizi a contare
+const DEBT_LOOKBACK=21; // non scandagliare più indietro di N giorni
+
+function calcRecurDebt(projId,recurIdx){
+  const recurCh=ld('recurChecks_'+projId,{});
+  const created=ld('recurCreated_'+projId,[])[recurIdx];
+  const today=new Date();today.setHours(0,0,0,0);
+  // Limita il lookback alla data di creazione: task ricorrenti vecchie/senza data salvata usano il lookback standard (retrocompat)
+  let maxLookback=DEBT_LOOKBACK;
+  if(created){
+    const createdDate=new Date(created);createdDate.setHours(0,0,0,0);
+    const daysSinceCreated=Math.floor((today-createdDate)/86400000);
+    maxLookback=Math.min(DEBT_LOOKBACK,daysSinceCreated);
+  }
+  let missedStreak=0,debt=0;
+  for(let i=1;i<=maxLookback;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=d.toDateString()+'_'+recurIdx;
+    if(recurCh[key]){break;}
+    missedStreak++;
+    if(missedStreak>DEBT_THRESHOLD)debt++;
+  }
+  return debt;
+}
+function calcProjDebt(projId){
+  const recur=ld('recur_'+projId,[]);
+  const forgiven=ld('debt_forgiven_'+projId,{});
+  const recovered=ld('debt_recovered_'+projId,{});
+  let total=0;
+  const perRecur=recur.map((_,i)=>{
+    let d=calcRecurDebt(projId,i);
+    d=Math.max(0,d-(recovered[i]||0));
+    if(forgiven[i])d=0;
+    total+=d;
+    return d;
+  });
+  // Debito da obiettivi settimanali: registrato al momento del reset se non si era al 100%
+  const weekForgiven=ld('debt_week_forgiven_'+projId,false);
+  const weekDebt=weekForgiven?0:ld('debt_week_count_'+projId,0);
+  return{total:total+weekDebt,perRecur,weekDebt};
+}
+function allProjectsDebt(){
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
+  const map={};
+  allProjs.forEach(p=>{map[p.id]=calcProjDebt(p.id).total;});
+  return map;
+}
+function recoverRecurDebt(projId,recurIdx){
+  const recovered=ld('debt_recovered_'+projId,{});
+  recovered[recurIdx]=(recovered[recurIdx]||0)+1;
+  sv('debt_recovered_'+projId,recovered);
+  renderHome();
+  if(document.getElementById('det')?.style.display!=='none')openProj(projId);
+  toast('DEBITO RECUPERATO');
+}
+function forgiveRecurDebt(projId,recurIdx){
+  modal('confirm','Perdonare questo debito? Si azzera senza recuperarlo.',()=>{
+    const forgiven=ld('debt_forgiven_'+projId,{});
+    forgiven[recurIdx]=true;
+    sv('debt_forgiven_'+projId,forgiven);
+    const recovered=ld('debt_recovered_'+projId,{});
+    delete recovered[recurIdx];
+    sv('debt_recovered_'+projId,recovered);
+    renderHome();
+    if(document.getElementById('det')?.style.display!=='none')openProj(projId);
+    toast('DEBITO PERDONATO');
+  });
+}
+function forgiveWeekDebt(projId){
+  modal('confirm','Perdonare il debito sugli obiettivi settimanali?',()=>{
+    sv('debt_week_count_'+projId,0);
+    sv('debt_week_forgiven_'+projId,false);
+    renderHome();
+    if(document.getElementById('det')?.style.display!=='none')openProj(projId);
+    toast('DEBITO PERDONATO');
+  });
+}
+
 document.getElementById('tdate').textContent=GG[D.getDay()].toUpperCase()+' '+D.getDate()+' '+MM[D.getMonth()].toUpperCase()+' '+D.getFullYear();
 
 function renderTopbar(){
@@ -1088,13 +1172,17 @@ function renderHome(){
       const td=p.hasInv?null:tasksDone(p.id);
       const age=getAge(p.id);
       const pri=getPri(p.id);
+      const projDebt=p.hasInv?0:calcProjDebt(p.id).total;
       h+=`<div class="pc" draggable="true" ondragstart="dragProjStart(event,'${p.id}')" ondragover="event.preventDefault()" ondrop="dropProjOnCard(event,'${p.id}')" onclick="openProj('${p.id}')">
         <div class="acc" style="background:${color};cursor:pointer" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)" title="Cambia colore"></div>
         <div class="pc-actions">
           <button class="pca arch" onclick="event.stopPropagation();archiveProj('${p.id}')" title="Archivia">⬇</button>
           <button class="pca" onclick="event.stopPropagation();deleteProj('${p.id}')" title="Elimina">×</button>
         </div>
-        <div class="ptag" style="color:${color};padding-right:36px">${p.tag}</div>
+        <div style="display:flex;align-items:center;gap:6px;padding-right:36px">
+          <div class="ptag" style="color:${color}">${p.tag}</div>
+          ${projDebt>0?`<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--red);background:var(--red-glow);padding:1px 6px;border-radius:10px;flex-shrink:0" title="${projDebt} debiti accumulati">⚠ ${projDebt}</span>`:''}
+        </div>
         <div style="display:flex;align-items:center;gap:11px;margin-bottom:4px">
           <div class="ring-wrap">
             ${ringSVG(pctDay,color,40,3.5)}
@@ -1492,11 +1580,11 @@ function doSearch(q){
   ld('carteInv',[]).forEach(c=>{if(c.nome.toLowerCase().includes(ql))results.push({type:'CARTA',proj:'CARTE',color:'#fb923c',text:c.nome,id:'carte'});});
   ld('vinInv',[]).forEach(v=>{if(v.nome.toLowerCase().includes(ql))results.push({type:'VINTED',proj:'VINTED',color:'#f472b6',text:v.nome,id:'vinted'});});
   ld('txLog',[]).forEach(t=>{if(t.desc&&t.desc.toLowerCase().includes(ql)){const col=t.tipo==='entrata'?'#4ade80':'#f87171';results.push({type:'TX',proj:t.tipo.toUpperCase(),color:col,text:t.desc+' — '+(t.tipo==='entrata'?'+':'−')+'€'+t.importo+' ('+t.data+')',id:null});}});
-  // Allenamento: esercizi in tutte le schede
+  // Allenamento: esercizi nel catalogo
   if(!ld('archived',[]).includes('allenamento')){
-    allGetSchede().forEach(s=>s.esercizi.forEach(es=>{
-      if(es.nome&&es.nome.toLowerCase().includes(ql))results.push({type:'ESERCIZIO',proj:'ALLENAMENTO — '+s.nome,color:'#ef4444',text:es.nome,id:'allenamento'});
-    }));
+    allGetCatalogo().forEach(ex=>{
+      if(ex.nome&&ex.nome.toLowerCase().includes(ql))results.push({type:'ESERCIZIO',proj:'ALLENAMENTO',color:'#ef4444',text:ex.nome,id:'allenamento'});
+    });
   }
   // Alimentazione: pasti in tutte le schede
   if(!ld('archived',[]).includes('alimentazione')){
@@ -1718,26 +1806,33 @@ function buildStd(p){
 
   // ── Task ricorrenti (si resettano automaticamente ogni giorno) ──
   const recurDone=recur.filter((_,i)=>recurChecks[todayKey+'_'+i]).length;
+  const projDebtInfo=calcProjDebt(id);
   h+=`<div class="slbl">Task ricorrenti
     <span style="font-size:9px;color:var(--text-faint)">${recurDone}/${recur.length} oggi</span>
   </div>
   <div class="card" id="recur-${id}">`;
   recur.forEach((t,i)=>{
     const done=!!recurChecks[todayKey+'_'+i];
-    h+=`<div class="row${done?' done':''}">
+    const debt=projDebtInfo.perRecur[i]||0;
+    h+=`<div class="row${done?' done':''}" style="flex-wrap:wrap">
       <div class="hd${done?' on':''}" onclick="ckRecur(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'${id}',this.value)">
       <span style="font-family:var(--sans);font-weight:600;font-size:8px;color:var(--text-faint);padding:0 6px;flex-shrink:0">R</span>
       <button class="xb" onclick="delRecur(${i},'${id}')">×</button>
+      ${debt>0?`<div style="width:100%;display:flex;align-items:center;gap:8px;padding:6px 0 2px 26px">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--red);background:var(--red-glow);padding:2px 7px;border-radius:8px">⚠ ${debt} saltat${debt===1?'o':'i'}</span>
+        <button onclick="recoverRecurDebt('${id}',${i})" style="font-family:var(--sans);font-size:9px;font-weight:600;color:var(--green);background:none;border:none;cursor:pointer">↩ Recupera</button>
+        <button onclick="forgiveRecurDebt('${id}',${i})" style="font-family:var(--sans);font-size:9px;font-weight:600;color:var(--text-faint);background:none;border:none;cursor:pointer">Perdona</button>
+      </div>`:''}
     </div>`;
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div>`;
 
-
   // ── Obiettivi settimanali ──
   const wDone=weekGoalChecks.filter(Boolean).length;
   h+=`<div class="slbl">Obiettivi settimana
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center">
+      ${projDebtInfo.weekDebt>0?`<span style="font-family:var(--mono);font-size:9px;color:var(--red);background:var(--red-glow);padding:2px 7px;border-radius:8px">⚠ ${projDebtInfo.weekDebt}</span><button onclick="forgiveWeekDebt('${id}')" style="font-family:var(--sans);font-size:9px;font-weight:600;color:var(--text-faint);background:none;border:none;cursor:pointer">Perdona</button>`:''}
       <span style="font-size:9px;color:var(--text-faint)">${wDone}/${weekGoals.length}</span>
       <span style="color:var(--yellow);cursor:pointer;font-size:9px" onclick="resetWeekGoals('${id}')">↺ RESET</span>
     </div>
@@ -1813,13 +1908,35 @@ function addRecur(id){
   const inp=document.getElementById('recur-inp-'+id);
   const v=inp?.value.trim();if(!v)return;
   const t=ld('recur_'+id,[]);t.push(v);sv('recur_'+id,t);
+  const created=ld('recurCreated_'+id,[]);created.push(new Date().toDateString());sv('recurCreated_'+id,created);
   if(inp)inp.value='';openProj(id);
 }
 function delRecur(i,id){
   const t=ld('recur_'+id,[]);t.splice(i,1);sv('recur_'+id,t);
+  const created=ld('recurCreated_'+id,[]);created.splice(i,1);sv('recurCreated_'+id,created);
   const ch=ld('recurChecks_'+id,{});
-  Object.keys(ch).forEach(k=>{if(k.endsWith('_'+i))delete ch[k];});
-  sv('recurChecks_'+id,ch);openProj(id);
+  const newCh={};
+  Object.keys(ch).forEach(k=>{
+    const lastUnderscore=k.lastIndexOf('_');
+    const dateKey=k.slice(0,lastUnderscore);
+    const idx=Number(k.slice(lastUnderscore+1));
+    if(idx<i)newCh[k]=ch[k];
+    else if(idx>i)newCh[dateKey+'_'+(idx-1)]=ch[k];
+    // idx===i: scartato
+  });
+  sv('recurChecks_'+id,newCh);
+  // Risincronizza anche i registri di debito (forgiven/recovered) con lo stesso shift
+  ['debt_forgiven_','debt_recovered_'].forEach(prefix=>{
+    const reg=ld(prefix+id,{});
+    const newReg={};
+    Object.keys(reg).forEach(k=>{
+      const idx=Number(k);
+      if(idx<i)newReg[k]=reg[k];
+      else if(idx>i)newReg[idx-1]=reg[k];
+    });
+    sv(prefix+id,newReg);
+  });
+  openProj(id);
 }
 
 // ── OBIETTIVI SETTIMANALI ─────────────────────────────────
@@ -1852,8 +1969,16 @@ function delWeekGoal(i,id){
 }
 function resetWeekGoals(id){
   modal('confirm','Azzerare gli obiettivi della settimana?',()=>{
-    sv('weekGoalChecks_'+id,ld('weekGoals_'+id,[]).map(()=>false));
-    openProj(id);toast('OBIETTIVI AZZERATI');
+    const goals=ld('weekGoals_'+id,[]);
+    const checks=ld('weekGoalChecks_'+id,[]);
+    const wasIncomplete=goals.length>0&&checks.filter(Boolean).length<goals.length;
+    if(wasIncomplete){
+      const debtCount=ld('debt_week_count_'+id,0);
+      sv('debt_week_count_'+id,debtCount+1);
+      sv('debt_week_forgiven_'+id,false); // nuovo debito attivo
+    }
+    sv('weekGoalChecks_'+id,goals.map(()=>false));
+    openProj(id);renderHome();toast(wasIncomplete?'OBIETTIVI AZZERATI — debito registrato':'OBIETTIVI AZZERATI');
   });
 }
 
@@ -2072,6 +2197,59 @@ function sortCarte(by){const inv=ld('carteInv',[]);inv.sort((a,b)=>b[by]-a[by]);
 // ── ALLENAMENTO ──────────────────────────────────────────
 const ALL_GG=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
 function allWeekdayIdx(date){return (date.getDay()+6)%7;} // 0=Lun .. 6=Dom
+const allNormName=s=>String(s||'').trim().toLowerCase();
+
+// ── CATALOGO ESERCIZI — fonte unica di verità per nome+storico ──
+function allGetCatalogo(){
+  const raw=ld('all_catalogo',null);
+  if(!Array.isArray(raw))return[];
+  return raw.map(e=>({
+    id:e&&e.id?e.id:('ex_'+Math.random().toString(36).slice(2,9)),
+    nome:(e&&typeof e.nome==='string')?e.nome:'Esercizio',
+    storia:(e&&Array.isArray(e.storia))?e.storia:[]
+  }));
+}
+function allFindOrCreateCatEsercizio(nome){
+  const norm=allNormName(nome);
+  const cat=allGetCatalogo();
+  let ex=cat.find(e=>allNormName(e.nome)===norm);
+  if(ex)return{id:ex.id,isNew:false};
+  const newEx={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:nome.trim(),storia:[]};
+  cat.push(newEx);
+  sv('all_catalogo',cat);
+  return{id:newEx.id,isNew:true};
+}
+function allCatEsercizioById(id){return allGetCatalogo().find(e=>e.id===id)||null;}
+function allEsercizioNome(catId){const ex=allCatEsercizioById(catId);return ex?ex.nome:'(esercizio eliminato)';}
+
+// ── SCHEDE SETTIMANALI — solo riferimenti (catId) + valori del giorno ──
+function allGetSchede(){
+  const raw=ld('all_schede',null);
+  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,esercizi:[]}));
+  schede=schede.map((s,i)=>({
+    nome:(s&&typeof s.nome==='string')?s.nome:ALL_GG[i],
+    esercizi:(s&&Array.isArray(s.esercizi))?s.esercizi.map(es=>({
+      catId:es&&es.catId?es.catId:null,
+      _legacyNome:es&&!es.catId&&es.nome?es.nome:null,
+      peso:es&&typeof es.peso==='number'?es.peso:0,
+      reps:es&&typeof es.reps==='number'?es.reps:0,
+      serie:es&&typeof es.serie==='number'?es.serie:0
+    })):[]
+  }));
+  let migrated=false;
+  schede.forEach(s=>{
+    s.esercizi.forEach(es=>{
+      if(!es.catId&&es._legacyNome){
+        const{id}=allFindOrCreateCatEsercizio(es._legacyNome);
+        es.catId=id;migrated=true;
+      }
+      delete es._legacyNome;
+    });
+  });
+  if(migrated)sv('all_schede',schede);
+  return schede;
+}
+
 function allCalcPctOggi(){
   const schede=allGetSchede();
   const todayIdx=allWeekdayIdx(new Date());
@@ -2090,24 +2268,21 @@ function alimCalcPctOggi(){
   const done=scheda.pasti.filter((_,i)=>checksOggi[todayIdx+'_'+i]).length;
   return tot?Math.round(done/tot*100):0;
 }
-function allGetSchede(){
-  const raw=ld('all_schede',null);
-  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,esercizi:[]}));
-  schede=schede.map((s,i)=>({
-    nome:(s&&typeof s.nome==='string')?s.nome:ALL_GG[i],
-    esercizi:(s&&Array.isArray(s.esercizi))?s.esercizi:[]
-  }));
-  return schede;
-}
-const allNormName=s=>String(s||'').trim().toLowerCase();
 
+// ── ROUTER vista interna: 'schede' | 'esercizio' ──
 function buildAllenamento(p){
+  const view=ld('all_view',{mode:'schede',exId:null});
+  if(view.mode==='esercizio'&&view.exId)return buildEsercizioDetail(p,view.exId);
+  return buildAllenamentoSchede(p);
+}
+
+function buildAllenamentoSchede(p){
   const schede=allGetSchede();
+  const catalogo=allGetCatalogo();
   const today=new Date();
   const todayIdx=allWeekdayIdx(today);
   const todayKey=today.toDateString();
-  const storia=ld('all_storia',{}); // {nomeNormalizzato: [{dataKey,data,peso,reps,serie}]}
-  const checksOggi=ld('all_checksOggi',{}); // {todayKey: {schedaIdx_esIdx: true}}
+  const checksOggi=ld('all_checksOggi',{});
   const selIdx=ld('all_selSchedaIdx',todayIdx);
 
   let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
@@ -2115,9 +2290,9 @@ function buildAllenamento(p){
   schede.forEach((s,i)=>{
     const isToday=i===todayIdx;
     const isSel=i===selIdx;
-    h+=`<div onclick="allSelectScheda(${i})" style="background:${isSel?'#1a2e1a':'#141414'};border:1px solid ${isSel?'#4ade80':isToday?'#4ade8055':'#2a2a2a'};border-radius:6px;padding:6px 4px;text-align:center;cursor:pointer">
-      <div style="font-family:'Space Mono',monospace;font-size:8px;color:${isToday?'#4ade80':'#666'}">${s.nome.slice(0,3).toUpperCase()}</div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:${s.esercizi.length?'#4ade80':'#333'};margin-top:2px">${s.esercizi.length||'—'}</div>
+    h+=`<div onclick="allSelectScheda(${i})" ondragover="event.preventDefault();this.style.borderColor='var(--green)'" ondragleave="this.style.borderColor=''" ondrop="allDropOnScheda(event,${i})" style="background:${isSel?'var(--green-glow)':'var(--surface2)'};border:1px solid ${isSel?'var(--green)':isToday?'var(--green-glow)':'var(--border)'};border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer">
+      <div style="font-family:var(--mono);font-size:8px;color:${isToday?'var(--green)':'var(--text-faint)'}">${s.nome.slice(0,3).toUpperCase()}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:${s.esercizi.length?'var(--green)':'var(--text-ghost)'};margin-top:2px">${s.esercizi.length||'—'}</div>
     </div>`;
   });
   h+=`</div>`;
@@ -2129,14 +2304,18 @@ function buildAllenamento(p){
   const allDone=isSelToday&&scheda.esercizi.length>0&&doneCount===scheda.esercizi.length;
 
   h+=`<div class="slbl">
-    <input id="all-nome-scheda" value="${esc(scheda.nome)}" onchange="allRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:var(--text);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed #333">
-    ${isSelToday?`<span style="font-size:9px;color:${allDone?'#4ade80':'#555'}">${doneCount}/${scheda.esercizi.length} oggi${allDone?' ✓':''}</span>`:''}
+    <input id="all-nome-scheda" value="${esc(scheda.nome)}" onchange="allRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed var(--border)">
+    ${isSelToday?`<span style="font-size:9px;color:${allDone?'var(--green)':'var(--text-faint)'}">${doneCount}/${scheda.esercizi.length} oggi${allDone?' ✓':''}</span>`:''}
   </div>
-  <div class="card" id="all-esercizi">`;
+  <div class="card" id="all-esercizi" ondragover="event.preventDefault()" ondrop="allDropOnScheda(event,${selIdx})">`;
 
+  if(!scheda.esercizi.length){
+    h+=`<div style="padding:14px;font-size:12px;color:var(--text-ghost);text-align:center">Nessun esercizio in questa scheda.<br>Aggiungine dal catalogo qui sotto.</div>`;
+  }
   scheda.esercizi.forEach((es,i)=>{
-    const key=allNormName(es.nome);
-    const hist=storia[key]||[];
+    const ex=allCatEsercizioById(es.catId);
+    const nome=ex?ex.nome:'(esercizio eliminato)';
+    const hist=ex?ex.storia:[];
     const last=hist[hist.length-1];
     const curPeso=last?last.peso:es.peso||0;
     const curReps=last?last.reps:es.reps||0;
@@ -2144,22 +2323,18 @@ function buildAllenamento(p){
     const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
     h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:center">
       ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
-      <input class="rt" value="${esc(es.nome)}" onchange="allEdEsercizio(${selIdx},${i},'nome',this.value)" style="flex:1 1 140px;min-width:120px">
-      <input type="number" value="${curSerie}" placeholder="serie" id="all-serie-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'serie',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:'Space Mono',monospace">
+      <span class="rt" style="flex:1 1 140px;min-width:120px;color:${ex?'var(--text)':'var(--red)'};cursor:${ex?'pointer':'default'}" ${ex?`onclick="allOpenEsercizio('${es.catId}')"`:''}>${esc(nome)}</span>
+      <input type="number" value="${curSerie}" placeholder="serie" id="all-serie-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'serie',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
       <span style="color:var(--text-ghost);font-size:11px">×</span>
-      <input type="number" value="${curReps}" placeholder="reps" id="all-reps-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'reps',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:'Space Mono',monospace">
-      <input type="number" value="${curPeso}" placeholder="kg" id="all-peso-${selIdx}-${i}" onchange="allEdEsercizio(${selIdx},${i},'peso',this.value)" style="width:54px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--green);text-align:center;font-family:'Space Mono',monospace">
-      <span style="font-size:9px;color:var(--text-ghost);font-family:'Space Mono',monospace">kg</span>
-      <button class="xb" onclick="allDelEsercizio(${selIdx},${i})">×</button>
-      ${hist.length?`<button onclick="allToggleHist('${key.replace(/'/g,"\\'")}')" style="font-family:'Space Mono',monospace;font-size:9px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0 4px" title="Storico pesi">📈</button>`:''}
-      <div id="all-hist-${i}" style="display:none;width:100%;font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);padding-top:4px">
-        ${hist.slice(-8).map(h2=>`<span style="margin-right:8px">${h2.data}: ${h2.peso}kg×${h2.reps}×${h2.serie}</span>`).join('')||'nessuno storico'}
-      </div>
+      <input type="number" value="${curReps}" placeholder="reps" id="all-reps-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'reps',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
+      <input type="number" value="${curPeso}" placeholder="kg" id="all-peso-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'peso',this.value)" style="width:54px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--green);text-align:center;font-family:var(--mono)">
+      <span style="font-size:9px;color:var(--text-ghost);font-family:var(--mono)">kg</span>
+      <button class="xb" onclick="allDelEsercizio(${selIdx},${i})" style="flex-shrink:0">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="all-ex-inp" placeholder="+ esercizio…" onkeydown="if(event.key==='Enter')allAddEsercizio(${selIdx})"><button class="abtn" onclick="allAddEsercizio(${selIdx})">+ ADD</button></div></div>`;
+  h+=`<div class="arow"><button class="abtn" onclick="allOpenPicker(${selIdx})" style="width:100%;text-align:center">+ AGGIUNGI DAL CATALOGO</button></div></div>`;
 
-  // Streak / settimana — conta i giorni in cui TUTTI gli esercizi della scheda del giorno sono stati completati
+  // Streak settimana
   let weekDone=0;
   for(let i=0;i<7;i++){
     const d=new Date(today);d.setDate(today.getDate()-i);
@@ -2171,67 +2346,212 @@ function buildAllenamento(p){
   }
   h+=`<div class="slbl">ULTIMI 7 GIORNI</div>
   <div class="card" style="padding:14px;text-align:center">
-    <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:${p.color}">${weekDone}/7</div>
+    <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${p.color}">${weekDone}/7</div>
     <div style="font-size:11px;color:var(--text-faint);margin-top:4px">allenamenti completati</div>
   </div>`;
+
+  // ── Catalogo esercizi — libreria, gestione separata ──
+  h+=`<div class="slbl">CATALOGO ESERCIZI <span style="font-size:9px;color:var(--text-ghost)">${catalogo.length} totali · trascina su una scheda</span></div>
+  <div class="arow"><input class="ain" id="all-new-ex-inp" placeholder="+ nuovo esercizio nel catalogo…" onkeydown="if(event.key==='Enter')allCreateCatEsercizio()"><button class="abtn" onclick="allCreateCatEsercizio()">+ ADD</button></div>
+  <div class="card" style="margin-top:6px">`;
+  if(!catalogo.length){
+    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessun esercizio ancora. Crea il tuo primo esercizio qui sopra.</div>`;
+  } else {
+    catalogo.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(ex=>{
+      const usedIn=schede.filter(s=>s.esercizi.some(e=>e.catId===ex.id)).length;
+      h+=`<div class="row" draggable="true" ondragstart="allDragStart(event,'${ex.id}')" style="cursor:grab">
+        <span class="drag-handle">⠿</span>
+        <span class="rt" style="cursor:pointer" onclick="allOpenEsercizio('${ex.id}')">${esc(ex.nome)}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${usedIn?usedIn+' sched.':'inutilizzato'}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);flex-shrink:0">${ex.storia.length} sess.</span>
+        <button class="xb" onclick="allDelCatEsercizio('${ex.id}')" title="Elimina dal catalogo">×</button>
+      </div>`;
+    });
+  }
+  h+=`</div>`;
 
   h+=goalsH('allenamento',ld('goals_allenamento',[]),ld('gchecks_allenamento',[]),p.color);
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_allenamento',this.value);toast()">${ld('note_allenamento','')}</textarea>`;
   return h;
 }
 
+// ── VISTA DETTAGLIO ESERCIZIO — grafico storico pesi ──
+function buildEsercizioDetail(p,exId){
+  const ex=allCatEsercizioById(exId);
+  if(!ex){sv('all_view',{mode:'schede',exId:null});return buildAllenamentoSchede(p);}
+  const hist=ex.storia;
+  const last=hist[hist.length-1];
+  const maxPeso=hist.length?Math.max(...hist.map(h=>h.peso)):0;
+  const minPeso=hist.length?Math.min(...hist.map(h=>h.peso)):0;
+
+  let h=`<button class="back" onclick="allCloseEsercizio()" style="margin-bottom:14px">← TORNA ALLE SCHEDE</button>
+  <div class="slbl" style="margin-top:0">
+    <input value="${esc(ex.nome)}" onchange="allRenameCatEsercizio('${ex.id}',this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:16px;font-weight:700;outline:none;border-bottom:1px dashed var(--border);flex:1">
+  </div>`;
+
+  h+=`<div class="isg" style="margin-bottom:1rem">
+    <div class="ist"><div class="istl">Sessioni</div><div class="istv">${hist.length}</div></div>
+    <div class="ist"><div class="istl">Ultimo peso</div><div class="istv pos">${last?last.peso+'kg':'—'}</div></div>
+    <div class="ist"><div class="istl">Max</div><div class="istv" style="color:var(--green)">${maxPeso?maxPeso+'kg':'—'}</div></div>
+    <div class="ist"><div class="istl">Min</div><div class="istv" style="color:var(--text-faint)">${minPeso?minPeso+'kg':'—'}</div></div>
+  </div>`;
+
+  h+=`<div class="slbl">PROGRESSIONE PESO</div>
+  <div class="card" style="padding:14px">`;
+  if(hist.length<2){
+    h+=`<div style="text-align:center;padding:20px 0;font-size:12px;color:var(--text-ghost)">Servono almeno 2 sessioni per il grafico.<br>Sessioni registrate: ${hist.length}.</div>`;
+  } else {
+    h+=`<canvas id="ex-chart-${ex.id}" width="500" height="180"></canvas>`;
+  }
+  h+=`</div>`;
+
+  h+=`<div class="slbl">STORICO SESSIONI</div><div class="card">`;
+  if(!hist.length){
+    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessuna sessione registrata ancora. Spuntalo in una scheda per registrare la prima.</div>`;
+  } else {
+    hist.slice().reverse().forEach(s2=>{
+      h+=`<div class="row">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint);width:70px;flex-shrink:0">${s2.data}</span>
+        <span class="rt">${s2.peso}kg × ${s2.reps} reps × ${s2.serie} serie</span>
+      </div>`;
+    });
+  }
+  h+=`</div>`;
+
+  h+=`<div class="arow" style="margin-top:1rem;border-top:none"><button class="abtn" onclick="allDelCatEsercizio('${ex.id}')" style="color:var(--red)">ELIMINA QUESTO ESERCIZIO DAL CATALOGO</button></div>`;
+
+  setTimeout(()=>{
+    if(hist.length>=2){
+      const canvas=document.getElementById('ex-chart-'+ex.id);
+      if(canvas){
+        new Chart(canvas,{type:'line',data:{labels:hist.map(s2=>s2.data),datasets:[{data:hist.map(s2=>s2.peso),borderColor:p.color,backgroundColor:p.color+'22',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:p.color}]},options:{responsive:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'#888',font:{size:9},callback:v=>v+'kg'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+      }
+    }
+  },50);
+
+  return h;
+}
+function allOpenEsercizio(exId){sv('all_view',{mode:'esercizio',exId});openProj('allenamento');}
+function allCloseEsercizio(){sv('all_view',{mode:'schede',exId:null});openProj('allenamento');}
+
 function allSelectScheda(i){sv('all_selSchedaIdx',i);openProj('allenamento');}
 function allRenameScheda(i,v){
   const schede=allGetSchede();
   schede[i].nome=v;sv('all_schede',schede);toast();
 }
-function allAddEsercizio(schedaIdx){
-  const inp=document.getElementById('all-ex-inp');
+
+// ── GESTIONE CATALOGO ──
+function allCreateCatEsercizio(){
+  const inp=document.getElementById('all-new-ex-inp');
   const nome=inp?.value.trim();if(!nome)return;
-  const schede=allGetSchede();
-  schede[schedaIdx].esercizi.push({nome,peso:0,reps:0,serie:0});
-  sv('all_schede',schede);
+  const{isNew}=allFindOrCreateCatEsercizio(nome);
   if(inp)inp.value='';
   openProj('allenamento');
+  toast(isNew?'ESERCIZIO CREATO':'Esiste già nel catalogo');
 }
-function allEdEsercizio(schedaIdx,i,k,v){
+function allRenameCatEsercizio(id,nuovoNome){
+  nuovoNome=nuovoNome.trim();if(!nuovoNome)return;
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.nome=nuovoNome;
+  sv('all_catalogo',cat);
+  toast('RINOMINATO — storico conservato');
+  openProj('allenamento');
+}
+function allDelCatEsercizio(id){
+  modal('confirm','Eliminare questo esercizio dal catalogo? Verrà rimosso da tutte le schede e perderai lo storico pesi.',()=>{
+    const cat=allGetCatalogo().filter(e=>e.id!==id);
+    sv('all_catalogo',cat);
+    const schede=allGetSchede();
+    schede.forEach(s=>{s.esercizi=s.esercizi.filter(e=>e.catId!==id);});
+    sv('all_schede',schede);
+    sv('all_view',{mode:'schede',exId:null});
+    openProj('allenamento');toast('ELIMINATO DAL CATALOGO');
+  });
+}
+
+// ── PICKER MULTIPLO: aggiungi più esercizi a una scheda ──
+function allOpenPicker(schedaIdx){
+  const cat=allGetCatalogo();
+  if(!cat.length){toast('Crea prima qualche esercizio nel catalogo');return;}
   const schede=allGetSchede();
-  const es=schede[schedaIdx].esercizi[i];
-  if(k==='nome')es.nome=v;
-  else es[k]=parseFloat(v)||0;
+  const presentIds=new Set(schede[schedaIdx].esercizi.map(e=>e.catId));
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const list=cat.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).map(ex=>{
+    const already=presentIds.has(ex.id);
+    return `<label style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border-soft);cursor:${already?'default':'pointer'};opacity:${already?.4:1}">
+      <input type="checkbox" data-exid="${ex.id}" ${already?'checked disabled':''} style="width:16px;height:16px;accent-color:var(--green)">
+      <span style="flex:1;font-size:13px;color:var(--text)">${esc(ex.nome)}</span>
+      ${already?'<span style="font-size:9px;color:var(--text-ghost);font-family:var(--mono)">già presente</span>':''}
+    </label>`;
+  }).join('');
+  ov.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:12px;padding:18px;max-width:380px;width:100%;max-height:75vh;display:flex;flex-direction:column">
+    <div style="font-family:var(--sans);font-weight:700;font-size:13px;color:var(--text);margin-bottom:10px">Aggiungi esercizi alla scheda</div>
+    <div style="overflow-y:auto;flex:1" id="all-picker-list">${list}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+      <button id="all-picker-ok" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">AGGIUNGI</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#all-picker-ok').onclick=()=>{
+    const checked=[...ov.querySelectorAll('input[type=checkbox]:checked:not(:disabled)')].map(c=>c.dataset.exid);
+    if(checked.length){
+      const s2=allGetSchede();
+      checked.forEach(catId=>s2[schedaIdx].esercizi.push({catId,peso:0,reps:0,serie:0}));
+      sv('all_schede',s2);
+      toast(checked.length+' esercizi aggiunti');
+    }
+    ov.remove();
+    openProj('allenamento');
+  };
+}
+
+// ── DRAG & DROP dal catalogo alla scheda ──
+let _allDragExId=null;
+function allDragStart(e,exId){_allDragExId=exId;e.dataTransfer.effectAllowed='copy';}
+function allDropOnScheda(e,schedaIdx){
+  e.preventDefault();
+  e.currentTarget.style.borderColor='';
+  if(!_allDragExId)return;
+  const schede=allGetSchede();
+  if(schede[schedaIdx].esercizi.some(es=>es.catId===_allDragExId)){
+    toast('Esercizio già presente in questa scheda');
+    _allDragExId=null;return;
+  }
+  schede[schedaIdx].esercizi.push({catId:_allDragExId,peso:0,reps:0,serie:0});
+  sv('all_schede',schede);
+  _allDragExId=null;
+  openProj('allenamento');
+  toast('AGGIUNTO ALLA SCHEDA');
+}
+
+function allEdValori(schedaIdx,i,k,v){
+  const schede=allGetSchede();
+  schede[schedaIdx].esercizi[i][k]=parseFloat(v)||0;
   sv('all_schede',schede);toast();
 }
 function allDelEsercizio(schedaIdx,i){
   const schede=allGetSchede();
   schede[schedaIdx].esercizi.splice(i,1);
   sv('all_schede',schede);
-  // Pulisce i check di oggi per questo esercizio e shifta gli indici successivi
   const checksOggi=ld('all_checksOggi',{});
   Object.keys(checksOggi).forEach(dateKey=>{
     const day=checksOggi[dateKey];
     const newDay={};
     Object.keys(day).forEach(k=>{
-      const [sIdx,eIdx]=k.split('_').map(Number);
+      const[sIdx,eIdx]=k.split('_').map(Number);
       if(sIdx!==schedaIdx)newDay[k]=day[k];
       else if(eIdx<i)newDay[k]=day[k];
       else if(eIdx>i)newDay[sIdx+'_'+(eIdx-1)]=day[k];
-      // eIdx===i: scartato (era l'esercizio eliminato)
     });
     checksOggi[dateKey]=newDay;
   });
   sv('all_checksOggi',checksOggi);
   openProj('allenamento');
 }
-function allToggleHist(key){
-  // Trova l'indice riga corrispondente al nome corrente per mostrare/nascondere
-  document.querySelectorAll('[id^="all-hist-"]').forEach(el=>{
-    const row=el.closest('.row');
-    const nameInput=row?.querySelector('.rt');
-    if(nameInput&&allNormName(nameInput.value)===key){
-      el.style.display=el.style.display==='none'?'block':'none';
-    }
-  });
-}
+
 function allToggleCheck(schedaIdx,i){
   const schede=allGetSchede();
   const es=schede[schedaIdx].esercizi[i];
@@ -2239,18 +2559,17 @@ function allToggleCheck(schedaIdx,i){
   const checksOggi=ld('all_checksOggi',{});
   if(!checksOggi[todayKey])checksOggi[todayKey]={};
   const isChecked=!!checksOggi[todayKey][schedaIdx+'_'+i];
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===es.catId);
 
   if(isChecked){
-    // Annulla: rimuove l'ultima entry di storico per questo esercizio di oggi
     delete checksOggi[todayKey][schedaIdx+'_'+i];
-    const key=allNormName(es.nome);
-    const storia=ld('all_storia',{});
-    const hist=storia[key]||[];
-    if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
-    storia[key]=hist;
-    sv('all_storia',storia);
+    if(ex){
+      const hist=ex.storia;
+      if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
+      sv('all_catalogo',cat);
+    }
   } else {
-    // Legge i valori attuali dai campi input nel DOM
     const serieEl=document.getElementById(`all-serie-${schedaIdx}-${i}`);
     const repsEl=document.getElementById(`all-reps-${schedaIdx}-${i}`);
     const pesoEl=document.getElementById(`all-peso-${schedaIdx}-${i}`);
@@ -2260,12 +2579,10 @@ function allToggleCheck(schedaIdx,i){
     es.serie=serie;es.reps=reps;es.peso=peso;
     sv('all_schede',schede);
 
-    const key=allNormName(es.nome);
-    const storia=ld('all_storia',{});
-    const hist=storia[key]||[];
-    hist.push({dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso,reps,serie});
-    storia[key]=hist;
-    sv('all_storia',storia);
+    if(ex){
+      ex.storia.push({dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso,reps,serie});
+      sv('all_catalogo',cat);
+    }
     checksOggi[todayKey][schedaIdx+'_'+i]=true;
   }
   sv('all_checksOggi',checksOggi);
@@ -2840,6 +3157,36 @@ function renderSpese(){const el=document.getElementById('spg');if(!el)return;con
 function renderSpeseGen(){
   const el=document.getElementById('spese-gen-list');if(!el)return;
   const list=ld('speseGen',[]);
+
+  // ── Widget countdown piani rate attivi ──
+  const planEl=document.getElementById('spese-gen-plans');
+  if(planEl){
+    const plans={};
+    list.forEach(s=>{if(s.planId){if(!plans[s.planId])plans[s.planId]=[];plans[s.planId].push(s);}});
+    const activePlans=Object.entries(plans).filter(([_,items])=>items.some(s=>!s.paid));
+    if(!activePlans.length){planEl.innerHTML='';}
+    else{
+      planEl.innerHTML=activePlans.map(([planId,items])=>{
+        const tot=items[0].planTot;
+        const paid=items.filter(s=>s.paid).length;
+        const remaining=tot-paid;
+        const next=items.find(s=>!s.paid);
+        const baseName=items[0].nome.replace(/\s*\(\d+\/\d+\)$/,'');
+        const pct=Math.round(paid/tot*100);
+        return `<div class="fc" style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-family:var(--sans);font-weight:600;font-size:12px;color:var(--text)">${esc(baseName)}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint)">${paid}/${tot} pagate</span>
+          </div>
+          <div class="pb" style="margin-bottom:6px"><div class="pbf" style="width:${pct}%;background:var(--blue)"></div></div>
+          <div style="font-size:11px;color:var(--text-faint)">
+            ${next?`Prossima: <span style="color:var(--text)">€${next.v}</span> il <span style="color:var(--text)">${next.data}</span> · ${remaining} rate rimanenti`:'Completato'}
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
   if(!list.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuna spesa generale.</div>';return;}
   el.innerHTML=list.map((s,i)=>`
     <div class="fr2" style="${isScaduta(s.data)?'border-left:2px solid #f87171;padding-left:8px':''}">
@@ -2863,6 +3210,57 @@ function addSpeseGen(){
   document.getElementById('sg-val').value='';
   document.getElementById('sg-data').value='';
   renderSpeseGen();renderTopbar();toast();
+}
+function openRatePlanModal(){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  ov.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:12px;padding:18px;max-width:340px;width:100%">
+    <div style="font-family:var(--sans);font-weight:700;font-size:13px;color:var(--text);margin-bottom:12px">Crea piano rate</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <input id="rp-nome" placeholder="Nome (es. Prestito zia)" style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);outline:none">
+      <div style="display:flex;gap:8px">
+        <input id="rp-importo" type="number" placeholder="€ per rata" style="flex:1;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);outline:none">
+        <input id="rp-numero" type="number" placeholder="N. rate" value="10" style="width:80px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);outline:none">
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-faint);margin-bottom:4px">Prima rata il</div>
+        <input id="rp-data" type="date" style="width:100%;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);outline:none">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+      <button id="rp-ok" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">CREA RATE</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  const today=new Date();
+  document.getElementById('rp-data').value=today.toISOString().slice(0,10);
+  ov.querySelector('#rp-ok').onclick=()=>{
+    const nome=document.getElementById('rp-nome').value.trim();
+    const importo=parseFloat(document.getElementById('rp-importo').value)||0;
+    const numero=parseInt(document.getElementById('rp-numero').value)||0;
+    const dataStr=document.getElementById('rp-data').value;
+    if(!nome||!importo||!numero||!dataStr){toast('Compila tutti i campi');return;}
+    const startDate=new Date(dataStr+'T00:00:00');
+    const startDay=startDate.getDate();
+    const planId='plan_'+Date.now();
+    const list=ld('speseGen',[]);
+    for(let i=0;i<numero;i++){
+      const targetMonth=startDate.getMonth()+i;
+      const targetYear=startDate.getFullYear()+Math.floor(targetMonth/12);
+      const normMonth=((targetMonth%12)+12)%12;
+      // Usa l'ultimo giorno del mese se il giorno di partenza non esiste in quel mese (es. 31 in febbraio)
+      const lastDayOfMonth=new Date(targetYear,normMonth+1,0).getDate();
+      const day=Math.min(startDay,lastDayOfMonth);
+      const d=new Date(targetYear,normMonth,day);
+      const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yyyy=d.getFullYear();
+      list.push({nome:nome+' ('+(i+1)+'/'+numero+')',v:importo,data:`${dd}/${mm}/${yyyy}`,paid:false,planId,planIdx:i+1,planTot:numero});
+    }
+    sv('speseGen',list);
+    ov.remove();
+    renderSpeseGen();renderTopbar();
+    toast(numero+' rate create');
+  };
 }
 function ckSpeseGen(i){
   const s=ld('speseGen',[]);
@@ -3034,7 +3432,7 @@ function renderTodayFocus(){
         const isChecked=!!checksOggi[todayIdx+'_'+i];
         h+=`<div class="row${isChecked?' done':''}">
           <div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${todayIdx},${i})" style="margin:0;flex-shrink:0"></div>
-          <span class="rt" style="color:${isChecked?'#444':'#ccc'}">${esc(es.nome)}</span>
+          <span class="rt" style="color:${isChecked?'#444':'#ccc'}">${esc(allEsercizioNome(es.catId))}</span>
           <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${es.peso||0}kg×${es.reps||0}×${es.serie||0}</span>
         </div>`;
       });
