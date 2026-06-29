@@ -117,7 +117,11 @@ body{
   background-image:var(--bg-grad);
   background-attachment:fixed;
   color:var(--text);font-family:var(--sans);
-  padding:max(1.25rem,env(safe-area-inset-top)) max(1.25rem,env(safe-area-inset-right)) max(1.25rem,env(safe-area-inset-bottom)) max(1.25rem,env(safe-area-inset-left));
+  padding:1.25rem;
+  padding-top:calc(1.25rem + env(safe-area-inset-top, 0px));
+  padding-right:calc(1.25rem + env(safe-area-inset-right, 0px));
+  padding-bottom:calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  padding-left:calc(1.25rem + env(safe-area-inset-left, 0px));
   -webkit-font-smoothing:antialiased;
   min-height:100vh;min-height:100dvh;
   overscroll-behavior-y:none;
@@ -339,10 +343,13 @@ textarea::placeholder{color:var(--text-ghost);}
 /* ── STICKY TABS — pill nav con glow ── */
 .tabs{
   display:flex;gap:7px;margin-bottom:1.1rem;position:sticky;
-  top:0;top:env(safe-area-inset-top,0px);
+  top:-1.25rem;
+  top:calc(-1.25rem - env(safe-area-inset-top, 0px));
   z-index:100;
   background:var(--glass);backdrop-filter:blur(16px);
-  padding:11px 0 11px 2px;margin:-11px -2px 1.1rem;
+  padding:11px 0 11px 2px;
+  padding-top:calc(11px + env(safe-area-inset-top, 0px));
+  margin-left:-2px;
 }
 .tab{
   font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 17px;border-radius:10px;
@@ -874,17 +881,22 @@ const getPri=id=>{const p=ld('proj_pri_'+id,'none');return p==='high'?{dot:'#f87
 const DEBT_THRESHOLD=2; // giorni consecutivi prima che inizi a contare
 const DEBT_LOOKBACK=21; // non scandagliare più indietro di N giorni
 
+function getDebtSystemActivationDate(){
+  let activated=ld('debt_system_activated',null);
+  if(!activated){
+    activated=new Date().toDateString();
+    sv('debt_system_activated',activated);
+  }
+  return activated;
+}
 function calcRecurDebt(projId,recurIdx){
   const recurCh=ld('recurChecks_'+projId,{});
-  const created=ld('recurCreated_'+projId,[])[recurIdx];
+  const created=ld('recurCreated_'+projId,[])[recurIdx]||getDebtSystemActivationDate();
   const today=new Date();today.setHours(0,0,0,0);
-  // Limita il lookback alla data di creazione: task ricorrenti vecchie/senza data salvata usano il lookback standard (retrocompat)
-  let maxLookback=DEBT_LOOKBACK;
-  if(created){
-    const createdDate=new Date(created);createdDate.setHours(0,0,0,0);
-    const daysSinceCreated=Math.floor((today-createdDate)/86400000);
-    maxLookback=Math.min(DEBT_LOOKBACK,daysSinceCreated);
-  }
+  // Il lookback non risale mai prima della creazione della ricorrente NÉ prima dell'attivazione del sistema debiti
+  const createdDate=new Date(created);createdDate.setHours(0,0,0,0);
+  const daysSinceCreated=Math.floor((today-createdDate)/86400000);
+  const maxLookback=Math.max(0,Math.min(DEBT_LOOKBACK,daysSinceCreated));
   let missedStreak=0,debt=0;
   for(let i=1;i<=maxLookback;i++){
     const d=new Date(today);d.setDate(today.getDate()-i);
