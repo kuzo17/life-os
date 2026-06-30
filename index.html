@@ -343,13 +343,11 @@ textarea::placeholder{color:var(--text-ghost);}
 /* ── STICKY TABS — pill nav con glow ── */
 .tabs{
   display:flex;gap:7px;margin-bottom:1.1rem;position:sticky;
-  top:-1.25rem;
-  top:calc(-1.25rem - env(safe-area-inset-top, 0px));
+  top:0;
   z-index:100;
   background:var(--glass);backdrop-filter:blur(16px);
   padding:11px 0 11px 2px;
-  padding-top:calc(11px + env(safe-area-inset-top, 0px));
-  margin-left:-2px;
+  margin:0 0 1.1rem -2px;
 }
 .tab{
   font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 17px;border-radius:10px;
