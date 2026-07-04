@@ -4088,7 +4088,27 @@ function updateQCPreview(){
   const fallbackKey=document.getElementById('qc-date').value;
   const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
   if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
+  const DAY_NAMES_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
   const rows=lines.map(l=>{
+    if(isQCAllenamento(l)){
+      const p=qcParseAllenamento(l);
+      if(p)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">💪 ${DAY_NAMES_IT[p.dayIdx]}</span>
+        <span style="color:var(--text-faint)">ALLENAMENTO</span>
+        <span style="color:var(--text);flex:1">${p.nome} ${p.serie?p.serie+'×'+p.reps:''} ${p.peso?p.peso+'kg':''}</span>
+      </div>`;
+    }
+    if(isQCAlimentazione(l)){
+      const p=qcParseAlimentazione(l);
+      if(p){
+        const SLOT_NAMES=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
+        return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+          <span style="color:var(--orange);min-width:80px;flex-shrink:0">🥗 ${DAY_NAMES_IT[p.dayIdx]}</span>
+          <span style="color:var(--text-faint)">ALIMENTAZIONE</span>
+          <span style="color:var(--text);flex:1">${SLOT_NAMES[p.slotIdx]}: ${p.cibo}</span>
+        </div>`;
+      }
+    }
     const p=parseQCLine(l,allProjs);
     const dateLabel=p.isRecur?'ricorrente':_qcDateLabel(p.targetDate||fallbackDate);
     const projLabel=p.proj?`<span style="color:${p.proj.color};font-weight:700">${p.proj.tag}</span>`:`<span style="color:var(--text-ghost)">nessun progetto</span>`;
@@ -4102,6 +4122,69 @@ function updateQCPreview(){
   document.getElementById('qc-preview').innerHTML=rows.join('');
 }
 
+// ── QC: parser allenamento ──
+// Sintassi: "squat 4x10 80kg #lunedì" o "squat 4x10 80kg" (oggi)
+function qcParseAllenamento(line){
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  let text=line.trim();
+  let dayIdx=allWeekdayIdx(new Date());
+  // Estrai #giorno
+  const dayMatch=text.match(/#(\w+)/i);
+  if(dayMatch){
+    const d=dayMatch[1].toLowerCase();
+    if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
+    text=text.replace(dayMatch[0],'').trim();
+  }
+  // Estrai NxM (serie x reps)
+  const srMatch=text.match(/(\d+)[x×](\d+)/i);
+  const serie=srMatch?parseInt(srMatch[1]):0;
+  const reps=srMatch?parseInt(srMatch[2]):0;
+  if(srMatch)text=text.replace(srMatch[0],'').trim();
+  // Estrai peso (numero seguito da kg o solo numero alla fine)
+  const pesoMatch=text.match(/(\d+(?:\.\d+)?)\s*kg?/i);
+  const peso=pesoMatch?parseFloat(pesoMatch[1]):0;
+  if(pesoMatch)text=text.replace(pesoMatch[0],'').trim();
+  const nome=text.trim();
+  if(!nome)return null;
+  return{nome,serie,reps,peso,dayIdx};
+}
+
+// Sintassi: "pranzo: riso e pollo #lunedì" o "pranzo: riso e pollo"
+function qcParseAlimentazione(line){
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  const SLOT_MAP={colazione:0,spuntino1:1,'spuntino 1':1,pranzo:2,spuntino2:3,'spuntino 2':3,cena:4};
+  let text=line.trim();
+  let dayIdx=allWeekdayIdx(new Date());
+  const dayMatch=text.match(/#(\w+)/i);
+  if(dayMatch){
+    const d=dayMatch[1].toLowerCase();
+    if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
+    text=text.replace(dayMatch[0],'').trim();
+  }
+  // Cerca "slot: cibo"
+  const colonIdx=text.indexOf(':');
+  if(colonIdx<0)return null;
+  const slotRaw=text.slice(0,colonIdx).trim().toLowerCase();
+  const cibo=text.slice(colonIdx+1).trim();
+  if(!cibo)return null;
+  const slotIdx=SLOT_MAP[slotRaw];
+  if(slotIdx===undefined)return null;
+  return{slotIdx,cibo,dayIdx};
+}
+
+function isQCAllenamento(line){
+  // Ha formato NxM o Nkg e NON ha ":"
+  return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
+}
+function isQCAlimentazione(line){
+  // Ha formato "slot: cibo"
+  const SLOTS=['colazione','pranzo','cena','spuntino'];
+  const colonIdx=line.indexOf(':');
+  if(colonIdx<0)return false;
+  const slot=line.slice(0,colonIdx).trim().toLowerCase();
+  return SLOTS.some(s=>slot.startsWith(s));
+}
+
 function submitQC(){
   const allProjs=[...PD,...ld('customProjs',[])];
   const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
@@ -4110,7 +4193,56 @@ function submitQC(){
   const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
   let added=0,recurs=0;
   const byDate={};
+  let allenamento_added=0,alimentazione_added=0;
   lines.forEach(line=>{
+    // Prova allenamento
+    if(isQCAllenamento(line)){
+      const parsed=qcParseAllenamento(line);
+      if(parsed){
+        const schede=allGetSchede();
+        const scheda=schede[parsed.dayIdx];
+        // Cerca o crea esercizio nel catalogo
+        const{id:catId}=allFindOrCreateCatEsercizio(parsed.nome);
+        // Cerca esercizio nella scheda
+        let esIdx=scheda.esercizi.findIndex(e=>e.catId===catId);
+        if(esIdx<0){
+          scheda.esercizi.push({catId,peso:parsed.peso,reps:parsed.reps,serie:parsed.serie});
+          esIdx=scheda.esercizi.length-1;
+        } else {
+          if(parsed.peso)scheda.esercizi[esIdx].peso=parsed.peso;
+          if(parsed.reps)scheda.esercizi[esIdx].reps=parsed.reps;
+          if(parsed.serie)scheda.esercizi[esIdx].serie=parsed.serie;
+        }
+        sv('all_schede',schede);
+        // Se è oggi, registra anche nello storico
+        const todayIdxNow=allWeekdayIdx(new Date());
+        if(parsed.dayIdx===todayIdxNow&&(parsed.peso||parsed.reps||parsed.serie)){
+          const cat=allGetCatalogo();
+          const ex=cat.find(e=>e.id===catId);
+          if(ex){
+            const todayKey=new Date().toDateString();
+            ex.storia=ex.storia||[];
+            const existing=ex.storia.findIndex(s=>s.dataKey===todayKey);
+            const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso:parsed.peso,reps:parsed.reps,serie:parsed.serie};
+            if(existing>=0)ex.storia[existing]=entry;else ex.storia.push(entry);
+            sv('all_catalogo',cat);
+          }
+        }
+        allenamento_added++;
+        return;
+      }
+    }
+    // Prova alimentazione
+    if(isQCAlimentazione(line)){
+      const parsed=qcParseAlimentazione(line);
+      if(parsed){
+        const schede=alimGetSchede();
+        schede[parsed.dayIdx].pasti[parsed.slotIdx].testo=parsed.cibo;
+        sv('alim_schede',schede);
+        alimentazione_added++;
+        return;
+      }
+    }
     const{text,projId,isRecur,targetDate}=parseQCLine(line,allProjs);
     if(!text)return;
     if(isRecur&&projId){
@@ -4133,7 +4265,7 @@ function submitQC(){
   closeQC();
   const agendaTab=document.getElementById('tab-agenda');
   if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
-  const msg=[added?`⚡ ${added} in agenda`:'',recurs?`↺ ${recurs} ricorrenti`:''].filter(Boolean).join(' · ');
+  const msg=[added?`⚡ ${added} in agenda`:'',recurs?`↺ ${recurs} ricorrenti`:'',allenamento_added?`💪 ${allenamento_added} esercizi`:'',alimentazione_added?`🥗 ${alimentazione_added} pasti`:''].filter(Boolean).join(' · ');
   toast(msg||'⚡ fatto');
 }
 
