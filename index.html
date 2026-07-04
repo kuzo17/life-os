@@ -3600,7 +3600,9 @@ function renderTodayFocus(){
   const todayKey=new Date().toDateString();
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
   const agendaKey_today='agenda_'+today.toISOString().slice(0,10);
-  // Calcola summary per N3
+  const _archivedProjs=ld('archived',[]);
+
+  // Summary 3 numeri
   let _sumOpen=0,_sumDone=0;
   allProjs.forEach(p=>{
     const recur=ld('recur_'+p.id,[]);
@@ -3612,24 +3614,31 @@ function renderTodayFocus(){
   const _habits=ld('habits',[]),_habDots=ld('habitDots',[]);
   const _todayDow2=(new Date().getDay()+6)%7;
   const _habDone=_habits.filter((_,i)=>(_habDots[i]||[])[_todayDow2]).length;
-  const _sumTot=_sumOpen+_sumDone;
-  const _pct=_sumTot?Math.round(_sumDone/_sumTot*100):0;
+
   let h='<div style="margin-bottom:1rem">';
-  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${_sumOpen?'var(--red)':'var(--green)'}">${_sumOpen}</div>
-      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">da fare</div>
+
+  // Summary bar
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${_sumOpen?'var(--red)':'var(--green)'}">${_sumOpen}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:2px">da fare</div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green)">${_sumDone}</div>
-      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">fatte</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">${_sumDone}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:2px">fatte</div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
-      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--yellow)">${_habDone}/${_habits.length}</div>
-      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">abitudini</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--yellow)">${_habDone}/${_habits.length}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:2px">abitudini</div>
     </div>
   </div>`;
-  h+='<div class="oggi-2col"><div>'; // col sinistra
+
+  // Layout 2 colonne
+  h+='<div class="oggi-2col">';
+
+  // ── COLONNA SINISTRA: task compatte ──
+  h+='<div style="min-width:0">';
+
   let totalOpen=0,totalDone=0;
   allProjs.forEach(p=>{
     const color=ld('proj_color_'+p.id,p.color);
@@ -3637,141 +3646,151 @@ function renderTodayFocus(){
     const recurCh=ld('recurChecks_'+p.id,{});
     const agTasks=getAgendaDay(today).filter(t=>t.projId===p.id);
     if(!recur.length&&!agTasks.length)return;
-    const allT=[...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i})),...agTasks.map((t,i)=>({text:t.text,done:t.done,_type:'agenda',_i:allProjs.indexOf(p),_ai:i}))];
+    const allT=[
+      ...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i})),
+      ...agTasks.map((t,i)=>({text:t.text,done:t.done,_type:'agenda',_ai:i}))
+    ];
     const done=allT.filter(t=>t.done).length;
     totalOpen+=allT.filter(t=>!t.done).length;
     totalDone+=done;
     const pct=allT.length?Math.round(done/allT.length*100):0;
-    h+=`<div style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>
-        <span style="font-family:'Space Mono',monospace;font-size:9px;color:${color};letter-spacing:.08em">${p.tag}</span>
-        <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-ghost)">${done}/${allT.length} · ${pct}%</span>
-        <div style="flex:1;height:1px;background:var(--border-soft)"></div>
-      </div>
-      <div class="card">`;
+    // Header progetto compatto
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;margin-bottom:2px">';
+    h+=`<span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></span>`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:${color};letter-spacing:.06em">${p.tag}</span>`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost)">${done}/${allT.length}</span>`;
+    h+='<div style="flex:1;height:1px;background:var(--border-soft)"></div>';
+    h+='</div>';
+    // Righe task compatte
+    h+='<div style="margin-bottom:8px">';
     allT.forEach(t=>{
-      const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${p.id}')`:`ckAgendaFocus('${agendaKey_today}',${t._ai})`;
-      h+=`<div class="row${t.done?' done':''}">
-        <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0"></div>
-        <span class="rt" style="color:${t.done?'#444':'#ccc'}">${t.text}</span>
-        <span style="font-family:'Space Mono',monospace;font-size:8px;color:var(--text-ghost)">${t._type==='recur'?'R':'G'}</span>
-      </div>`;
+      const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${p.id}')`:
+               `ckAgendaFocus('${agendaKey_today}',${t._ai})`;
+      h+=`<div style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;transition:background .1s" onmouseover="this.style.background='var(--row-hover)'" onmouseout="this.style.background='transparent'">`;
+      h+=`<div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:14px;height:14px;border-radius:4px"></div>`;
+      h+=`<span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''}; flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.text}</span>`;
+      h+=`<span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>`;
+      h+='</div>';
     });
-    h+='</div></div>';
+    h+='</div>';
   });
-  h+='</div><div>'; // col destra: allenamento + alimentazione + abitudini
-  // Sezione ALLENAMENTO
+
+  // Task agenda libere (ALTRO)
+  const freeTasks=getAgendaDay(today).filter(t=>!t.projId);
+  if(freeTasks.length){
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;margin-bottom:2px">';
+    h+='<span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);letter-spacing:.06em">ALTRO</span>';
+    h+='<div style="flex:1;height:1px;background:var(--border-soft)"></div>';
+    h+='</div><div style="margin-bottom:8px">';
+    freeTasks.forEach((t,i)=>{
+      totalOpen+=t.done?0:1;totalDone+=t.done?1:0;
+      h+=`<div style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px" onmouseover="this.style.background='var(--row-hover)'" onmouseout="this.style.background='transparent'">`;
+      h+=`<div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0;width:14px;height:14px;border-radius:4px"></div>`;
+      h+=`<span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''}"> ${t.text}</span>`;
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+
+  if(totalOpen===0&&totalDone===0){
+    h+='<div style="padding:20px 0;font-family:var(--mono);font-size:11px;color:var(--text-ghost)">✓ Nessuna task</div>';
+  }
+  h+='</div>'; // fine col sinistra
+
+  // ── COLONNA DESTRA: allenamento + alimentazione ──
+  h+='<div style="display:flex;flex-direction:column;gap:10px;min-width:0">';
+
+  // Allenamento
   if(!ld('archived',[]).includes('allenamento')){
     const schede=allGetSchede();
     const todayIdx=allWeekdayIdx(today);
     const scheda=schede[todayIdx];
     const checksOggi=ld('all_checksOggi',{})[todayKey]||{};
-    if(scheda.esercizi.length){
-      const done=scheda.esercizi.filter((_,i)=>checksOggi[todayIdx+'_'+i]).length;
-      totalOpen+=scheda.esercizi.length-done;totalDone+=done;
-      const pct=Math.round(done/scheda.esercizi.length*100);
-      const allColor=ld('proj_color_allenamento','#ef4444');
-      h+=`<div style="margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-          <span style="width:8px;height:8px;border-radius:50%;background:${allColor};flex-shrink:0;display:inline-block"></span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:${allColor};letter-spacing:.08em">ALLENAMENTO — ${scheda.nome}</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-ghost)">${done}/${scheda.esercizi.length} · ${pct}%</span>
-          <div style="flex:1;height:1px;background:var(--border-soft)"></div>
-        </div>
-        <div class="card">`;
+    const allColor=ld('proj_color_allenamento','#ef4444');
+    const allDone=scheda.esercizi.filter((_,i)=>checksOggi[todayIdx+'_'+i]).length;
+    const allTot=scheda.esercizi.length;
+    h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border-soft)">`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:${allColor};letter-spacing:.06em">ALLENAMENTO — ${scheda.nome}</span>`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost)">${allDone}/${allTot}</span>`;
+    h+='</div>';
+    if(!allTot){
+      h+='<div style="padding:10px 12px;font-size:11px;color:var(--text-ghost)">Nessun esercizio</div>';
+    } else {
       scheda.esercizi.forEach((es,i)=>{
         const isChecked=!!checksOggi[todayIdx+'_'+i];
-        h+=`<div class="row${isChecked?' done':''}">
-          <div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${todayIdx},${i})" style="margin:0;flex-shrink:0"></div>
-          <span class="rt" style="color:${isChecked?'#444':'#ccc'}">${esc(allEsercizioNome(es.catId))}</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${es.peso||0}kg×${es.reps||0}×${es.serie||0}</span>
-        </div>`;
+        const nome=allEsercizioNome(es.catId);
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft)">`;
+        h+=`<div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${todayIdx},${i})" style="margin:0;flex-shrink:0;width:14px;height:14px;border-radius:4px"></div>`;
+        h+=`<span style="font-size:12px;color:${isChecked?'var(--text-ghost)':'var(--text)'};${isChecked?'text-decoration:line-through':''}flex:1">${nome}</span>`;
+        if(es.peso||es.reps||es.serie) h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${es.serie||'?'}×${es.reps||'?'} ${es.peso||'?'}kg</span>`;
+        h+='</div>';
       });
-      h+='</div></div>';
     }
+    h+='</div>';
   }
-  // Sezione ALIMENTAZIONE
+
+  // Alimentazione
   if(!ld('archived',[]).includes('alimentazione')){
-    const schede=alimGetSchede();
-    const todayIdx=allWeekdayIdx(today);
-    const scheda=schede[todayIdx];
-    const checksOggi=ld('alim_checksOggi',{})[todayKey]||{};
-    const hasContent=scheda.pasti.some(p=>p.testo.trim());
-    if(hasContent){
-      const done=scheda.pasti.filter((_,i)=>checksOggi[todayIdx+'_'+i]).length;
-      totalOpen+=scheda.pasti.length-done;totalDone+=done;
-      const pct=Math.round(done/scheda.pasti.length*100);
-      const alimColor=ld('proj_color_alimentazione','#fb923c');
-      h+=`<div style="margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-          <span style="width:8px;height:8px;border-radius:50%;background:${alimColor};flex-shrink:0;display:inline-block"></span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:${alimColor};letter-spacing:.08em">ALIMENTAZIONE — ${scheda.nome}</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-ghost)">${done}/${scheda.pasti.length} · ${pct}%</span>
-          <div style="flex:1;height:1px;background:var(--border-soft)"></div>
-        </div>
-        <div class="card">`;
-      scheda.pasti.forEach((pasto,i)=>{
-        const isChecked=!!checksOggi[todayIdx+'_'+i];
-        h+=`<div class="row${isChecked?' done':''}">
-          <div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${todayIdx},${i})" style="margin:0;flex-shrink:0"></div>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);width:70px;flex-shrink:0">${esc(pasto.slot)}</span>
-          <span class="rt" style="color:${isChecked?'#444':'#ccc'}">${esc(pasto.testo)||'—'}</span>
-        </div>`;
+    const schedeAlim=alimGetSchede();
+    const todayIdxA=allWeekdayIdx(today);
+    const schedaA=schedeAlim[todayIdxA];
+    const checksAlim=ld('alim_checksOggi',{})[todayKey]||{};
+    const alimColor=ld('proj_color_alimentazione','#fb923c');
+    const alimDone=schedaA.pasti.filter((_,i)=>checksAlim[todayIdxA+'_'+i]).length;
+    const alimTot=schedaA.pasti.filter(p=>p.testo.trim()).length;
+    h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border-soft)">`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:${alimColor};letter-spacing:.06em">ALIMENTAZIONE</span>`;
+    h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost)">${alimDone}/${alimTot}</span>`;
+    h+='</div>';
+    const pastiConTesto=schedaA.pasti.filter(p=>p.testo.trim());
+    if(!pastiConTesto.length){
+      h+='<div style="padding:10px 12px;font-size:11px;color:var(--text-ghost)">Nessun pasto pianificato</div>';
+    } else {
+      pastiConTesto.forEach((pasto,i)=>{
+        const realIdx=schedaA.pasti.indexOf(pasto);
+        const isChecked=!!checksAlim[todayIdxA+'_'+realIdx];
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft)">`;
+        h+=`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${todayIdxA},${realIdx})" style="margin:0;flex-shrink:0;width:14px;height:14px;border-radius:4px"></div>`;
+        h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0;width:60px">${pasto.slot}</span>`;
+        h+=`<span style="font-size:12px;color:${isChecked?'var(--text-ghost)':'var(--text)'};${isChecked?'text-decoration:line-through':''}flex:1">${pasto.testo}</span>`;
+        h+='</div>';
       });
-      h+='</div></div>';
     }
+    h+='</div>';
   }
-  // Task agenda libere di oggi
-  const freeTasks=getAgendaDay(today).filter(t=>!t.projId);
-  if(freeTasks.length){
-    h+=`<div style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-        <span style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-faint);letter-spacing:.08em">ALTRO</span>
-        <div style="flex:1;height:1px;background:var(--border-soft)"></div>
-      </div>
-      <div class="card">`;
-    freeTasks.forEach((t,i)=>{
-      totalOpen+=t.done?0:1;totalDone+=t.done?1:0;
-      h+=`<div class="row${t.done?' done':''}">
-        <div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0"></div>
-        <span class="rt" style="color:${t.done?'#444':'#ccc'}">${t.text}</span>
-      </div>`;
-    });
-    h+='</div></div>';
-  }
-  // Abitudini in tab OGGI — solo checkbox oggi + streak
+
+  h+='</div>'; // fine col destra
+  h+='</div>'; // fine 2col
+
+  // ── ABITUDINI sotto full-width ──
   if(_habits.length){
-    h+='<div style="margin-bottom:12px">';
+    h+='<div style="margin-top:10px">';
     h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
     h+='<span style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-dim);letter-spacing:.08em">ABITUDINI</span>';
     h+='<div style="flex:1;height:1px;background:var(--border-soft)"></div></div>';
-    h+='<div class="card">';
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px">';
     _habits.forEach(function(hb,hi){
       const done=(_habDots[hi]||[])[_todayDow2]||false;
       const streak=calcHabStreak(hi);
-      h+='<div class="row'+(done?' done':'')+'" style="padding:8px 14px">';
-      h+='<div class="hd'+(done?' on':'')+'" onclick="tDotToday('+hi+','+_todayDow2+')" style="margin:0;flex-shrink:0"></div>';
-      h+='<span class="rt" style="font-size:12px">'+hb+'</span>';
-      if(streak>1) h+='<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>';
+      h+=`<div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--surface2);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:8px;cursor:pointer" onclick="tDotToday(${hi},${_todayDow2})">`;
+      h+=`<div class="hd${done?' on':''}" style="margin:0;flex-shrink:0;width:14px;height:14px;border-radius:4px;pointer-events:none"></div>`;
+      h+=`<span style="font-size:12px;color:${done?'var(--text-dim)':'var(--text)'};${done?'text-decoration:line-through':''}flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${hb}</span>`;
+      if(streak>1) h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">${FIRE}${streak}w</span>`;
       h+='</div>';
     });
     h+='</div></div>';
   }
-  h+='</div></div>'; // chiude col-dx e 2col
-  if(totalOpen===0&&totalDone===0&&!_habits.length){
-    h+='<div style="text-align:center;padding:30px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text-ghost)">✓ NIENTE PER OGGI</div>';
+
+  if(_sumOpen===0&&_sumDone===0&&!_habits.length){
+    h+='<div style="text-align:center;padding:30px 0;font-family:var(--mono);font-size:11px;color:var(--text-ghost)">✓ NIENTE PER OGGI</div>';
   }
+
   h+='</div>';
   el.innerHTML=h;
 }
-function tDotToday(hi,di){
-  const d=ld('habitDots',[]);
-  if(!d[hi])d[hi]=Array(7).fill(false);
-  d[hi][di]=!d[hi][di];
-  sv('habitDots',d);
-  renderTodayFocus();renderHab();updateTodayBadge();
-}
+
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
   const ch=ld('recurChecks_'+id,{});
