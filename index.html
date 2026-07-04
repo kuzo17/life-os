@@ -143,7 +143,7 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
 .pc{
   background:linear-gradient(160deg,var(--surface2),var(--surface));
-  border:1px solid var(--border);border-radius:var(--r-md);padding:12px 13px;
+  border:1px solid var(--border);border-radius:var(--r-md);padding:10px 11px;
   cursor:pointer;position:relative;overflow:hidden;
   box-shadow:var(--sh-card);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
@@ -154,6 +154,10 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .ppct{font-family:var(--mono);font-size:19px;font-weight:700;margin-bottom:0;line-height:1;text-shadow:0 0 8px currentColor;}
 .ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ring-num{position:absolute;font-family:var(--mono);font-weight:700;text-align:center;line-height:1.1;}
+.pc .pb{display:none;}
+.folder-drag-handle{cursor:grab;color:var(--text-ghost);font-size:13px;padding:0 4px;opacity:0;transition:opacity .15s;flex-shrink:0;user-select:none;}
+.folder-hdr:hover .folder-drag-handle{opacity:1;}
+.folder-hdr.folder-drag-over{border-top:2px solid var(--green);}
 .pb{height:3px;background:var(--border-soft);border-radius:99px;margin:7px 0 8px;overflow:hidden;}
 .pbf{height:3px;border-radius:99px;transition:width .4s;}
 .psub{font-size:11px;color:var(--text-faint);}
@@ -419,6 +423,14 @@ textarea::placeholder{color:var(--text-ghost);}
 .overdue-badge{font-family:var(--sans);font-size:10px;font-weight:600;color:var(--red);margin-top:5px;}
 @media screen and (max-width:768px){input,select,textarea{font-size:16px!important;}}
 @media screen and (max-width:768px){#reg-tipo,#reg-desc,#reg-imp,#reg-asset{font-size:16px!important;}}
+.proj-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:1rem;}
+.proj-3col .slbl{margin-top:0;}
+@media(max-width:900px){.proj-3col{grid-template-columns:1fr;}}
+.proj-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1rem;}
+.proj-2col .slbl{margin-top:0;}
+@media(max-width:700px){.proj-2col{grid-template-columns:1fr;}}
+.ag-day-drop-target{border:2px dashed var(--green)!important;background:rgba(74,222,128,.06)!important;}
+.ag-task-dragging{opacity:.4;}
 </style>
 </head>
 <body>
@@ -444,7 +456,7 @@ textarea::placeholder{color:var(--text-ghost);}
   <div class="topbar">
     <div>
       <h1>Giovanni</h1>
-      <div style="font-size:11px;color:var(--text-faint);margin-top:3px;letter-spacing:.06em;text-transform:uppercase" id="tdate"></div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px;letter-spacing:.04em;font-weight:600;font-family:var(--mono)" id="tdate"></div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
       <div style="display:flex;align-items:center;gap:10px">
@@ -462,11 +474,11 @@ textarea::placeholder{color:var(--text-ghost);}
     <div id="srch-res" style="display:none"></div>
   </div>
   <div class="tabs">
-    <button class="tab on" onclick="showTab('progetti',this)">PROGETTI</button>
+    <button class="tab" id="tab-prog-btn" onclick="showTab('progetti',this)">PROGETTI</button>
     <button class="tab" id="tab-oggi-btn" onclick="showTab('oggi',this)">OGGI</button>
     <button class="tab" onclick="showTab('agenda',this)">AGENDA</button>
   </div>
-  <div id="tab-progetti"><div id="ph"></div></div>
+  <div id="tab-progetti" style="display:none"><div id="ph"></div></div>
   <div id="tab-oggi" style="display:none"></div>
   <div id="tab-agenda" style="display:none"><div id="agenda-view"></div></div>
   <div class="divider"></div>
@@ -484,8 +496,13 @@ textarea::placeholder{color:var(--text-ghost);}
     <button class="abtn" onclick="addHab()">+ ADD</button>
   </div>
   <div class="divider"></div>
-  <div class="flbl" style="margin-top:0">Note veloci</div>
-  <textarea id="quicknote" rows="3" placeholder="Idee, pensieri, cose da non dimenticare…" onblur="sv('quicknote',this.value);toast()"></textarea>
+  <div class="flbl" style="margin-top:0;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="toggleQuicknote()">
+    <span>Note veloci</span>
+    <span id="qn-arrow" style="font-size:10px;color:var(--text-ghost)">▼</span>
+  </div>
+  <div id="qn-wrap" style="display:none">
+    <textarea id="quicknote" rows="3" placeholder="Idee, pensieri, cose da non dimenticare…" onblur="sv('quicknote',this.value);toast()"></textarea>
+  </div>
   <div class="divider"></div>
   <div class="flbl" style="margin-top:0">Patrimonio & Finanze</div>
   <div class="cc asset-panel">
@@ -848,6 +865,22 @@ const vinPot=()=>ld('vinInv',[]).filter(i=>i.stato!=='Venduto').reduce((a,i)=>a+
 const vinSoldTot=()=>ld('vinSold',[]).reduce((a,i)=>a+i.prezzo,0);
 const carteEbay=()=>ld('carteInv',[]).filter(c=>c.stato!=='Venduta').reduce((a,c)=>a+c.ebay,0);
 const carteSoldTot=()=>ld('carteInv',[]).filter(c=>c.stato==='Venduta').reduce((a,c)=>a+(c.vendita||0),0);
+const calcProjStreak=id=>{
+  const today=new Date();today.setHours(0,0,0,0);
+  let streak=0;
+  for(let i=0;i<30;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dk=d.toDateString();
+    const recurCh=ld('recurChecks_'+id,{});
+    const recur=ld('recur_'+id,[]);
+    const recurDone=recur.some((_,ri)=>recurCh[dk+'_'+ri]);
+    const agKey='agenda_'+d.toISOString().slice(0,10);
+    const agDone=ld(agKey,[]).some(t=>t.projId===id&&t.done);
+    if(recurDone||agDone)streak++;
+    else if(i>0)break;
+  }
+  return streak;
+};
 const calcPct=id=>{const p=PD.find(x=>x.id===id);const g=ld('goals_'+id,p?p.goals0||[]:[]);const c=ld('gchecks_'+id,[]);return g.length?Math.round(g.filter((_,i)=>c[i]).length/g.length*100):0;};
 const calcPctDay=id=>{
   // % oggi = ricorrenti di oggi + task giornaliere inserite manualmente nell'agenda di oggi
@@ -989,7 +1022,8 @@ function showTab(name,btn){
   btn.classList.add('on');
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
   document.getElementById('tab-oggi').style.display=name==='oggi'?'block':'none';
-  document.getElementById('tab-agenda').style.display=name==='agenda'?'block':'none';
+  document.getElementById('tab-agenda').style.display=name==='agenda'?'none':'none';
+  if(name==='agenda')document.getElementById('tab-agenda').style.display='block';
   if(name==='agenda'){
     renderAgenda();
     setTimeout(()=>{
@@ -1158,7 +1192,8 @@ function renderHome(){
     const savedOrder=ld('projOrders',{})[f]||[];
     const orderPos=new Map(savedOrder.map((id,i)=>[id,i]));
     const fps=folderProjs.slice().sort((a,b)=>(orderPos.has(a.id)?orderPos.get(a.id):savedOrder.length+folderProjs.indexOf(a))-(orderPos.has(b.id)?orderPos.get(b.id):savedOrder.length+folderProjs.indexOf(b)));
-    h+=`<div class="folder-hdr">
+    h+=`<div class="folder-hdr" draggable="true" ondragstart="folderDragStart(event,${fi})" ondragover="folderDragOver(event,${fi})" ondragleave="folderDragLeave(event)" ondrop="folderDrop(event,${fi})">
+      <span class="folder-drag-handle" title="Trascina per riordinare">⠇</span>
       <input class="folder-name" value="${f}" onblur="renameFolder(${fi},this.value)" onkeydown="if(event.key==='Enter')this.blur()">
       <div class="folder-actions">
         <button class="fla-btn" style="color:var(--green)" onclick="addProject('${f}')">+ PROGETTO</button>
@@ -1183,32 +1218,32 @@ function renderHome(){
       const age=getAge(p.id);
       const pri=getPri(p.id);
       const projDebt=p.hasInv?0:calcProjDebt(p.id).total;
+      const streak=p.hasInv?0:calcProjStreak(p.id);
+      const cardStatus=today_tot===0?'idle':today_done===today_tot?'done':today_done>0?'progress':'open';
+      const statusColor=cardStatus==='done'?'var(--green)':cardStatus==='progress'?'var(--yellow)':cardStatus==='open'?'var(--red)':'var(--border-hover)';
+      const statusDot=cardStatus==='done'?'✓':cardStatus==='progress'?today_done+'/'+today_tot:cardStatus==='open'?today_tot+'':'';
       h+=`<div class="pc" draggable="true" ondragstart="dragProjStart(event,'${p.id}')" ondragover="event.preventDefault()" ondrop="dropProjOnCard(event,'${p.id}')" onclick="openProj('${p.id}')">
-        <div class="acc" style="background:${color};cursor:pointer" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)" title="Cambia colore"></div>
+        <div class="acc" style="background:${color}" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)"></div>
         <div class="pc-actions">
-          <button class="pca arch" onclick="event.stopPropagation();archiveProj('${p.id}')" title="Archivia">⬇</button>
+          <button class="pca arch" onclick="event.stopPropagation();archiveProj('${p.id}')" title="Archivia">↓</button>
           <button class="pca" onclick="event.stopPropagation();deleteProj('${p.id}')" title="Elimina">×</button>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;padding-right:36px">
-          <div class="ptag" style="color:${color}">${p.tag}</div>
-          ${projDebt>0?`<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--red);background:var(--red-glow);padding:1px 6px;border-radius:10px;flex-shrink:0" title="${projDebt} debiti accumulati">⚠ ${projDebt}</span>`:''}
-        </div>
-        <div style="display:flex;align-items:center;gap:11px;margin-bottom:4px">
-          <div class="ring-wrap">
-            ${ringSVG(pctDay,color,40,3.5)}
-            <div class="ring-num" style="color:${color};font-size:11px">${pctDay}%</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:8px">
+          <div class="ptag" style="color:${color};margin-bottom:0;font-size:12px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.tag}</div>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-top:1px">
+            ${projDebt>0?`<span style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--red)">⚠${projDebt}</span>`:''}
+            ${pri.dot!=='transparent'?`<div class="pri-dot" style="background:${pri.dot};border:1px solid ${pri.dot}" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`:`<div class="pri-dot" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`}
           </div>
-          <div style="display:flex;flex-direction:column;gap:3px;flex:1">
-            <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-ghost);letter-spacing:.04em">OGGI</div>
-            <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-ghost);letter-spacing:.04em">SETT. <span style="color:${color};opacity:.75;font-family:var(--mono)">${pctWeek}%</span></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="width:6px;height:6px;border-radius:50%;background:${statusColor};flex-shrink:0;display:inline-block"></span>
+            <span style="font-family:var(--mono);font-size:10px;color:${cardStatus==='idle'?'var(--text-ghost)':statusColor};font-weight:${cardStatus==='idle'?'400':'700'}">${cardStatus==='idle'?'—':statusDot+(cardStatus==='done'?'':' oggi')}</span>
           </div>
-          ${pri.dot!=='transparent'?`<div class="pri-dot" style="background:${pri.dot};border:1px solid ${pri.dot};margin-left:auto" title="Priorità ${pri.label}" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`:`<div class="pri-dot" style="margin-left:auto" onclick="event.stopPropagation();cyclePri('${p.id}')" title="Imposta priorità"></div>`}
+          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">🔥${streak}d</span>`:''}
         </div>
-        <div class="pc-meta">
-          <span class="pc-tasks" style="color:var(--text-faint)">${today_tot?today_done+'/'+today_tot+' oggi':'—'}</span>
-          ${age?`<span class="pc-age">${age}</span>`:''}
-        </div>
-        ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')" title="Aggiungi task ricorrente">+</button>`:''}
+        ${p.sub?`<div style="margin-top:6px;font-size:10px;color:var(--text-ghost);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.sub}</div>`:''}
+        ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')" title="+">+</button>`:''}
       </div>`;
     });
     h+='</div>';
@@ -1270,6 +1305,28 @@ function updateTodayBadge(){
 }
 
 // ── FOLDER OPS ───────────────────────────────────────────
+let _folderDragIdx=null;
+function folderDragStart(e,fi){
+  _folderDragIdx=fi;
+  e.dataTransfer.effectAllowed='move';
+}
+function folderDragOver(e,fi){
+  if(_folderDragIdx===null||_folderDragIdx===fi)return;
+  e.preventDefault();
+  document.querySelectorAll('.folder-hdr').forEach(el=>el.classList.remove('folder-drag-over'));
+  e.currentTarget.classList.add('folder-drag-over');
+}
+function folderDragLeave(e){e.currentTarget.classList.remove('folder-drag-over');}
+function folderDrop(e,fi){
+  e.currentTarget.classList.remove('folder-drag-over');
+  if(_folderDragIdx===null||_folderDragIdx===fi){_folderDragIdx=null;return;}
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+  const [moved]=folders.splice(_folderDragIdx,1);
+  folders.splice(fi,0,moved);
+  sv('folders',folders);
+  _folderDragIdx=null;
+  renderHome();
+}
 function addFolder(){
   modal('prompt','Nome folder:',name=>{
     const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
@@ -1371,6 +1428,40 @@ function getAgendaDay(date){return ld(agendaKey(date),[]);}
 function setAgendaDay(date,tasks){sv(agendaKey(date),tasks);}
 
 let _agendaFilter='';
+let _agDrag=null; // {key,idx,text,projId}
+function agDragStart(e,key,idx,text,projId){
+  _agDrag={key,idx,text,projId};
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.classList.add('ag-task-dragging');
+}
+function agDragEnd(e){e.currentTarget.classList.remove('ag-task-dragging');}
+function agDayDragOver(e,key){
+  if(!_agDrag||_agDrag.key===key)return;
+  e.preventDefault();
+  document.querySelectorAll('.ag-day-drop-target').forEach(el=>el.classList.remove('ag-day-drop-target'));
+  e.currentTarget.classList.add('ag-day-drop-target');
+}
+function agDayDragLeave(e){e.currentTarget.classList.remove('ag-day-drop-target');}
+function agDayDrop(e,toKey){
+  e.currentTarget.classList.remove('ag-day-drop-target');
+  if(!_agDrag||_agDrag.key===toKey){_agDrag=null;return;}
+  const fromDateStr=_agDrag.key.replace('agenda_','');
+  const toDateStr=toKey.replace('agenda_','');
+  const fromDate=new Date(fromDateStr);
+  const toDate=new Date(toDateStr);
+  const fromTasks=getAgendaDay(fromDate);
+  const task=fromTasks[_agDrag.idx];
+  if(!task){_agDrag=null;return;}
+  fromTasks.splice(_agDrag.idx,1);
+  setAgendaDay(fromDate,fromTasks);
+  const toTasks=getAgendaDay(toDate);
+  toTasks.push({...task,ts:Date.now()});
+  setAgendaDay(toDate,toTasks);
+  _agDrag=null;
+  renderAgenda();
+  toast('TASK SPOSTATA');
+}
+
 function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
 
 // Ritorna task per un giorno: agenda libere + ricorrenti dei progetti (solo per oggi)
@@ -1452,7 +1543,14 @@ function renderAgenda(){
     const visTasks=isPast?tasks.filter(t=>!t.done):tasks;
     const hasContent=visTasks.length>0;
 
-    h+=`<div id="agenda-day-${key}" style="position:relative;padding-left:30px;margin-bottom:16px;scroll-margin-top:12px">
+    // A2: giorni passati senza task → riga compatta
+    if(isPast&&!visTasks.length){
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:3px 0 3px 30px;margin-bottom:4px;opacity:.4">
+        <div style="position:absolute;left:6px;width:8px;height:8px;border-radius:50%;border:1px solid var(--border);background:var(--bg)"></div>
+        <span style="font-size:11px;color:var(--text-ghost)">${dayNames[day.getDay()]} ${day.getDate()} ${monthNames[day.getMonth()]}</span>
+      </div>`;
+    } else {
+    h+=`<div id="agenda-day-${key}" style="position:relative;padding-left:30px;margin-bottom:16px;scroll-margin-top:12px" ondragover="agDayDragOver(event,'${key}')" ondragleave="agDayDragLeave(event)" ondrop="agDayDrop(event,'${key}')">
       <div style="position:absolute;left:6px;top:3px;width:15px;height:15px;border-radius:50%;
         background:${isToday?'var(--green)':hasContent?'var(--surface3)':'var(--bg)'};
         border:2px solid ${isToday?'var(--green)':hasContent?'var(--border-hover)':'var(--border)'};
@@ -1475,7 +1573,8 @@ function renderAgenda(){
                    `ckAgendaTask('${key}',${idx})`;
         const typeLabel=isRecur?'R':isProjTask?'G':'';
         const typeColor=isRecur?'var(--green)':'var(--yellow)';
-        h+=`<div class="row${t.done?' done':''}">
+        const _canDrag=!isProjTask&&!isRecur;
+        h+=`<div class="row${t.done?' done':''}" ${_canDrag?`draggable="true" ondragstart="agDragStart(event,'${key}',${idx},'${esc(t.text)}','${t.projId||''}')" ondragend="agDragEnd(event)"`:''} style="cursor:${_canDrag?'grab':'default'}">
           <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
           ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
           <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
@@ -1490,24 +1589,37 @@ function renderAgenda(){
     }
 
     if(!isPast){
-      h+=`<div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap" class="ag-add-row">
-        <input class="ain ag-add-input" id="ag-inp-${key}" placeholder="+ aggiungi task…"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;flex:1 1 140px;min-width:0"
-          onkeydown="if(event.key==='Enter')addAgendaTask('${key}')">
-        <select id="ag-proj-${key}" class="ag-add-select" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:7px;border-radius:8px;outline:none;flex:1 1 110px;min-width:0">
-          <option value="">— nessun progetto</option>
-          ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
-        </select>
-        <button class="abtn" onclick="addAgendaTask('${key}')" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px;flex-shrink:0">+ ADD</button>
+      h+=`<div style="margin-top:6px">
+        <button onclick="toggleAgAdd('${key}')" style="font-family:var(--sans);font-size:11px;font-weight:600;color:var(--text-ghost);background:none;border:none;cursor:pointer;padding:2px 0;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-ghost)'">+ aggiungi task</button>
+        <div id="ag-form-${key}" style="display:none;margin-top:6px;display:none">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap" class="ag-add-row">
+            <input class="ain ag-add-input" id="ag-inp-${key}" placeholder="+ aggiungi task…"
+              style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;flex:1 1 140px;min-width:0"
+              onkeydown="if(event.key==='Enter'){addAgendaTask('${key}');document.getElementById('ag-form-${key}').style.display='none';}">
+            <select id="ag-proj-${key}" class="ag-add-select" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:7px;border-radius:8px;outline:none;flex:1 1 110px;min-width:0">
+              <option value="">— nessun progetto</option>
+              ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
+            </select>
+            <button class="abtn" onclick="addAgendaTask('${key}');document.getElementById('ag-form-${key}').style.display='none'" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px;flex-shrink:0">+ ADD</button>
+          </div>
+        </div>
       </div>`;
     }
     h+='</div>';
+    } // chiude else A2 (giorni passati con contenuto)
   });
   h+='</div>';
 
   el.innerHTML=h;
 }
 
+function toggleAgAdd(key){
+  const el=document.getElementById('ag-form-'+key);
+  if(!el)return;
+  const visible=el.style.display!=='none';
+  el.style.display=visible?'none':'block';
+  if(!visible)setTimeout(()=>document.getElementById('ag-inp-'+key)?.focus(),50);
+}
 function scrollToAgendaDay(key){
   const el=document.getElementById('agenda-day-'+key);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1621,11 +1733,19 @@ function openProj(id){
   if(p.hasInv==='allenamento')pct=allCalcPctOggi();
   else if(p.hasInv==='alimentazione')pct=alimCalcPctOggi();
   else pct=p.hasInv?ld('pct_'+id,0):calcPct(id);
+  const _detStreak=p.hasInv?0:calcProjStreak(p.id);
+  const _detAge=getAge(p.id);
   let h=`<button class="back" onclick="closeProj()">← BACK</button>
   <div class="dh">
-    <div><div class="dn" style="color:${p.color}">${p.tag}</div><div style="font-size:12px;color:var(--text-faint);margin-top:4px">${p.sub}</div></div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="text-align:right"><div style="font-size:9px;color:var(--text-ghost);font-family:var(--mono);margin-top:2px">${p.hasInv?'':'CALCOLATO DA OBIETTIVI'}</div></div>
+    <div style="flex:1;min-width:0">
+      <div class="dn" style="color:${p.color}">${p.tag}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">
+        ${p.sub?`<span style="font-size:11px;color:var(--text-faint)">${p.sub}</span>`:''}
+        ${_detStreak>1?`<span style="font-family:var(--mono);font-size:10px;color:var(--yellow)">🔥 ${_detStreak}d streak</span>`:''}
+        ${_detAge?`<span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">&middot; ${_detAge}</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
       <div class="ring-wrap" id="dring">
         ${ringSVG(pct,p.color,56,5)}
         <div class="ring-num" id="dpct" style="color:${p.color};font-size:15px">${pct}%</div>
@@ -1678,6 +1798,10 @@ document.addEventListener('touchend',e=>{
   if(dx>=70&&Math.abs(dx)>Math.abs(dy)*1.5)closeProj();
 },{passive:true});
 const _statCharts={};
+function toggleStatChart(id){
+  sv('statChartOpen_'+id,!ld('statChartOpen_'+id,false));
+  openProj(id);
+}
 function renderStatChart(id,color){
   const hist=ld('pct_hist_'+id,[]);
   const el=document.getElementById('stat-chart-'+id);
@@ -1727,16 +1851,26 @@ function buildStd(p){
   const pctDay=calcPctDay(id);
   const pctWeek=calcPctWeek(id);
   const pctGoal=calcPct(id);
+  // today_tot/today_done per ring colore
+  const _today=new Date();_today.setHours(0,0,0,0);
+  const _recurCkStd=ld('recurChecks_'+id,{});
+  const _dayTasksStd=getAgendaDay(_today).filter(t=>t.projId===id);
+  const today_tot=recur.length+_dayTasksStd.length;
+  const today_done=recur.filter((_,i)=>_recurCkStd[new Date().toDateString()+'_'+i]).length+_dayTasksStd.filter(t=>t.done).length;
 
   // ── Mini calendario ──
   const today=new Date();today.setHours(0,0,0,0);
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  const _calOpen=ld('miniCalOpen_'+id,false);
   let h=`<div style="margin-bottom:1rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleMiniCal('${id}')">
       <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.1em">AGENDA PROGETTO</div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
+        <span style="font-size:10px;color:var(--text-ghost)">${_calOpen?'▲':'▼'}</span>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">`;
+    ${_calOpen?'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">':''}`;  
   const _todayKeyMini=new Date().toDateString();
   const _recur=ld('recur_'+id,[]);
   const _recurCh=ld('recurChecks_'+id,{});
@@ -1756,9 +1890,9 @@ function buildStd(p){
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'var(--green)':'var(--text-ghost)'};min-height:12px">${isSelected&&tot?done+'/'+tot:tot||''}</div>
     </div>`;
   }
-  h+=`</div>`;
+  if(_calOpen) h+=`</div>`;
   const selKey=ld('miniCalSel_'+id,'');
-  if(selKey){
+  if(selKey&&_calOpen){
     const selDate=new Date(selKey.replace('agenda_',''));
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
     const allSelTasks=getAgendaDay(selDate);
@@ -1793,30 +1927,33 @@ function buildStd(p){
   h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
     <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
       <div class="ring-wrap" id="ring-day-${id}">
-        ${ringSVG(pctDay,p.color,52,5)}
-        <div class="ring-num" style="color:${p.color};font-size:14px">${pctDay}%</div>
+        ${ringSVG(pctDay,pctDay===0&&today_tot===0?'var(--text-ghost)':p.color,52,5)}
+        <div class="ring-num" style="color:${pctDay===0&&today_tot===0?'var(--text-ghost)':p.color};font-size:14px">${pctDay}%</div>
       </div>
       <div style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-faint);letter-spacing:.06em">OGGI</div>
     </div>
     <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
       <div class="ring-wrap" id="ring-week-${id}">
-        ${ringSVG(pctWeek,p.color,52,5)}
-        <div class="ring-num" style="color:${p.color};font-size:14px">${pctWeek}%</div>
+        ${ringSVG(pctWeek,pctWeek===0&&weekGoals.length===0?'var(--text-ghost)':p.color,52,5)}
+        <div class="ring-num" style="color:${pctWeek===0&&weekGoals.length===0?'var(--text-ghost)':p.color};font-size:14px">${pctWeek}%</div>
       </div>
       <div style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-faint);letter-spacing:.06em">SETTIMANA</div>
     </div>
     <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
-      <div class="ring-wrap">
-        ${ringSVG(pctGoal,'#888',52,5)}
-        <div class="ring-num" style="color:var(--text-dim);font-size:14px">${pctGoal}%</div>
+      <div class="ring-wrap" id="ring-wgoal-${id}">
+        ${ringSVG(pctWeek,p.color,52,5)}
+        <div class="ring-num" style="color:${p.color};font-size:14px">${pctWeek}%</div>
       </div>
-      <div style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-faint);letter-spacing:.06em">OBIETTIVI</div>
+      <div style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-faint);letter-spacing:.06em">OB. SETT.</div>
     </div>
   </div>`;
 
-  // ── Task ricorrenti (si resettano automaticamente ogni giorno) ──
+  // ── 3 COLONNE layout ──
   const recurDone=recur.filter((_,i)=>recurChecks[todayKey+'_'+i]).length;
   const projDebtInfo=calcProjDebt(id);
+  // ── 2 COLONNE: Ricorrenti | Task giornaliere ──
+  const _agTodayProj=getAgendaDay(today).filter(t=>t.projId===id);
+  h+=`<div class="proj-2col"><div>`;
   h+=`<div class="slbl">Task ricorrenti
     <span style="font-size:9px;color:var(--text-faint)">${recurDone}/${recur.length} oggi</span>
   </div>
@@ -1824,10 +1961,14 @@ function buildStd(p){
   recur.forEach((t,i)=>{
     const done=!!recurChecks[todayKey+'_'+i];
     const debt=projDebtInfo.perRecur[i]||0;
-    h+=`<div class="row${done?' done':''}" style="flex-wrap:wrap">
+    const _rp=(ld('recurpri_'+id,[])[i])||'none';
+    const _rpBorder=_rp==='high'?'2px solid var(--red)':_rp==='medium'?'2px solid var(--yellow)':'2px solid transparent';
+    const _fl=(ld('recurFreq_'+id,[])[i])||'daily';
+    const _flLabel=_fl==='daily'?'R':_fl==='weekdays'?'R L-V':_fl==='weekend'?'R W-E':'R '+_fl.slice(0,3).toUpperCase();
+    h+=`<div class="row${done?' done':''}" style="flex-wrap:wrap;border-left:${_rpBorder}">
       <div class="hd${done?' on':''}" onclick="ckRecur(${i},'${id}')" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'${id}',this.value)">
-      <span style="font-family:var(--sans);font-weight:600;font-size:8px;color:var(--text-faint);padding:0 6px;flex-shrink:0">R</span>
+      <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);padding:0 5px;flex-shrink:0;cursor:pointer" onclick="cycleRecurPri(${i},'${id}')" title="Click per priorità">${_flLabel}</span>
       <button class="xb" onclick="delRecur(${i},'${id}')">×</button>
       ${debt>0?`<div style="width:100%;display:flex;align-items:center;gap:8px;padding:6px 0 2px 26px">
         <span style="font-family:var(--mono);font-size:9px;color:var(--red);background:var(--red-glow);padding:2px 7px;border-radius:8px">⚠ ${debt} saltat${debt===1?'o':'i'}</span>
@@ -1836,9 +1977,29 @@ function buildStd(p){
       </div>`:''}
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div>`;
-
-  // ── Obiettivi settimanali ──
+  h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div></div>`;
+  // ── COLONNA 2: Task giornaliere di oggi ──
+  h+=`<div>`;
+  h+=`<div class="slbl">Task giornaliere
+    <span style="font-size:9px;color:var(--text-faint)">${_agTodayProj.filter(t=>t.done).length}/${_agTodayProj.length} oggi</span>
+  </div>
+  <div class="card" id="agtask-${id}">`;
+  if(!_agTodayProj.length){
+    h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+  }
+  _agTodayProj.forEach((t,i)=>{
+    const _agKey='agenda_'+today.toISOString().slice(0,10);
+    const _allTasks=getAgendaDay(today);
+    const _realIdx=_allTasks.findIndex(x=>x.ts===t.ts&&x.text===t.text);
+    h+=`<div class="row${t.done?' done':''}">
+      <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agKey}',${_realIdx})" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${_agKey}',${_realIdx},this.value)">
+      <button class="xb" onclick="delAgendaTaskAndRefresh('${_agKey}',${_realIdx},'${id}')">×</button>
+    </div>`;
+  });
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')"><button class="abtn" onclick="addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')">+ ADD</button></div>`;
+  h+=`</div></div></div>`;
+  // ── FULL WIDTH: Obiettivi settimanali ──
   const wDone=weekGoalChecks.filter(Boolean).length;
   h+=`<div class="slbl">Obiettivi settimana
     <div style="display:flex;gap:8px;align-items:center">
@@ -1856,11 +2017,22 @@ function buildStd(p){
     </div>`;
   });
   h+=`<div class="arow"><input class="ain" id="wgoal-inp-${id}" placeholder="+ obiettivo settimana…" onkeydown="if(event.key==='Enter')addWeekGoal('${id}')"><button class="abtn" onclick="addWeekGoal('${id}')">+ ADD</button></div></div>`;
-
-  h+=goalsH(id,goals,gc,p.color)+speseH(id,sp);
-  h+=`<div class="slbl">Statistiche % nel tempo</div><div class="card" style="padding:14px"><canvas id="stat-chart-${id}" width="500" height="120"></canvas></div>`;
+  h+=goalsH(id,goals,gc,p.color);
+  h+=speseH(id,sp);
+  const _statOpen=ld('statChartOpen_'+id,false);
+  h+=`<div class="slbl" style="cursor:pointer" onclick="toggleStatChart('${id}')">
+    Statistiche % nel tempo
+    <span style="font-size:9px;color:var(--text-ghost)">${_statOpen?'▲':'▼'}</span>
+  </div>`;
+  if(_statOpen) h+=`<div class="card" style="padding:14px"><canvas id="stat-chart-${id}" width="500" height="120"></canvas></div>`;
   h+=`<div class="slbl">Note</div><textarea rows="4" placeholder="Note…" onblur="sv('note_${id}',this.value);toast()">${note}</textarea>`;
   return h;
+}
+function cycleRecurPri(i,id){
+  const tp=ld('recurpri_'+id,[]);
+  const cur=tp[i]||'none';
+  tp[i]=cur==='none'?'medium':cur==='medium'?'high':'none';
+  sv('recurpri_'+id,tp);openProj(id);
 }
 function cycleTaskPri(i,id){
   const tp=ld('taskpri_'+id,[]);
@@ -1870,6 +2042,10 @@ function cycleTaskPri(i,id){
 }
 
 // ── MINI CALENDARIO PROGETTO ─────────────────────────────
+function toggleMiniCal(id){
+  sv('miniCalOpen_'+id,!ld('miniCalOpen_'+id,false));
+  openProj(id);
+}
 function toggleMiniCalDay(projId,key){
   const cur=ld('miniCalSel_'+projId,'');
   sv('miniCalSel_'+projId,cur===key?'':key);
@@ -1914,15 +2090,45 @@ function ckRecur(i,id){
   toast();
 }
 function edRecur(i,id,v){const t=ld('recur_'+id,[]);t[i]=v;sv('recur_'+id,t);toast();}
+function recurActiveToday(id,i){
+  const freqs=ld('recurFreq_'+id,[]);
+  const freq=freqs[i]||'daily';
+  if(freq==='daily')return true;
+  const dow=(new Date().getDay()+6)%7;
+  if(freq==='weekdays')return dow<5;
+  if(freq==='weekend')return dow>=5;
+  const dayMap={mon:0,tue:1,wed:2,thu:3,fri:4,sat:5,sun:6};
+  if(dayMap[freq]!==undefined)return dayMap[freq]===dow;
+  return true;
+}
 function addRecur(id){
   const inp=document.getElementById('recur-inp-'+id);
   const v=inp?.value.trim();if(!v)return;
-  const t=ld('recur_'+id,[]);t.push(v);sv('recur_'+id,t);
-  const created=ld('recurCreated_'+id,[]);created.push(new Date().toDateString());sv('recurCreated_'+id,created);
-  if(inp)inp.value='';openProj(id);
+  if(inp)inp.value='';
+  const freqOv=document.createElement('div');
+  freqOv.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const freqOpts=[['daily','Ogni giorno'],['weekdays','Lun–Ven'],['weekend','Weekend'],['mon','Solo Lun'],['tue','Solo Mar'],['wed','Solo Mer'],['thu','Solo Gio'],['fri','Solo Ven']];
+  freqOv.innerHTML='<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:10px;padding:18px;max-width:280px;width:100%">'
+    +'<div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--text-dim);margin-bottom:12px;letter-spacing:.06em">FREQUENZA &mdash; '+v+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    +freqOpts.map(([k,l])=>'<button data-freq="'+k+'" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface3);color:var(--text-faint);cursor:pointer;text-align:left">'+l+'</button>').join('')
+    +'</div></div>';
+  document.body.appendChild(freqOv);
+  freqOv.querySelectorAll('button[data-freq]').forEach(btn=>{
+    btn.onclick=()=>{
+      const freq=btn.dataset.freq;
+      freqOv.remove();
+      const t=ld('recur_'+id,[]);t.push(v);sv('recur_'+id,t);
+      const freqs=ld('recurFreq_'+id,[]);freqs.push(freq);sv('recurFreq_'+id,freqs);
+      const created=ld('recurCreated_'+id,[]);created.push(new Date().toDateString());sv('recurCreated_'+id,created);
+      openProj(id);toast('AGGIUNTA ('+freq+')');
+    };
+  });
+  freqOv.addEventListener('click',e=>{if(e.target===freqOv)freqOv.remove();});
 }
 function delRecur(i,id){
   const t=ld('recur_'+id,[]);t.splice(i,1);sv('recur_'+id,t);
+  const freqs=ld('recurFreq_'+id,[]);freqs.splice(i,1);sv('recurFreq_'+id,freqs);
   const created=ld('recurCreated_'+id,[]);created.splice(i,1);sv('recurCreated_'+id,created);
   const ch=ld('recurChecks_'+id,{});
   const newCh={};
@@ -3330,6 +3536,13 @@ function renderCharts(){
 }
 
 // ── EXPORT / IMPORT ──────────────────────────────────────
+function toggleQuicknote(){
+  const wrap=document.getElementById('qn-wrap');
+  const arrow=document.getElementById('qn-arrow');
+  const open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
+  if(arrow)arrow.textContent=open?'▼':'▲';
+}
 function exportData(){const keys=Object.keys(localStorage).filter(k=>k.startsWith('g_'));const data={};keys.forEach(k=>data[k.slice(2)]=JSON.parse(localStorage.getItem(k)));const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lifeOS_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('BACKUP ESPORTATO');}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.keys(data).forEach(k=>localStorage.setItem('g_'+k,JSON.stringify(data[k])));toast('IMPORTATO — RICARICA');setTimeout(()=>{renderHome();renderHab();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();updateOv();const qn=document.getElementById('quicknote');if(qn)qn.value=ld('quicknote','');const tgt=document.getElementById('pat-tgt-inp');if(tgt)tgt.value='€'+(ld('pat_target',0)).toFixed(0);},300);}catch(err){toast('ERRORE IMPORT');}};reader.readAsText(file);}
 
@@ -3388,7 +3601,35 @@ function renderTodayFocus(){
   const todayKey=new Date().toDateString();
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
   const agendaKey_today='agenda_'+today.toISOString().slice(0,10);
+  // Calcola summary per N3
+  let _sumOpen=0,_sumDone=0;
+  allProjs.forEach(p=>{
+    const recur=ld('recur_'+p.id,[]);
+    const recurCh=ld('recurChecks_'+p.id,{});
+    recur.forEach((_,i)=>{if(recurCh[todayKey+'_'+i])_sumDone++;else _sumOpen++;});
+    getAgendaDay(today).filter(t=>t.projId===p.id).forEach(t=>{if(t.done)_sumDone++;else _sumOpen++;});
+  });
+  getAgendaDay(today).filter(t=>!t.projId).forEach(t=>{if(t.done)_sumDone++;else _sumOpen++;});
+  const _habits=ld('habits',[]),_habDots=ld('habitDots',[]);
+  const _todayDow2=(new Date().getDay()+6)%7;
+  const _habDone=_habits.filter((_,i)=>(_habDots[i]||[])[_todayDow2]).length;
+  const _sumTot=_sumOpen+_sumDone;
+  const _pct=_sumTot?Math.round(_sumDone/_sumTot*100):0;
   let h='<div style="margin-bottom:1rem">';
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${_sumOpen?'var(--red)':'var(--green)'}">${_sumOpen}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">da fare</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green)">${_sumDone}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">fatte</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--yellow)">${_habDone}/${_habits.length}</div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:3px">abitudini</div>
+    </div>
+  </div>`;
   let totalOpen=0,totalDone=0;
   allProjs.forEach(p=>{
     const color=ld('proj_color_'+p.id,p.color);
@@ -3498,11 +3739,36 @@ function renderTodayFocus(){
     });
     h+='</div></div>';
   }
-  if(totalOpen===0&&totalDone===0){
-    h+='<div style="text-align:center;padding:40px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text-ghost)">NIENTE PER OGGI ✓</div>';
+  // Abitudini in tab OGGI (_habits/_habDots/_todayDow2 già dichiarate sopra)
+  if(_habits.length){
+    h+='<div style="margin-bottom:12px">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
+    h+='<span style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.08em">ABITUDINI</span>';
+    h+='<div style="flex:1;height:1px;background:var(--border-soft)"></div></div>';
+    h+='<div class="card">';
+    _habits.forEach(function(hb,hi){
+      const done=(_habDots[hi]||[])[_todayDow2]||false;
+      const streak=calcHabStreak(hi);
+      h+='<div class="row'+(done?' done':'')+'">'
+        +'<div class="hd'+(done?' on':'')+'" onclick="tDotToday('+hi+','+_todayDow2+')" style="margin:0;flex-shrink:0"></div>'
+        +'<span class="rt" style="color:'+(done?'#444':'#ccc')+'">'+hb+'</span>'
+        +(streak>1?'<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':'')
+        +'</div>';
+    });
+    h+='</div></div>';
+  }
+  if(totalOpen===0&&totalDone===0&&!_habits.length){
+    h+='<div style="text-align:center;padding:40px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text-ghost)">✓ NIENTE PER OGGI</div>';
   }
   h+='</div>';
   el.innerHTML=h;
+}
+function tDotToday(hi,di){
+  const d=ld('habitDots',[]);
+  if(!d[hi])d[hi]=Array(7).fill(false);
+  d[hi][di]=!d[hi][di];
+  sv('habitDots',d);
+  renderTodayFocus();renderHab();updateTodayBadge();
 }
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
@@ -3583,8 +3849,11 @@ function migrateData(){
 function bootApp(){
   initData();migrateData();autoSnapOnce();
   renderHome();renderTopbar();renderHab();renderAssets();
+  // Attiva tab OGGI come default
+  const _oggiBtn=document.getElementById('tab-oggi-btn');
+  if(_oggiBtn)showTab('oggi',_oggiBtn);
   renderTxMonth();renderSpese();renderSpeseGen();
-  document.getElementById('quicknote').value=ld('quicknote','');
+  const _qnel=document.getElementById('quicknote');if(_qnel)_qnel.value=ld('quicknote','');
   setTimeout(()=>{
     renderCharts();renderPatTarget();renderPatChart();updateOv();
     if(window._fbListen)window._fbListen();
@@ -3594,7 +3863,7 @@ function bootApp(){
         renderHome();renderTopbar();renderHab();renderAssets();
         renderTxMonth();renderSpese();renderSpeseGen();
         renderCharts();renderPatTarget();renderPatChart();updateOv();
-        document.getElementById('quicknote').value=ld('quicknote','');
+        const _qnel=document.getElementById('quicknote');if(_qnel)_qnel.value=ld('quicknote','');
       });
     }
   },1500);
@@ -3856,6 +4125,5 @@ document.getElementById('qc-overlay').addEventListener('click',function(e){if(e.
 document.getElementById('qc-overlay').addEventListener('click',function(e){
   if(e.target===this)closeQC();
 });
+
 </script>
-</body>
-</html>
