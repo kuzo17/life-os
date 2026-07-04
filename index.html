@@ -1242,7 +1242,6 @@ function renderHome(){
           </div>
           ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">🔥${streak}d</span>`:''}
         </div>
-        ${p.sub?`<div style="margin-top:6px;font-size:10px;color:var(--text-ghost);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.sub}</div>`:''}
         ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')" title="+">+</button>`:''}
       </div>`;
     });
@@ -3630,6 +3629,7 @@ function renderTodayFocus(){
       <div style="font-size:10px;color:var(--text-faint);margin-top:3px">abitudini</div>
     </div>
   </div>`;
+  h+='<div class="oggi-2col"><div>'; // col sinistra
   let totalOpen=0,totalDone=0;
   allProjs.forEach(p=>{
     const color=ld('proj_color_'+p.id,p.color);
@@ -3660,6 +3660,7 @@ function renderTodayFocus(){
     });
     h+='</div></div>';
   });
+  h+='</div><div>'; // col destra: allenamento + alimentazione + abitudini
   // Sezione ALLENAMENTO
   if(!ld('archived',[]).includes('allenamento')){
     const schede=allGetSchede();
@@ -3739,26 +3740,27 @@ function renderTodayFocus(){
     });
     h+='</div></div>';
   }
-  // Abitudini in tab OGGI (_habits/_habDots/_todayDow2 già dichiarate sopra)
+  // Abitudini in tab OGGI — solo checkbox oggi + streak
   if(_habits.length){
     h+='<div style="margin-bottom:12px">';
-    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
-    h+='<span style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.08em">ABITUDINI</span>';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    h+='<span style="font-family:var(--sans);font-weight:700;font-size:9px;color:var(--text-dim);letter-spacing:.08em">ABITUDINI</span>';
     h+='<div style="flex:1;height:1px;background:var(--border-soft)"></div></div>';
     h+='<div class="card">';
     _habits.forEach(function(hb,hi){
       const done=(_habDots[hi]||[])[_todayDow2]||false;
       const streak=calcHabStreak(hi);
-      h+='<div class="row'+(done?' done':'')+'">'
-        +'<div class="hd'+(done?' on':'')+'" onclick="tDotToday('+hi+','+_todayDow2+')" style="margin:0;flex-shrink:0"></div>'
-        +'<span class="rt" style="color:'+(done?'#444':'#ccc')+'">'+hb+'</span>'
-        +(streak>1?'<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':'')
-        +'</div>';
+      h+='<div class="row'+(done?' done':'')+'" style="padding:8px 14px">';
+      h+='<div class="hd'+(done?' on':'')+'" onclick="tDotToday('+hi+','+_todayDow2+')" style="margin:0;flex-shrink:0"></div>';
+      h+='<span class="rt" style="font-size:12px">'+hb+'</span>';
+      if(streak>1) h+='<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>';
+      h+='</div>';
     });
     h+='</div></div>';
   }
+  h+='</div></div>'; // chiude col-dx e 2col
   if(totalOpen===0&&totalDone===0&&!_habits.length){
-    h+='<div style="text-align:center;padding:40px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text-ghost)">✓ NIENTE PER OGGI</div>';
+    h+='<div style="text-align:center;padding:30px 0;font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text-ghost)">✓ NIENTE PER OGGI</div>';
   }
   h+='</div>';
   el.innerHTML=h;
