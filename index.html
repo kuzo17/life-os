@@ -143,7 +143,7 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
 .pc{
   background:linear-gradient(160deg,var(--surface2),var(--surface));
-  border:1px solid var(--border);border-radius:var(--r-md);padding:14px 15px;
+  border:1px solid var(--border);border-radius:var(--r-md);padding:14px 15px;min-height:100px;
   cursor:pointer;position:relative;overflow:hidden;
   box-shadow:var(--sh-card);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
@@ -158,13 +158,15 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .folder-card{
   background:linear-gradient(160deg,var(--surface2),var(--surface));
   border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:22px 24px;cursor:pointer;position:relative;overflow:hidden;
+  padding:22px 24px;cursor:pointer;position:relative;overflow:hidden;min-height:100px;
   box-shadow:var(--sh-card);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
 }
 .folder-card:hover{transform:translateY(-2px);border-color:var(--border-hover);box-shadow:var(--sh-2);}
 .folder-card-accent{position:absolute;top:0;left:0;right:0;height:4px;}
-.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1rem;}
+.folder-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem;}
+@media(max-width:900px){.folder-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:500px){.folder-grid{grid-template-columns:1fr;}}
 .proj-list-back{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--text-faint);background:none;border:none;cursor:pointer;padding:0;margin-bottom:14px;display:flex;align-items:center;gap:4px;}
 .proj-list-back:hover{color:var(--text);}
 .proj-list-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
@@ -1224,7 +1226,7 @@ function renderHome(){
       const fStatus=fTot===0?'var(--text-ghost)':fDone===fTot?'var(--green)':fOpen>0?'var(--red)':'var(--yellow)';
       h+=`<div class="folder-card" onclick="openFolder('${f}')">
         <div class="folder-card-accent" style="background:${accentGrad}"></div>
-        <div style="font-family:var(--sans);font-weight:800;font-size:16px;color:var(--text);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</div>
+        <div style="font-family:var(--sans);font-weight:800;font-size:13px;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">${fp.length} prog.</span>
@@ -1309,7 +1311,7 @@ function renderHome(){
           ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">${FIRE}${streak}d</span>`:''}
         </div>
         ${!p.hasInv?(()=>{
-          const _ropen=ld('recur_'+p.id,[]).filter((_,i)=>!rc3[tk3+'_'+i]).slice(0,2);
+          const _ropen=ld('recur_'+p.id,[]).filter((_,i)=>!rc3[tk3+'_'+i]);
           return _ropen.length?`<div style="margin-top:8px;border-top:1px solid var(--border-soft);padding-top:7px">`
             +_ropen.map(t=>`<div style="font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 0">‣ ${t}</div>`).join('')
             +`</div>`:'';
