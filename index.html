@@ -1953,7 +1953,8 @@ function buildStd(p){
       <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.1em">AGENDA PROGETTO</div>
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">':''}`;  
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">`;
+  
   const _todayKeyMini=new Date().toDateString();
   const _recur=ld('recur_'+id,[]);
   const _recurCh=ld('recurChecks_'+id,{});
