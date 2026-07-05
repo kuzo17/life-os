@@ -1808,6 +1808,7 @@ function openProj(id){
   _lastScrollY=window.scrollY;
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
+  p.color=ld('proj_color_'+p.id,p.color); // usa colore custom se salvato
   document.getElementById('home').style.display='none';
   const dv=document.getElementById('det');dv.style.display='block';
   cPage=20;cFilter='tutti';
@@ -1822,7 +1823,7 @@ function openProj(id){
     +'<div style="display:flex;align-items:center;gap:10px">'
     +'<div class="dn" style="color:'+p.color+'">'+p.tag+'</div>'
     +(p.hasInv
-      ?'<div onclick="showInvColorPicker(\''+p.id+'\',event)" title="Cambia colore" style="width:14px;height:14px;border-radius:50%;background:'+p.color+';cursor:pointer;flex-shrink:0;border:2px solid rgba(0,0,0,.1)"></div>'
+      ?'<div class="inv-color-dot" data-inv="'+p.id+'" title="Cambia colore" style="width:14px;height:14px;border-radius:50%;background:'+p.color+';cursor:pointer;flex-shrink:0;border:2px solid rgba(0,0,0,.1)"></div>'
       :'')
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">'
@@ -3776,7 +3777,7 @@ function renderTodayFocus(){
     const alimColor=ld('proj_color_alimentazione','#fb923c');
     const pastiConTesto=schedaA.pasti.filter(p=>p.testo.trim());
     const alimDone=pastiConTesto.filter((_,i)=>chAlim[dIdxA+'_'+schedaA.pasti.indexOf(pastiConTesto[i])]).length;
-    h+=`<div style="background:#ff6b35;border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
+    h+=`<div style="background:${alimColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
     h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.06em">ALIMENTAZIONE</span>
       <span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600">${alimDone}/${pastiConTesto.length}</span>
@@ -3805,7 +3806,7 @@ function renderTodayFocus(){
     const chAll=ld('all_checksOggi',{})[todayKey]||{};
     const allColor=ld('proj_color_allenamento','#ef4444');
     const allDone=scheda.esercizi.filter((_,i)=>chAll[dIdx+'_'+i]).length;
-    h+=`<div style="background:#0a0a0a;border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
+    h+=`<div style="background:${allColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
     h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:.06em">ALLENAMENTO — ${scheda.nome.toUpperCase()}</span>
       <span style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600">${allDone}/${scheda.esercizi.length}</span>
@@ -3886,7 +3887,7 @@ function showInvColorPicker(invType,e){
   colors.forEach(c=>{
     const b=document.createElement('button');
     b.style.cssText='width:24px;height:24px;border-radius:50%;background:'+c+';border:2px solid transparent;cursor:pointer;';
-    b.onclick=()=>{sv('proj_color_'+invType,c);d.remove();openProj(invType);};
+    b.onclick=()=>{sv('proj_color_'+invType,c);d.remove();openProj(invType);renderTodayFocus();};
     d.appendChild(b);
   });
   document.body.appendChild(d);
@@ -3917,6 +3918,9 @@ function changeProjectColor(id,color){
   const cp=custom.find(x=>x.id===id);
   if(cp){cp.color=color;sv('customProjs',custom);}
   renderHome();
+  renderTodayFocus();
+  // Se siamo nella scheda progetto, ricaricala
+  if(document.getElementById('det').style.display!=='none')openProj(id);
 }
 
 // ── QUICK ADD FROM CARD ───────────────────────────────────
