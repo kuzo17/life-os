@@ -445,6 +445,9 @@ textarea::placeholder{color:var(--text-ghost);}
 .proj-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1rem;}
 .proj-2col .slbl{margin-top:0;}
 @media(max-width:700px){.proj-2col{grid-template-columns:1fr;}}
+.obj-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1rem;}
+.obj-2col .slbl{margin-top:0;}
+@media(max-width:700px){.obj-2col{grid-template-columns:1fr;}}
 .ag-day-drop-target{border:2px dashed var(--green)!important;background:rgba(74,222,128,.06)!important;}
 .ag-task-dragging{opacity:.4;}
 </style>
@@ -1829,7 +1832,6 @@ function closeProj(){
   document.getElementById('home').style.display='block';
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
-  const _allP2=[...PD,...ld('customProjs',[])];_allP2.forEach(p=>sessionStorage.removeItem('miniCalOpen_'+p.id));
   const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
   syncAssets();renderHome();renderTopbar();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
   setTimeout(()=>window.scrollTo(0,_lastScrollY),0);
@@ -1910,16 +1912,13 @@ function buildStd(p){
   // ── Mini calendario ──
   const today=new Date();today.setHours(0,0,0,0);
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  const _calOpen=sessionStorage.getItem('miniCalOpen_'+id)==='1';
+  const _calOpen=true; // sempre visibile
   let h=`<div style="margin-bottom:1rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleMiniCal('${id}')">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.1em">AGENDA PROGETTO</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
-        <span style="font-size:10px;color:var(--text-ghost)">${_calOpen?'▲':'▼'}</span>
-      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${monthNames[today.getMonth()]} ${today.getFullYear()}</div>
     </div>
-    ${_calOpen?'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">':''}`;  
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px">':''}`;  
   const _todayKeyMini=new Date().toDateString();
   const _recur=ld('recur_'+id,[]);
   const _recurCh=ld('recurChecks_'+id,{});
@@ -1939,9 +1938,9 @@ function buildStd(p){
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:${tot?'var(--green)':'var(--text-ghost)'};min-height:12px">${isSelected&&tot?done+'/'+tot:tot||''}</div>
     </div>`;
   }
-  if(_calOpen) h+=`</div>`;
+  h+=`</div>`;
   const selKey=ld('miniCalSel_'+id,'');
-  if(selKey&&_calOpen){
+  if(selKey){
     const selDate=new Date(selKey.replace('agenda_',''));
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
     const allSelTasks=getAgendaDay(selDate);
@@ -2049,6 +2048,8 @@ function buildStd(p){
   h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')"><button class="abtn" onclick="addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')">+ ADD</button></div>`;
   h+=`</div></div></div>`;
   // ── FULL WIDTH: Obiettivi settimanali ──
+  // ── 2 COLONNE: Obiettivi settimana | Obiettivi progetto ──
+  h+=`<div class="obj-2col"><div>`;
   const wDone=weekGoalChecks.filter(Boolean).length;
   h+=`<div class="slbl">Obiettivi settimana
     <div style="display:flex;gap:8px;align-items:center">
@@ -2065,8 +2066,11 @@ function buildStd(p){
       <button class="xb" onclick="delWeekGoal(${i},'${id}')">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="wgoal-inp-${id}" placeholder="+ obiettivo settimana…" onkeydown="if(event.key==='Enter')addWeekGoal('${id}')"><button class="abtn" onclick="addWeekGoal('${id}')">+ ADD</button></div></div>`;
+  h+=`<div class="arow"><input class="ain" id="wgoal-inp-${id}" placeholder="+ obiettivo settimana…" onkeydown="if(event.key==='Enter')addWeekGoal('${id}')"><button class="abtn" onclick="addWeekGoal('${id}')">+ ADD</button></div></div></div>`;
+  // Colonna 2: Obiettivi progetto
+  h+=`<div>`;
   h+=goalsH(id,goals,gc,p.color);
+  h+=`</div></div>`;
   h+=speseH(id,sp);
   const _statOpen=ld('statChartOpen_'+id,false);
   h+=`<div class="slbl" style="cursor:pointer" onclick="toggleStatChart('${id}')">
@@ -2091,12 +2095,6 @@ function cycleTaskPri(i,id){
 }
 
 // ── MINI CALENDARIO PROGETTO ─────────────────────────────
-function toggleMiniCal(id){
-  // Usa sessionStorage per non persistere tra aperture
-  const cur=sessionStorage.getItem('miniCalOpen_'+id)==='1';
-  sessionStorage.setItem('miniCalOpen_'+id,cur?'0':'1');
-  openProj(id);
-}
 function toggleMiniCalDay(projId,key){
   const cur=ld('miniCalSel_'+projId,'');
   sv('miniCalSel_'+projId,cur===key?'':key);
