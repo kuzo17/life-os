@@ -463,20 +463,24 @@ textarea::placeholder{color:var(--text-ghost);}
 
 /* ── Desktop font scale ── */
 @media(min-width:768px){
-  body{font-size:15px;}
-  .dn{font-size:22px!important;}
-  .ptag{font-size:14px!important;}
-  .slbl{font-size:12px!important;}
-  .row{padding:11px 16px!important;font-size:14px!important;}
-  .rt{font-size:14px!important;}
-  .ain{font-size:14px!important;}
-  .tab{font-size:13px!important;padding:7px 18px!important;}
-  .flbl{font-size:13px!important;}
-  .cc{padding:16px 18px!important;}
+  body{font-size:16px;}
+  .dn{font-size:26px!important;}
+  .ptag{font-size:16px!important;}
+  .slbl{font-size:13px!important;}
+  .row{padding:12px 18px!important;font-size:15px!important;}
+  .rt{font-size:15px!important;}
+  .ain{font-size:15px!important;}
+  .tab{font-size:14px!important;padding:8px 20px!important;}
+  .flbl{font-size:14px!important;}
+  .cc{padding:18px 20px!important;}
   .card{padding:4px 0!important;}
-  .hd{width:17px!important;height:17px!important;}
-  .abtn{font-size:12px!important;}
-  .arow{gap:8px!important;}
+  .hd{width:18px!important;height:18px!important;}
+  .abtn{font-size:13px!important;}
+  .arow{gap:10px!important;}
+  .folder-card{padding:24px 26px!important;}
+  .folder-card div[style*='font-size:13px']{font-size:15px!important;}
+  .pc .ptag{font-size:14px!important;}
+  #home{padding:0 24px 24px!important;}
 }
 </style>
 </head>
@@ -1813,23 +1817,25 @@ function openProj(id){
   else pct=p.hasInv?ld('pct_'+id,0):calcPct(id);
   const _detStreak=p.hasInv?0:calcProjStreak(p.id);
   const _detAge=getAge(p.id);
-  let h=`<button class="back" onclick="closeProj()">← BACK</button>
-  <div class="dh">
-    <div style="flex:1;min-width:0">
-      <div class="dn" style="color:${p.color}">${p.tag}</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">
-        ${p.sub?`<span style="font-size:11px;color:var(--text-faint)">${p.sub}</span>`:''}
-        ${_detStreak>1?`<span style="font-family:var(--mono);font-size:10px;color:var(--yellow)">🔥 ${_detStreak}d streak</span>`:''}
-        ${_detAge?`<span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">&middot; ${_detAge}</span>`:''}
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-      <div class="ring-wrap" id="dring">
-        ${ringSVG(pct,p.color,56,5)}
-        <div class="ring-num" id="dpct" style="color:${p.color};font-size:15px">${pct}%</div>
-      </div>
-    </div>
-  </div>`;
+  let h='<button class="back" onclick="closeProj()">← BACK</button>'
+    +'<div class="dh"><div style="flex:1;min-width:0">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<div class="dn" style="color:'+p.color+'">'+p.tag+'</div>'
+    +(p.hasInv
+      ?'<div onclick="showInvColorPicker(\''+p.id+'\',event)" title="Cambia colore" style="width:14px;height:14px;border-radius:50%;background:'+p.color+';cursor:pointer;flex-shrink:0;border:2px solid rgba(0,0,0,.1)"></div>'
+      :'')
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">'
+    +(p.sub?'<span style="font-size:11px;color:var(--text-faint)">'+p.sub+'</span>':'')
+    +(_detStreak>1?'<span style="font-family:var(--mono);font-size:10px;color:var(--yellow)">🔥 '+_detStreak+'d streak</span>':'')
+    +(_detAge?'<span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">&middot; '+_detAge+'</span>':'')
+    +'</div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'
+    +'<div class="ring-wrap" id="dring">'
+    +ringSVG(pct,p.color,56,5)
+    +'<div class="ring-num" id="dpct" style="color:'+p.color+';font-size:15px">'+pct+'%</div>'
+    +'</div></div></div>';
+
   if(p.hasInv==='vinted')h+=buildVinted(p);
   else if(p.hasInv==='carte')h+=buildCarte(p);
   else if(p.hasInv==='risparmio')h+=buildRisparmio(p);
@@ -3867,6 +3873,25 @@ function ckAgendaFocus(key,i){
 
 // ── COLOR PICKER ──────────────────────────────────────────
 const PICK_COLORS=['#4ade80','#22c55e','#34d399','#60a5fa','#3b82f6','#818cf8','#a855f7','#f472b6','#f87171','#fb923c','#e8b04a','#f59e0b','#06b6d4','#38bdf8','#fff'];
+function showInvColorPicker(invType,e){
+  e.stopPropagation();
+  const colors=['#ef4444','#f97316','#f59e0b','#16a34a','#0ea5e9','#6366f1','#a855f7','#ec4899','#0a0a0a','#64748b'];
+  const ex=document.getElementById('inv-color-picker-'+invType);
+  if(ex){ex.remove();return;}
+  const d=document.createElement('div');
+  d.id='inv-color-picker-'+invType;
+  d.style.cssText='position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-wrap:wrap;gap:6px;width:160px;z-index:9999;box-shadow:var(--sh-3)';
+  d.style.left=Math.min(e.clientX,window.innerWidth-170)+'px';
+  d.style.top=(e.clientY+8)+'px';
+  colors.forEach(c=>{
+    const b=document.createElement('button');
+    b.style.cssText='width:24px;height:24px;border-radius:50%;background:'+c+';border:2px solid transparent;cursor:pointer;';
+    b.onclick=()=>{sv('proj_color_'+invType,c);d.remove();openProj(invType);};
+    d.appendChild(b);
+  });
+  document.body.appendChild(d);
+  setTimeout(()=>document.addEventListener('click',function h(){d.remove();document.removeEventListener('click',h);}),10);
+}
 function showProjColorPicker(id,e){
   document.querySelectorAll('.color-picker-pop').forEach(x=>x.remove());
   const pop=document.createElement('div');
