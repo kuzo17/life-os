@@ -143,7 +143,7 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
 .pc{
   background:linear-gradient(160deg,var(--surface2),var(--surface));
-  border:1px solid var(--border);border-radius:var(--r-md);padding:10px 11px;
+  border:1px solid var(--border);border-radius:var(--r-md);padding:14px 15px;
   cursor:pointer;position:relative;overflow:hidden;
   box-shadow:var(--sh-card);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
@@ -155,6 +155,20 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ring-num{position:absolute;font-family:var(--mono);font-weight:700;text-align:center;line-height:1.1;}
 .pc .pb{display:none;}
+.folder-card{
+  background:linear-gradient(160deg,var(--surface2),var(--surface));
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:22px 24px;cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:var(--sh-card);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
+}
+.folder-card:hover{transform:translateY(-2px);border-color:var(--border-hover);box-shadow:var(--sh-2);}
+.folder-card-accent{position:absolute;top:0;left:0;right:0;height:4px;}
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1rem;}
+.proj-list-back{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--text-faint);background:none;border:none;cursor:pointer;padding:0;margin-bottom:14px;display:flex;align-items:center;gap:4px;}
+.proj-list-back:hover{color:var(--text);}
+.proj-list-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media(max-width:600px){.proj-list-grid{grid-template-columns:1fr;}}
 .folder-drag-handle{cursor:grab;color:var(--text-ghost);font-size:13px;padding:0 4px;opacity:0;transition:opacity .15s;flex-shrink:0;user-select:none;}
 .folder-hdr:hover .folder-drag-handle{opacity:1;}
 .folder-hdr.folder-drag-over{border-top:2px solid var(--green);}
@@ -477,32 +491,13 @@ textarea::placeholder{color:var(--text-ghost);}
     <button class="tab" id="tab-prog-btn" onclick="showTab('progetti',this)">PROGETTI</button>
     <button class="tab" id="tab-oggi-btn" onclick="showTab('oggi',this)">OGGI</button>
     <button class="tab" onclick="showTab('agenda',this)">AGENDA</button>
+    <button class="tab" onclick="showTab('finanze',this)">FINANZE</button>
   </div>
   <div id="tab-progetti" style="display:none"><div id="ph"></div></div>
   <div id="tab-oggi" style="display:none"></div>
   <div id="tab-agenda" style="display:none"><div id="agenda-view"></div></div>
-  <div class="divider"></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-    <div class="flbl" style="margin:0">Abitudini — settimana corrente</div>
-    <div style="display:flex;gap:6px">
-      <button onclick="resetHabits()" style="font-family:var(--sans);font-weight:600;font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--red)">RESET SETT.</button>
-      <button onclick="toggleHabHist()" id="histbtn" style="font-family:var(--sans);font-weight:600;font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--blue)">STORICO</button>
-    </div>
-  </div>
-  <div class="hw" id="hw"></div>
-  <div id="habHist" style="display:none;margin-top:8px"></div>
-  <div class="arow" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-top:6px;border-top:1px solid #2a2a2a">
-    <input class="ain" id="nh" placeholder="+ nuova abitudine…" onkeydown="if(event.key==='Enter')addHab()">
-    <button class="abtn" onclick="addHab()">+ ADD</button>
-  </div>
-  <div class="divider"></div>
-  <div class="flbl" style="margin-top:0;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="toggleQuicknote()">
-    <span>Note veloci</span>
-    <span id="qn-arrow" style="font-size:10px;color:var(--text-ghost)">▼</span>
-  </div>
-  <div id="qn-wrap" style="display:none">
-    <textarea id="quicknote" rows="3" placeholder="Idee, pensieri, cose da non dimenticare…" onblur="sv('quicknote',this.value);toast()"></textarea>
-  </div>
+  <div id="tab-finanze" style="display:none"><div id="finanze-view"></div></div>
+  <div id="home-extra">
   <div class="divider"></div>
   <div class="flbl" style="margin-top:0">Patrimonio & Finanze</div>
   <div class="cc asset-panel">
@@ -586,6 +581,7 @@ textarea::placeholder{color:var(--text-ghost);}
     <button class="foot-btn" style="color:var(--green)" onclick="exportData()">↓ ESPORTA BACKUP</button>
     <label class="foot-btn" style="color:var(--blue)">↑ IMPORTA BACKUP<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
   </div>
+  </div><!-- end home-extra -->
   <div class="foot" id="foot"></div>
 </div>
 <div id="det" style="display:none"></div>
@@ -1022,8 +1018,12 @@ function showTab(name,btn){
   btn.classList.add('on');
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
   document.getElementById('tab-oggi').style.display=name==='oggi'?'block':'none';
-  document.getElementById('tab-agenda').style.display=name==='agenda'?'none':'none';
-  if(name==='agenda')document.getElementById('tab-agenda').style.display='block';
+  document.getElementById('tab-agenda').style.display=name==='agenda'?'block':'none';
+  document.getElementById('tab-finanze').style.display=name==='finanze'?'block':'none';
+  // Nascondi sezioni home quando non si è su PROGETTI
+  const homeExtra=document.getElementById('home-extra');
+  if(homeExtra)homeExtra.style.display=name==='finanze'?'block':'none';
+  if(name==='finanze')renderFinanze();
   if(name==='agenda'){
     renderAgenda();
     setTimeout(()=>{
@@ -1180,6 +1180,23 @@ function renderPatChart(){
 }
 
 // ── HOME ─────────────────────────────────────────────────
+let _homeFolder=null;
+function openFolder(f){_homeFolder=f;renderHome();}
+function closeFolder(){_homeFolder=null;renderHome();}
+
+function renderFinanze(){
+  const el=document.getElementById('finanze-view');if(!el)return;
+  syncAssets();
+  // Render manuale delle sezioni finanze nel tab dedicato
+  let h='';
+  h+='<div style="margin-top:0">';
+  // Clona visivamente il contenuto — usiamo i div già esistenti tramite innerHTML
+  const he=document.getElementById('home-extra');
+  if(he)el.innerHTML=he.innerHTML;
+  // Re-trigger render dei componenti interattivi
+  setTimeout(()=>{renderAssets();renderTxMonth();renderSpese();renderSpeseGen();updateOv();renderCharts();renderPatTarget();renderPatChart();},50);
+}
+
 function renderHome(){
   syncAssets();
   const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
@@ -1187,41 +1204,90 @@ function renderHome(){
   const customProjs=ld('customProjs',[]);
   const allProjs=[...PD,...customProjs];
   let h='';
-  folders.forEach((f,fi)=>{
-    const folderProjs=allProjs.filter(p=>p.folder===f&&!archived.includes(p.id));
-    const savedOrder=ld('projOrders',{})[f]||[];
-    const orderPos=new Map(savedOrder.map((id,i)=>[id,i]));
-    const fps=folderProjs.slice().sort((a,b)=>(orderPos.has(a.id)?orderPos.get(a.id):savedOrder.length+folderProjs.indexOf(a))-(orderPos.has(b.id)?orderPos.get(b.id):savedOrder.length+folderProjs.indexOf(b)));
-    h+=`<div class="folder-hdr" draggable="true" ondragstart="folderDragStart(event,${fi})" ondragover="folderDragOver(event,${fi})" ondragleave="folderDragLeave(event)" ondrop="folderDrop(event,${fi})">
-      <span class="folder-drag-handle" title="Trascina per riordinare">⠇</span>
-      <input class="folder-name" value="${f}" onblur="renameFolder(${fi},this.value)" onkeydown="if(event.key==='Enter')this.blur()">
-      <div class="folder-actions">
-        <button class="fla-btn" style="color:var(--green)" onclick="addProject('${f}')">+ PROGETTO</button>
-        <button class="fla-btn" style="color:var(--red)" onclick="delFolder(${fi})">× FOLDER</button>
+  if(!_homeFolder){
+    // ── VISTA FOLDER CARD ──
+    h+='<div class="folder-grid">';
+    folders.forEach((f,fi)=>{
+      const fp=allProjs.filter(p=>p.folder===f&&!archived.includes(p.id));
+      const today2=new Date();today2.setHours(0,0,0,0);
+      const tk2=new Date().toDateString();
+      let fOpen=0,fDone=0;
+      fp.filter(p=>!p.hasInv).forEach(p=>{
+        ld('recur_'+p.id,[]).forEach((_,i)=>{if(ld('recurChecks_'+p.id,{})[tk2+'_'+i])fDone++;else fOpen++;});
+        getAgendaDay(today2).filter(t=>t.projId===p.id).forEach(t=>{if(t.done)fDone++;else fOpen++;});
+      });
+      const fTot=fOpen+fDone;
+      const fColors=[...new Set(fp.slice(0,5).map(p=>ld('proj_color_'+p.id,p.color)))];
+      const accentGrad=fColors.length>1
+        ?'linear-gradient(90deg,'+fColors.map((c,i)=>c+' '+(i/(fColors.length-1)*100)+'%').join(',')+')' 
+        :fColors[0]||'var(--border)';
+      const fStatus=fTot===0?'var(--text-ghost)':fDone===fTot?'var(--green)':fOpen>0?'var(--red)':'var(--yellow)';
+      h+=`<div class="folder-card" onclick="openFolder('${f}')">
+        <div class="folder-card-accent" style="background:${accentGrad}"></div>
+        <div style="font-family:var(--sans);font-weight:800;font-size:16px;color:var(--text);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">${fp.length} prog.</span>
+            ${fTot>0?`<span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${fStatus}">${fDone}/${fTot} oggi</span>`:''}
+          </div>
+          <div style="display:flex;gap:3px">
+            ${fColors.map(c=>`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c}"></span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    });
+    h+='</div>';
+    // Archivio
+    if(archived.length){
+      h+=`<div style="display:flex;gap:9px;margin-top:4px">
+        <button onclick="addFolder()" style="font-family:var(--mono);font-size:9px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px dashed var(--border);background:transparent;color:var(--text-faint)">+ NUOVA FOLDER</button>
+        <button onclick="toggleArchive()" style="font-family:var(--mono);font-size:9px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-ghost)">ARCHIVIO (${archived.length}) <span id="arch-arrow">▶</span></button>
       </div>
-    </div>
-    <div class="pgrid" ondragover="event.preventDefault()" ondrop="dropProjToFolder(event,'${f}')">`;
+      <div id="arch-grid" style="display:none;margin-top:8px" class="arch-grid">`;
+      archived.forEach(id=>{
+        const p=allProjs.find(x=>x.id===id);if(!p)return;
+        h+=`<div class="pc pc-archived">
+          <div class="acc" style="background:${p.color}"></div>
+          <div class="pc-actions" style="opacity:1">
+            <button class="pca" style="color:var(--green)" onclick="unarchiveProj('${id}')">↑</button>
+            <button class="pca" onclick="deleteProj('${id}')">×</button>
+          </div>
+          <div class="ptag" style="color:${p.color};padding-right:36px">${p.tag}</div>
+        </div>`;
+      });
+      h+='</div>';
+    } else {
+      h+=`<button onclick="addFolder()" style="font-family:var(--mono);font-size:9px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px dashed var(--border);background:transparent;color:var(--text-faint);margin-top:4px">+ NUOVA FOLDER</button>`;
+    }
+  } else {
+    // ── VISTA PROGETTI DENTRO FOLDER ──
+    const fi=folders.indexOf(_homeFolder);
+    const fp=allProjs.filter(p=>p.folder===_homeFolder&&!archived.includes(p.id));
+    const savedOrder=ld('projOrders',{})[_homeFolder]||[];
+    const orderPos=new Map(savedOrder.map((id,i)=>[id,i]));
+    const fps=fp.slice().sort((a,b)=>(orderPos.has(a.id)?orderPos.get(a.id):99+fp.indexOf(a))-(orderPos.has(b.id)?orderPos.get(b.id):99+fp.indexOf(b)));
+    // Header
+    h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="proj-list-back" onclick="closeFolder()">← CARTELLE</button>
+      <span style="color:var(--border)">|</span>
+      <span style="font-family:var(--sans);font-weight:800;font-size:16px;color:var(--text)">${_homeFolder}</span>
+      <button onclick="addProject('${_homeFolder}')" style="font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;margin-left:auto">+ PROGETTO</button>
+    </div>`;
+    h+=`<div class="proj-list-grid" ondragover="event.preventDefault()" ondrop="dropProjToFolder(event,'${_homeFolder}')">`;
     fps.forEach(p=>{
       const color=ld('proj_color_'+p.id,p.color);
-      const pct=p.hasInv?ld('pct_'+p.id,0):calcPct(p.id);
-      const pctDay=p.hasInv==='allenamento'?allCalcPctOggi():p.hasInv==='alimentazione'?alimCalcPctOggi():p.hasInv?ld('pct_'+p.id,0):calcPctDay(p.id);
-      const pctWeek=p.hasInv?ld('pct_'+p.id,0):calcPctWeek(p.id);
-      const _todayKey=new Date().toDateString();
-      const _recur=p.hasInv?[]:ld('recur_'+p.id,[]);
-      const _recurCh=p.hasInv?{}:ld('recurChecks_'+p.id,{});
-      const _today=new Date();_today.setHours(0,0,0,0);
-      const _dayTasks=p.hasInv?[]:getAgendaDay(_today).filter(t=>t.projId===p.id);
-      const today_tot=_recur.length+_dayTasks.length;
-      const today_done=_recur.filter((_,i)=>_recurCh[_todayKey+'_'+i]).length
-                       +_dayTasks.filter(t=>t.done).length;
-      const td=p.hasInv?null:tasksDone(p.id);
-      const age=getAge(p.id);
+      const today3=new Date();today3.setHours(0,0,0,0);
+      const tk3=new Date().toDateString();
+      const recur3=p.hasInv?[]:ld('recur_'+p.id,[]);
+      const rc3=p.hasInv?{}:ld('recurChecks_'+p.id,{});
+      const ag3=p.hasInv?[]:getAgendaDay(today3).filter(t=>t.projId===p.id);
+      const t3tot=recur3.length+ag3.length;
+      const t3done=recur3.filter((_,i)=>rc3[tk3+'_'+i]).length+ag3.filter(t=>t.done).length;
+      const streak=p.hasInv?0:calcProjStreak(p.id);
+      const cs=t3tot===0?'idle':t3done===t3tot?'done':t3done>0?'progress':'open';
+      const sc=cs==='done'?'var(--green)':cs==='progress'?'var(--yellow)':cs==='open'?'var(--red)':'var(--border-hover)';
       const pri=getPri(p.id);
       const projDebt=p.hasInv?0:calcProjDebt(p.id).total;
-      const streak=p.hasInv?0:calcProjStreak(p.id);
-      const cardStatus=today_tot===0?'idle':today_done===today_tot?'done':today_done>0?'progress':'open';
-      const statusColor=cardStatus==='done'?'var(--green)':cardStatus==='progress'?'var(--yellow)':cardStatus==='open'?'var(--red)':'var(--border-hover)';
-      const statusDot=cardStatus==='done'?'✓':cardStatus==='progress'?today_done+'/'+today_tot:cardStatus==='open'?today_tot+'':'';
       h+=`<div class="pc" draggable="true" ondragstart="dragProjStart(event,'${p.id}')" ondragover="event.preventDefault()" ondrop="dropProjOnCard(event,'${p.id}')" onclick="openProj('${p.id}')">
         <div class="acc" style="background:${color}" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)"></div>
         <div class="pc-actions">
@@ -1229,48 +1295,31 @@ function renderHome(){
           <button class="pca" onclick="event.stopPropagation();deleteProj('${p.id}')" title="Elimina">×</button>
         </div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:8px">
-          <div class="ptag" style="color:${color};margin-bottom:0;font-size:12px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.tag}</div>
-          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-top:1px">
-            ${projDebt>0?`<span style="font-family:var(--mono);font-size:8px;font-weight:700;color:var(--red)">⚠${projDebt}</span>`:''}
+          <div class="ptag" style="color:${color};margin-bottom:0;font-size:12px;font-weight:800">${p.tag}</div>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+            ${projDebt>0?`<span style="font-family:var(--mono);font-size:8px;color:var(--red)">⚠${projDebt}</span>`:''}
             ${pri.dot!=='transparent'?`<div class="pri-dot" style="background:${pri.dot};border:1px solid ${pri.dot}" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`:`<div class="pri-dot" onclick="event.stopPropagation();cyclePri('${p.id}')"></div>`}
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
           <div style="display:flex;align-items:center;gap:5px">
-            <span style="width:6px;height:6px;border-radius:50%;background:${statusColor};flex-shrink:0;display:inline-block"></span>
-            <span style="font-family:var(--mono);font-size:10px;color:${cardStatus==='idle'?'var(--text-ghost)':statusColor};font-weight:${cardStatus==='idle'?'400':'700'}">${cardStatus==='idle'?'—':statusDot+(cardStatus==='done'?'':' oggi')}</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:${sc};flex-shrink:0;display:inline-block"></span>
+            <span style="font-family:var(--mono);font-size:10px;color:${cs==='idle'?'var(--text-ghost)':sc};font-weight:${cs==='idle'?'400':'700'}">${cs==='idle'?'—':cs==='done'?'✓':t3done+'/'+t3tot+' oggi'}</span>
           </div>
-          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">🔥${streak}d</span>`:''}
+          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">${FIRE}${streak}d</span>`:''}
         </div>
-        ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')" title="+">+</button>`:''}
+        ${!p.hasInv?(()=>{
+          const _ropen=ld('recur_'+p.id,[]).filter((_,i)=>!rc3[tk3+'_'+i]).slice(0,2);
+          return _ropen.length?`<div style="margin-top:8px;border-top:1px solid var(--border-soft);padding-top:7px">`
+            +_ropen.map(t=>`<div style="font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 0">‣ ${t}</div>`).join('')
+            +`</div>`:'';
+        })():''}
+        ${!p.hasInv?`<button class="pc-qadd" onclick="event.stopPropagation();quickAddToCard('${p.id}')">+</button>`:''}
       </div>`;
     });
     h+='</div>';
-  });
-  h+=`<div style="margin-top:10px"><button onclick="addFolder()" style="font-family:Space Mono,monospace;font-size:9px;padding:6px 14px;border-radius:6px;cursor:pointer;border:1px dashed #2a2a2a;background:transparent;color:var(--text-faint)">+ NUOVA FOLDER</button></div>`;
-  if(archived.length){
-    h+=`<div class="arch-section">
-      <div class="flbl" style="cursor:pointer;display:flex;align-items:center;gap:6px" onclick="toggleArchive()">
-        <span>ARCHIVIO (${archived.length})</span><span id="arch-arrow">▶</span>
-      </div>
-      <div id="arch-grid" style="display:none" class="arch-grid">`;
-    archived.forEach(id=>{
-      const p=allProjs.find(x=>x.id===id);if(!p)return;
-      const pct=p.hasInv?ld('pct_'+id,0):calcPct(id);
-      h+=`<div class="pc pc-archived">
-        <div class="acc" style="background:${p.color}"></div>
-        <div class="pc-actions" style="opacity:1">
-          <button class="pca" style="color:var(--green)" onclick="unarchiveProj('${id}')" title="Ripristina">↑</button>
-          <button class="pca" onclick="deleteProj('${id}')" title="Elimina">×</button>
-        </div>
-        <div class="ptag" style="color:${p.color};padding-right:36px">${p.tag}</div>
-        <div class="ppct" style="color:${p.color}">${pct}%</div>
-        <div class="pb"><div class="pbf" style="width:${pct}%;background:${p.color}"></div></div>
-      </div>`;
-    });
-    h+='</div></div>';
   }
-  document.getElementById('ph').innerHTML=h;
+    document.getElementById('ph').innerHTML=h;
   updateTodayBadge();
 }
 
@@ -1723,6 +1772,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))docum
 // ── OPEN PROJECT ─────────────────────────────────────────
 function openProj(id){
   _lastScrollY=window.scrollY;
+  sv('miniCalOpen_'+id,false);
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   document.getElementById('home').style.display='none';
@@ -1781,6 +1831,8 @@ function closeProj(){
   document.getElementById('home').style.display='block';
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
+  const _allP2=[...PD,...ld('customProjs',[])];_allP2.forEach(p=>sv('miniCalOpen_'+p.id,false));
+  const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
   syncAssets();renderHome();renderTopbar();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
   setTimeout(()=>window.scrollTo(0,_lastScrollY),0);
 }
@@ -3616,19 +3668,18 @@ function renderTodayFocus(){
 
   let h='<div style="margin-bottom:1rem">';
 
-  // ── SUMMARY: 1 box ──
-  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-family:var(--mono);font-size:22px;font-weight:700;color:${totalOpen===0&&totalTot>0?'var(--green)':totalOpen>0?'var(--red)':'var(--text-ghost)'}">
-      ${totalDone}/${totalTot}
-    </span>
-    <span style="font-size:11px;color:var(--text-faint)">task completate oggi</span>
-    <div style="display:flex;gap:4px;align-items:center">
-      ${Array.from({length:Math.min(totalTot,20)},(_,i)=>`<div style="width:6px;height:6px;border-radius:50%;background:${i<totalDone?'var(--green)':'var(--border-hover)'}"></div>`).join('')}
+  // ── SUMMARY compatto ──
+  const _summaryColor=totalOpen===0&&totalTot>0?'var(--green)':totalOpen>0?'var(--red)':'var(--text-ghost)';
+  h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:0 2px">
+    <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:${_summaryColor}">${totalDone}/${totalTot}</span>
+    <span style="font-size:11px;color:var(--text-faint)">task oggi</span>
+    <div style="display:flex;gap:3px;align-items:center;margin-left:4px">
+      ${Array.from({length:Math.min(totalTot,16)},(_,i)=>`<div style="width:5px;height:5px;border-radius:50%;background:${i<totalDone?'var(--green)':'var(--border-hover)'}"></div>`).join('')}
     </div>
   </div>`;
 
   // ── BODY 2 COLONNE ──
-  h+='<div style="display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start;margin-bottom:12px">';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px">';
 
   // ── COLONNA SX: task ──
   h+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">';
@@ -3765,6 +3816,13 @@ function renderTodayFocus(){
   el.innerHTML=h;
 }
 
+function tDotToday(hi,di){
+  const d=ld('habitDots',[]);
+  if(!d[hi])d[hi]=Array(7).fill(false);
+  d[hi][di]=!d[hi][di];
+  sv('habitDots',d);
+  renderTodayFocus();renderHab();updateTodayBadge();
+}
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
   const ch=ld('recurChecks_'+id,{});
@@ -3843,6 +3901,7 @@ function migrateData(){
 }
 function bootApp(){
   initData();migrateData();autoSnapOnce();
+  const _he=document.getElementById('home-extra');if(_he)_he.style.display='none';
   renderHome();renderTopbar();renderHab();renderAssets();
   // Attiva tab OGGI come default
   const _oggiBtn=document.getElementById('tab-oggi-btn');
