@@ -1187,15 +1187,12 @@ function openFolder(f){_homeFolder=f;renderHome();}
 function closeFolder(){_homeFolder=null;renderHome();}
 
 function renderFinanze(){
-  const el=document.getElementById('finanze-view');if(!el)return;
+  // Non cloniamo il DOM — mostriamo direttamente home-extra nel contesto home
+  // Il contenuto è già nel DOM, basta che home-extra sia visibile
+  // finanze-view è vuoto, home-extra viene mostrato via showTab
+  const fv=document.getElementById('finanze-view');
+  if(fv)fv.innerHTML='';
   syncAssets();
-  // Render manuale delle sezioni finanze nel tab dedicato
-  let h='';
-  h+='<div style="margin-top:0">';
-  // Clona visivamente il contenuto — usiamo i div già esistenti tramite innerHTML
-  const he=document.getElementById('home-extra');
-  if(he)el.innerHTML=he.innerHTML;
-  // Re-trigger render dei componenti interattivi
   setTimeout(()=>{renderAssets();renderTxMonth();renderSpese();renderSpeseGen();updateOv();renderCharts();renderPatTarget();renderPatChart();},50);
 }
 
@@ -1774,7 +1771,6 @@ document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))docum
 // ── OPEN PROJECT ─────────────────────────────────────────
 function openProj(id){
   _lastScrollY=window.scrollY;
-  sv('miniCalOpen_'+id,false);
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   document.getElementById('home').style.display='none';
@@ -1833,7 +1829,7 @@ function closeProj(){
   document.getElementById('home').style.display='block';
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
-  const _allP2=[...PD,...ld('customProjs',[])];_allP2.forEach(p=>sv('miniCalOpen_'+p.id,false));
+  const _allP2=[...PD,...ld('customProjs',[])];_allP2.forEach(p=>sessionStorage.removeItem('miniCalOpen_'+p.id));
   const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
   syncAssets();renderHome();renderTopbar();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
   setTimeout(()=>window.scrollTo(0,_lastScrollY),0);
@@ -1914,7 +1910,7 @@ function buildStd(p){
   // ── Mini calendario ──
   const today=new Date();today.setHours(0,0,0,0);
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  const _calOpen=ld('miniCalOpen_'+id,false);
+  const _calOpen=sessionStorage.getItem('miniCalOpen_'+id)==='1';
   let h=`<div style="margin-bottom:1rem">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleMiniCal('${id}')">
       <div style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-dim);letter-spacing:.1em">AGENDA PROGETTO</div>
@@ -2096,7 +2092,9 @@ function cycleTaskPri(i,id){
 
 // ── MINI CALENDARIO PROGETTO ─────────────────────────────
 function toggleMiniCal(id){
-  sv('miniCalOpen_'+id,!ld('miniCalOpen_'+id,false));
+  // Usa sessionStorage per non persistere tra aperture
+  const cur=sessionStorage.getItem('miniCalOpen_'+id)==='1';
+  sessionStorage.setItem('miniCalOpen_'+id,cur?'0':'1');
   openProj(id);
 }
 function toggleMiniCalDay(projId,key){
