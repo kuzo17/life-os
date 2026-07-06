@@ -4002,6 +4002,9 @@ const QC_DAY_NAMES=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 function _escRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 
 function parseQCLine(line,allProjs){
+  // Normalizza #giorno → giorno (es. #lunedì → lunedì)
+  line=line.replace(/#(lunedì|lun|martedì|mar|mercoledì|mer|giovedì|gio|venerdì|ven|sabato|sab|domenica|dom)\b/gi,
+    (m,d)=>' '+d+' ');
   let text=line.trim();
   let projId='',proj=null,targetDate=null,isRecur=false;
 
@@ -4178,6 +4181,22 @@ function updateQCPreview(){
   if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
   const DAY_NAMES_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
   const rows=lines.map(l=>{
+    if(isQCObiettivoSett(l)){
+      const p2=qcParseObiettivo(l);
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--blue);min-width:80px;flex-shrink:0">🎯 OB.SETT.</span>
+        <span style="color:var(--text-faint)">${p2.projId||'?'}</span>
+        <span style="color:var(--text);flex:1">${p2.text}</span>
+      </div>`;
+    }
+    if(isQCObiettivo(l)&&!isQCObiettivoSett(l)){
+      const p2=qcParseObiettivo(l);
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--purple);min-width:80px;flex-shrink:0">🏆 OBIET.</span>
+        <span style="color:var(--text-faint)">${p2.projId||'?'}</span>
+        <span style="color:var(--text);flex:1">${p2.text}</span>
+      </div>`;
+    }
     if(isQCAllenamento(l)){
       const p=qcParseAllenamento(l);
       if(p)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
@@ -4216,8 +4235,8 @@ function qcParseAllenamento(line){
   const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
   let text=line.trim();
   let dayIdx=allWeekdayIdx(new Date());
-  // Estrai #giorno
-  const dayMatch=text.match(/#(\w+)/i);
+  // Estrai #giorno (supporta accenti)
+  const dayMatch=text.match(/#([a-zA-Zàèéìòù]+)/i);
   if(dayMatch){
     const d=dayMatch[1].toLowerCase();
     if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
@@ -4243,7 +4262,7 @@ function qcParseAlimentazione(line){
   const SLOT_MAP={colazione:0,spuntino1:1,'spuntino 1':1,pranzo:2,spuntino2:3,'spuntino 2':3,cena:4};
   let text=line.trim();
   let dayIdx=allWeekdayIdx(new Date());
-  const dayMatch=text.match(/#(\w+)/i);
+  const dayMatch=text.match(/#([a-zA-Zàèéìòù]+)/i);
   if(dayMatch){
     const d=dayMatch[1].toLowerCase();
     if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
@@ -4260,6 +4279,28 @@ function qcParseAlimentazione(line){
   return{slotIdx,cibo,dayIdx};
 }
 
+function isQCObiettivoSett(line){
+  return /^obiettivo\s+sett(imana)?:\s*/i.test(line.trim());
+}
+function isQCObiettivo(line){
+  return /^obiettivo:\s*/i.test(line.trim());
+}
+function qcParseObiettivo(line){
+  const allProjs=[...PD,...ld('customProjs',[])];
+  // Estrai !PROGETTO
+  const projMatch=line.match(/!([\w\s&àèéìòù.\-]+?)(?:\s*#|$)/i);
+  let projId=null;
+  let text=line;
+  if(projMatch){
+    const tag=projMatch[1].trim().toLowerCase();
+    const p=allProjs.find(x=>x.tag.toLowerCase().includes(tag)||tag.includes(x.tag.toLowerCase().slice(0,4)));
+    if(p)projId=p.id;
+    text=text.replace(projMatch[0],'').trim();
+  }
+  // Rimuovi prefisso
+  text=text.replace(/^obiettivo\s+(sett(imana)?:)?\s*/i,'').replace(/^:/,'').trim();
+  return{text,projId};
+}
 function isQCAllenamento(line){
   // Ha formato NxM o Nkg e NON ha ":"
   return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
@@ -4283,6 +4324,24 @@ function submitQC(){
   const byDate={};
   let allenamento_added=0,alimentazione_added=0;
   lines.forEach(line=>{
+    // Prova obiettivo settimanale
+    if(isQCObiettivoSett(line)){
+      const parsed=qcParseObiettivo(line);
+      if(parsed.text&&parsed.projId){
+        const wg=ld('weekGoals_'+parsed.projId,[]);
+        if(!wg.includes(parsed.text)){wg.push(parsed.text);sv('weekGoals_'+parsed.projId,wg);}
+        added++;return;
+      }
+    }
+    // Prova obiettivo progetto
+    if(isQCObiettivo(line)&&!isQCObiettivoSett(line)){
+      const parsed=qcParseObiettivo(line);
+      if(parsed.text&&parsed.projId){
+        const goals=ld('goals_'+parsed.projId,[]);
+        if(!goals.includes(parsed.text)){goals.push(parsed.text);sv('goals_'+parsed.projId,goals);}
+        added++;return;
+      }
+    }
     // Prova allenamento
     if(isQCAllenamento(line)){
       const parsed=qcParseAllenamento(line);
