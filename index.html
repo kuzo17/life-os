@@ -4112,7 +4112,7 @@ function parseQCLine(line,allProjs){
             const re=new RegExp('\\b'+_escRe(name)+'\\b','i');
             if(re.test(text)){
               const d=new Date(today);
-              const diff=(num-d.getDay()+7)%7||7;
+              const diff=(num-d.getDay()+7)%7;
               d.setDate(d.getDate()+diff);
               targetDate=d;matched=name;break;
             }
