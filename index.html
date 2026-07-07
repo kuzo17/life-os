@@ -496,7 +496,7 @@ textarea::placeholder{color:var(--text-ghost);}
       <div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--green);letter-spacing:.1em">⚡ QUICK CAPTURE</div>
       <button onclick="closeQC()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
     </div>
-    <div style="font-size:11px;color:var(--text-ghost);font-family:var(--sans)">Una task per riga · usa <span style="color:var(--yellow)">#PROGETTO</span> per assegnare · es: <span style="color:var(--text-faint)">fare post #QUARTZICA</span></div>
+    <div style="font-size:11px;color:var(--text-ghost);font-family:var(--sans)">Una task per riga · usa <span style="color:var(--yellow)">#PROGETTO</span> · data: "7 luglio" o #lunedì · es: <span style="color:var(--text-faint)">fare post #QUARTZICA 7 luglio</span></div>
     <textarea id="qc-input" rows="8" placeholder="fare post TikTok #QUARTZICA&#10;call con cliente&#10;studiare copywriting #KDP" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:var(--sans);resize:vertical;line-height:1.7" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();submitQC()}"></textarea>
     <select id="qc-date" style="display:none"></select>
     <button onclick="submitQC()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:8px 20px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;align-self:flex-end">+ AGGIUNGI</button>
@@ -2418,6 +2418,49 @@ function buildVinted(p){
   sold.forEach((it,i)=>h+=`<tr><td><input value="${esc(it.nome)}" onchange="vsEd(${i},'nome',this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:65px;font-family:Space Mono,monospace;color:var(--green)" onchange="vsEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><input value="${esc(it.data)}" style="width:85px" onchange="vsEd(${i},'data',this.value)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vsDel(${i})">×</button></td></tr>`);
   h+=`</tbody></table></div>`;
   h+=goalsH('vinted',ld('goals_vinted',[]),ld('gchecks_vinted',[]),p.color)+speseH('vinted',ld('spese_vinted',[]));
+  // ── Task block ──
+  const _vinted_recur=ld('recur_vinted',[]);
+  const _vinted_recurCh=ld('recurChecks_vinted',{});
+  const _vinted_tk=new Date().toDateString();
+  const _vinted_today2=new Date();_vinted_today2.setHours(0,0,0,0);
+  const _vinted_agToday=getAgendaDay(_vinted_today2).filter(t=>t.projId==='vinted');
+  const _vinted_recurDone=_vinted_recur.filter((_,i)=>_vinted_recurCh[_vinted_tk+'_'+i]).length;
+  const _vinted_pctDay=_vinted_recur.length+_vinted_agToday.length?Math.round((_vinted_recurDone+_vinted_agToday.filter(t=>t.done).length)/(_vinted_recur.length+_vinted_agToday.length)*100):0;
+  const _vinted_wg=ld('weekGoals_vinted',[]);
+  const _vinted_wgCh=ld('weekGoalChecks_vinted',[]);
+  const _vinted_wgDone=_vinted_wg.filter((_,i)=>_vinted_wgCh[i]).length;
+  const _vinted_pctW=_vinted_wg.length?Math.round(_vinted_wgDone/_vinted_wg.length*100):0;
+  const _vinted_goals=ld('goals_vinted',[]);
+  const _vinted_gc=ld('gchecks_vinted',[]);
+  const _vinted_color=ld('proj_color_vinted',p.color);
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctDay===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctW===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="proj-2col">`;
+  h+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_vinted_recurDone}/${_vinted_recur.length} oggi</span></div><div class="card" id="recur-vinted">`;
+  _vinted_recur.forEach((t,i)=>{
+    const done=!!_vinted_recurCh[_vinted_tk+'_'+i];
+    h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
+      <div class="hd${done?' on':''}" onclick="ckRecur(${i},'vinted')" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'vinted',this.value)">
+      <button class="xb" onclick="delRecur(${i},'vinted')">×</button></div>`;
+  });
+  h+=`<div class="arow"><input class="ain" id="recur-inp-vinted" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('vinted')"><button class="abtn" onclick="addRecur('vinted')">+ ADD</button></div></div></div>`;
+  h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_vinted_agToday.length} oggi</span></div><div class="card" id="agtask-vinted">`;
+  if(!_vinted_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+  _vinted_agToday.forEach((t,i)=>{
+    const _agK='agenda_'+_vinted_today2.toISOString().slice(0,10);
+    const _allT=getAgendaDay(_vinted_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
+    h+=`<div class="row${t.done?' done':''}">
+      <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agK}',${_ri})" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${_agK}',${_ri},this.value)">
+      <button class="xb" onclick="delAgendaTaskAndRefresh('${_agK}',${_ri},'vinted')">×</button></div>`;
+  });
+  const _agK2_vinted='agenda_'+_vinted_today2.toISOString().slice(0,10);
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-vinted" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('vinted','${_agK2_vinted}')"><button class="abtn" onclick="addMiniCalTask('vinted','${_agK2_vinted}')">+ ADD</button></div></div></div></div>`;
+  h+=goalsH('vinted',_vinted_goals,_vinted_gc,_vinted_color);
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_vinted',this.value);toast()">${ld('note_vinted','')}</textarea>`;
   return h;
 }
@@ -2463,6 +2506,49 @@ function buildCarte(p){
   <table><thead><tr><th>Nome</th><th>Serie</th><th>Acq.</th><th>eBay</th><th>Stato</th><th></th></tr></thead><tbody id="ctb"></tbody></table>
   <div class="loadmore" id="lm" onclick="cPage+=20;renderCarteRows()">↓ MOSTRA ALTRE</div></div>`;
   h+=goalsH('carte',ld('goals_carte',[]),ld('gchecks_carte',[]),p.color)+speseH('carte',ld('spese_carte',[]));
+  // ── Task block ──
+  const _carte_recur=ld('recur_carte',[]);
+  const _carte_recurCh=ld('recurChecks_carte',{});
+  const _carte_tk=new Date().toDateString();
+  const _carte_today2=new Date();_carte_today2.setHours(0,0,0,0);
+  const _carte_agToday=getAgendaDay(_carte_today2).filter(t=>t.projId==='carte');
+  const _carte_recurDone=_carte_recur.filter((_,i)=>_carte_recurCh[_carte_tk+'_'+i]).length;
+  const _carte_pctDay=_carte_recur.length+_carte_agToday.length?Math.round((_carte_recurDone+_carte_agToday.filter(t=>t.done).length)/(_carte_recur.length+_carte_agToday.length)*100):0;
+  const _carte_wg=ld('weekGoals_carte',[]);
+  const _carte_wgCh=ld('weekGoalChecks_carte',[]);
+  const _carte_wgDone=_carte_wg.filter((_,i)=>_carte_wgCh[i]).length;
+  const _carte_pctW=_carte_wg.length?Math.round(_carte_wgDone/_carte_wg.length*100):0;
+  const _carte_goals=ld('goals_carte',[]);
+  const _carte_gc=ld('gchecks_carte',[]);
+  const _carte_color=ld('proj_color_carte',p.color);
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctDay===0?'var(--text-ghost)':_carte_color}">${_carte_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctW===0?'var(--text-ghost)':_carte_color}">${_carte_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="proj-2col">`;
+  h+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_carte_recurDone}/${_carte_recur.length} oggi</span></div><div class="card" id="recur-carte">`;
+  _carte_recur.forEach((t,i)=>{
+    const done=!!_carte_recurCh[_carte_tk+'_'+i];
+    h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
+      <div class="hd${done?' on':''}" onclick="ckRecur(${i},'carte')" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'carte',this.value)">
+      <button class="xb" onclick="delRecur(${i},'carte')">×</button></div>`;
+  });
+  h+=`<div class="arow"><input class="ain" id="recur-inp-carte" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('carte')"><button class="abtn" onclick="addRecur('carte')">+ ADD</button></div></div></div>`;
+  h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_carte_agToday.length} oggi</span></div><div class="card" id="agtask-carte">`;
+  if(!_carte_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+  _carte_agToday.forEach((t,i)=>{
+    const _agK='agenda_'+_carte_today2.toISOString().slice(0,10);
+    const _allT=getAgendaDay(_carte_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
+    h+=`<div class="row${t.done?' done':''}">
+      <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agK}',${_ri})" style="margin:0;flex-shrink:0"></div>
+      <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${_agK}',${_ri},this.value)">
+      <button class="xb" onclick="delAgendaTaskAndRefresh('${_agK}',${_ri},'carte')">×</button></div>`;
+  });
+  const _agK2_carte='agenda_'+_carte_today2.toISOString().slice(0,10);
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-carte" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('carte','${_agK2_carte}')"><button class="abtn" onclick="addMiniCalTask('carte','${_agK2_carte}')">+ ADD</button></div></div></div></div>`;
+  h+=goalsH('carte',_carte_goals,_carte_gc,_carte_color);
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_carte',this.value);toast()">${ld('note_carte','')}</textarea>`;
   setTimeout(renderCarteRows,0);
   return h;
@@ -4102,9 +4188,11 @@ function parseQCLine(line,allProjs){
         matched=ddmm[0];
       } else {
         // DD mese (es. "15 giu")
-        const ddmon=text.match(/\b(\d{1,2})\s+(gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic)\b/i);
+        const _MLONG={gennaio:0,febbraio:1,marzo:2,aprile:3,maggio:4,giugno:5,luglio:6,agosto:7,settembre:8,ottobre:9,novembre:10,dicembre:11};
+        const ddmon=text.match(/\b(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)\b/i);
         if(ddmon){
-          targetDate=new Date(today.getFullYear(),QC_MONTHS[ddmon[2].toLowerCase()],parseInt(ddmon[1]));
+          const _mr=ddmon[2].toLowerCase();const _mi=QC_MONTHS[_mr]!==undefined?QC_MONTHS[_mr]:(_MLONG[_mr]!==undefined?_MLONG[_mr]:QC_MONTHS[_mr.slice(0,3)]);
+          targetDate=new Date(today.getFullYear(),_mi,parseInt(ddmon[1]));
           matched=ddmon[0];
         } else {
           // giorno della settimana (prossimo)
@@ -4175,7 +4263,11 @@ function closeQC(){document.getElementById('qc-overlay').style.display='none';}
 
 function updateQCPreview(){
   const allProjs=[...PD,...ld('customProjs',[])];
-  const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
+  let _rawQC=document.getElementById('qc-input').value;
+  // Normalizza: forza newline prima di 'obiettivo' se non c'è già
+  _rawQC=_rawQC.replace(/([^\n])(obiettivo\s+sett)/gi,'$1\n$2');
+  _rawQC=_rawQC.replace(/([^\n])(obiettivo:)/gi,'$1\n$2');
+  const lines=_rawQC.split('\n').filter(l=>l.trim());
   const fallbackKey=document.getElementById('qc-date').value;
   const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
   if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
@@ -4292,13 +4384,20 @@ function qcParseObiettivo(line){
   let projId=null;
   let text=line;
   if(projMatch){
-    const tag=projMatch[1].trim().toLowerCase();
-    const p=allProjs.find(x=>x.tag.toLowerCase().includes(tag)||tag.includes(x.tag.toLowerCase().slice(0,4)));
+    const tag=projMatch[1].trim().toLowerCase().replace(/[_\-]+/g,' ');
+    const normalize=s=>s.toLowerCase().replace(/[_\-—·]+/g,' ').replace(/\s+/g,' ').trim();
+    const p=allProjs.find(x=>{
+      const nt=normalize(x.tag);const ni=normalize(x.id);
+      return nt.includes(tag)||tag.includes(nt)||ni.includes(tag)||tag.includes(ni)||
+             tag.split(' ').every(w=>w.length<3||nt.includes(w));
+    });
     if(p)projId=p.id;
     text=text.replace(projMatch[0],'').trim();
   }
-  // Rimuovi prefisso
-  text=text.replace(/^obiettivo\s+(sett(imana)?:)?\s*/i,'').replace(/^:/,'').trim();
+  // Rimuovi prefisso e pulizia
+  text=text.replace(/^obiettivo\s+sett(imana)?:\s*/i,'').replace(/^obiettivo:\s*/i,'').replace(/^:/,'').trim();
+  // Rimuovi eventuale !TAG residuo
+  text=text.replace(/!\S+/g,'').trim();
   return{text,projId};
 }
 function isQCAllenamento(line){
@@ -4316,7 +4415,10 @@ function isQCAlimentazione(line){
 
 function submitQC(){
   const allProjs=[...PD,...ld('customProjs',[])];
-  const lines=document.getElementById('qc-input').value.split('\n').filter(l=>l.trim());
+  let _rawQC=document.getElementById('qc-input').value;
+  _rawQC=_rawQC.replace(/([^\n])(obiettivo\s+sett)/gi,'$1\n$2');
+  _rawQC=_rawQC.replace(/([^\n])(obiettivo:)/gi,'$1\n$2');
+  const lines=_rawQC.split('\n').filter(l=>l.trim());
   if(!lines.length)return;
   const fallbackKey=document.getElementById('qc-date').value;
   const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
