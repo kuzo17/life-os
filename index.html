@@ -31,8 +31,19 @@ window._fbLoadAll=function(cb){
   get(ref(db,ROOT)).then(s=>{
     if(s.exists()){
       const d=s.val();
-      Object.keys(d).forEach(k=>{try{localStorage.setItem('g_'+k,JSON.stringify(d[k]));}catch(e){}});
-      console.log('Dati caricati da Firebase');
+      const fbTs=d['_last_updated']||0;
+      const localTs=parseInt(localStorage.getItem('g__last_updated')||'0');
+      if(fbTs>=localTs){
+        // Firebase più recente → sovrascrive locale
+        Object.keys(d).forEach(k=>{try{localStorage.setItem('g_'+k,JSON.stringify(d[k]));}catch(e){}});
+        console.log('Sync: Firebase→Local ts='+fbTs);
+      } else {
+        // Locale più recente → carica su Firebase
+        console.log('Sync: Local→Firebase ts='+localTs);
+        Object.keys(localStorage).forEach(lk=>{
+          if(lk.startsWith('g_')){try{window._fbWrite(lk.slice(2),JSON.parse(localStorage.getItem(lk)));}catch(e){}}
+        });
+      }
     } else {
       Object.keys(localStorage).forEach(lk=>{
         if(lk.startsWith('g_')){try{window._fbWrite(lk.slice(2),JSON.parse(localStorage.getItem(lk)));}catch(e){}}
@@ -42,7 +53,8 @@ window._fbLoadAll=function(cb){
   }).catch(e=>{console.warn('FB read:',e);if(cb)cb();});
 };
 const _sent={};
-window._fbMarkSent=function(k,v){_sent[k]=JSON.stringify(v);setTimeout(()=>delete _sent[k],5000);};
+const _sentTs={};
+window._fbMarkSent=function(k,v){_sentTs[k]=Date.now();_sent[k]=JSON.stringify(v);setTimeout(()=>{delete _sent[k];delete _sentTs[k];},2000);};
 window._fbListen=function(){
   onValue(ref(db,ROOT+'/txLog'),s=>{
     const fbVal=s.exists()?s.val():[];
@@ -55,10 +67,12 @@ window._fbListen=function(){
   onValue(ref(db,ROOT),s=>{
     if(!s.exists())return;
     const data=s.val();const changed=[];
+    // Reset _sent per questo batch — i dati vengono da Firebase, non da noi
     Object.keys(data).forEach(k=>{
       if(k==='txLog')return;
       const fbJson=JSON.stringify(data[k]);
-      if(_sent[k]===fbJson)return;
+      // Salta solo se è esattamente quello che abbiamo appena scritto noi (entro 2 sec)
+      if(_sent[k]===fbJson&&(Date.now()-(_sentTs[k]||0))<2000)return;
       if(fbJson!==localStorage.getItem('g_'+k)){
         try{localStorage.setItem('g_'+k,fbJson);}catch(e){}
         changed.push(k);
@@ -638,7 +652,14 @@ const sv=(k,v)=>{
     localStorage.setItem('g_'+k,json);
   }catch(e){}
   if(window._fbReady){
-    try{if(k!=='txLog')window._fbMarkSent(k,v);window._fbWrite(k,v);}catch(e){}
+    try{
+      if(k!=='txLog')window._fbMarkSent(k,v);
+      window._fbWrite(k,v);
+      // Aggiorna timestamp ultimo write locale
+      const ts=Date.now();
+      localStorage.setItem('g__last_updated',ts);
+      window._fbWrite('_last_updated',ts);
+    }catch(e){}
   }
 };
 const ld=(k,d)=>{
@@ -3764,6 +3785,7 @@ window._refreshAll=function(changedKeys){
       if(t){const allP=[...PD,...ld('customProjs',[])];const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
     }
     if(!editing)renderHab();
+    if(!editing)renderTodayFocus();
     renderAssets();
     if(!keys.length||keys.includes('txLog'))window._refreshTxLog();
     if(!keys.length||keys.includes('assets')){renderCharts();renderPatTarget();renderPatChart();}
