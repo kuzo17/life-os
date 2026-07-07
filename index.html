@@ -989,7 +989,7 @@ function calcProjDebt(projId){
   return{total:total+weekDebt,perRecur,weekDebt};
 }
 function allProjectsDebt(){
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
   const map={};
   allProjs.forEach(p=>{map[p.id]=calcProjDebt(p.id).total;});
   return map;
@@ -1362,7 +1362,7 @@ function updateTodayBadge(){
   const todayKey=new Date().toDateString();
   const today=new Date();today.setHours(0,0,0,0);
   const archived=ld('archived',[]);
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!archived.includes(p.id));
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!archived.includes(p.id));
   let open=0;
   allProjs.forEach(p=>{
     const recur=ld('recur_'+p.id,[]);
@@ -1570,7 +1570,7 @@ function getAgendaDayFull(day,allProjs){
 
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv);
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte');
   const today=new Date();today.setHours(0,0,0,0);
   const dayNames=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
@@ -2394,30 +2394,6 @@ function countOverdueExpenses(){
 function buildVinted(p){
   const inv=ld('vinInv',[]),sold=ld('vinSold',[]);
   const pot=vinPot(),soldTot=vinSoldTot(),qty=inv.reduce((a,i)=>a+i.qty,0);
-  let h=`<div class="card" style="margin-bottom:10px"><div class="isg">
-    <div class="ist"><div class="istl">Articoli</div><div class="istv" id="v-qty">${qty}</div></div>
-    <div class="ist"><div class="istl">Potenziale</div><div class="istv pos" id="v-pot">€${pot.toFixed(0)}</div></div>
-    <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="v-sold">€${soldTot.toFixed(2)}</div></div>
-    <div class="ist"><div class="istl">Vendite</div><div class="istv" id="v-nsold">${sold.length}</div></div></div></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 6px">
-    <div class="flbl" style="margin:0">% progetto</div>
-    <input class="pct-inp" id="vpct" style="color:${p.color}" value="${ld('pct_vinted',0)}%">
-  </div>
-  <div class="slbl">Inventario <span style="color:${p.color};cursor:pointer" onclick="addVItem()">+ ADD</span></div>
-  <div class="card"><div class="ifil">
-    <button class="ib on" onclick="fV('tutti',this)">TUTTI</button>
-    <button class="ib" onclick="fV('Beanie',this)">BEANIE</button>
-    <button class="ib" onclick="fV('Donna',this)">DONNA</button>
-    <button class="ib" onclick="fV('Accessori',this)">ACCESSORI</button>
-    <button class="ib" onclick="fV('Altro',this)">ALTRO</button></div>
-  <table><thead><tr><th>Nome</th><th>Cat.</th><th>Stato</th><th>Qty</th><th>Prezzo</th><th></th></tr></thead><tbody id="vtb">`;
-  inv.forEach((it,i)=>h+=`<tr data-cat="${esc(it.cat)}"><td><input value="${esc(it.nome)}" onchange="vEd(${i},'nome',this.value)"></td><td><input value="${esc(it.cat)}" style="width:65px" onchange="vEd(${i},'cat',this.value)"></td><td><select onchange="vEd(${i},'stato',this.value)"><option${it.stato==='In Stock'?' selected':''}>In Stock</option><option${it.stato==='In Vendita'?' selected':''}>In Vendita</option><option${it.stato==='Venduto'?' selected':''}>Venduto</option><option${it.stato==='Da listare'?' selected':''}>Da listare</option></select></td><td><input type="number" min="0" value="${it.qty}" style="width:34px;font-family:Space Mono,monospace" onchange="vEd(${i},'qty',+this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:55px;font-family:Space Mono,monospace;color:var(--green)" onchange="vEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vDel(${i})">×</button></td></tr>`);
-  h+=`</tbody></table></div>
-  <div class="slbl">Registro vendite <span style="color:${p.color};cursor:pointer" onclick="addVSold()">+ ADD</span></div>
-  <div class="card"><table><thead><tr><th>Nome</th><th>Prezzo</th><th>Data</th><th></th></tr></thead><tbody>`;
-  sold.forEach((it,i)=>h+=`<tr><td><input value="${esc(it.nome)}" onchange="vsEd(${i},'nome',this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:65px;font-family:Space Mono,monospace;color:var(--green)" onchange="vsEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><input value="${esc(it.data)}" style="width:85px" onchange="vsEd(${i},'data',this.value)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vsDel(${i})">×</button></td></tr>`);
-  h+=`</tbody></table></div>`;
-  h+=goalsH('vinted',ld('goals_vinted',[]),ld('gchecks_vinted',[]),p.color)+speseH('vinted',ld('spese_vinted',[]));
   // ── Task block ──
   const _vinted_recur=ld('recur_vinted',[]);
   const _vinted_recurCh=ld('recurChecks_vinted',{});
@@ -2461,6 +2437,30 @@ function buildVinted(p){
   const _agK2_vinted='agenda_'+_vinted_today2.toISOString().slice(0,10);
   h+=`<div class="arow"><input class="ain" id="agtask-inp-vinted" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('vinted','${_agK2_vinted}')"><button class="abtn" onclick="addMiniCalTask('vinted','${_agK2_vinted}')">+ ADD</button></div></div></div></div>`;
   h+=goalsH('vinted',_vinted_goals,_vinted_gc,_vinted_color);
+  let h=`<div class="card" style="margin-bottom:10px"><div class="isg">
+    <div class="ist"><div class="istl">Articoli</div><div class="istv" id="v-qty">${qty}</div></div>
+    <div class="ist"><div class="istl">Potenziale</div><div class="istv pos" id="v-pot">€${pot.toFixed(0)}</div></div>
+    <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="v-sold">€${soldTot.toFixed(2)}</div></div>
+    <div class="ist"><div class="istl">Vendite</div><div class="istv" id="v-nsold">${sold.length}</div></div></div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 6px">
+    <div class="flbl" style="margin:0">% progetto</div>
+    <input class="pct-inp" id="vpct" style="color:${p.color}" value="${ld('pct_vinted',0)}%">
+  </div>
+  <div class="slbl">Inventario <span style="color:${p.color};cursor:pointer" onclick="addVItem()">+ ADD</span></div>
+  <div class="card"><div class="ifil">
+    <button class="ib on" onclick="fV('tutti',this)">TUTTI</button>
+    <button class="ib" onclick="fV('Beanie',this)">BEANIE</button>
+    <button class="ib" onclick="fV('Donna',this)">DONNA</button>
+    <button class="ib" onclick="fV('Accessori',this)">ACCESSORI</button>
+    <button class="ib" onclick="fV('Altro',this)">ALTRO</button></div>
+  <table><thead><tr><th>Nome</th><th>Cat.</th><th>Stato</th><th>Qty</th><th>Prezzo</th><th></th></tr></thead><tbody id="vtb">`;
+  inv.forEach((it,i)=>h+=`<tr data-cat="${esc(it.cat)}"><td><input value="${esc(it.nome)}" onchange="vEd(${i},'nome',this.value)"></td><td><input value="${esc(it.cat)}" style="width:65px" onchange="vEd(${i},'cat',this.value)"></td><td><select onchange="vEd(${i},'stato',this.value)"><option${it.stato==='In Stock'?' selected':''}>In Stock</option><option${it.stato==='In Vendita'?' selected':''}>In Vendita</option><option${it.stato==='Venduto'?' selected':''}>Venduto</option><option${it.stato==='Da listare'?' selected':''}>Da listare</option></select></td><td><input type="number" min="0" value="${it.qty}" style="width:34px;font-family:Space Mono,monospace" onchange="vEd(${i},'qty',+this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:55px;font-family:Space Mono,monospace;color:var(--green)" onchange="vEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vDel(${i})">×</button></td></tr>`);
+  h+=`</tbody></table></div>
+  <div class="slbl">Registro vendite <span style="color:${p.color};cursor:pointer" onclick="addVSold()">+ ADD</span></div>
+  <div class="card"><table><thead><tr><th>Nome</th><th>Prezzo</th><th>Data</th><th></th></tr></thead><tbody>`;
+  sold.forEach((it,i)=>h+=`<tr><td><input value="${esc(it.nome)}" onchange="vsEd(${i},'nome',this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:65px;font-family:Space Mono,monospace;color:var(--green)" onchange="vsEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><input value="${esc(it.data)}" style="width:85px" onchange="vsEd(${i},'data',this.value)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vsDel(${i})">×</button></td></tr>`);
+  h+=`</tbody></table></div>`;
+  h+=goalsH('vinted',ld('goals_vinted',[]),ld('gchecks_vinted',[]),p.color)+speseH('vinted',ld('spese_vinted',[]));
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_vinted',this.value);toast()">${ld('note_vinted','')}</textarea>`;
   return h;
 }
@@ -2480,32 +2480,6 @@ function buildCarte(p){
   const totI=inv.filter(c=>c.stato!=='Venduta').reduce((a,c)=>a+c.acquisto,0),totE=carteEbay();
   const profLatente=totE-totI;
   const incassato=carteSoldTot();
-  let h=`<div class="card" style="margin-bottom:10px"><div class="isg" style="grid-template-columns:repeat(3,1fr)">
-    <div class="ist"><div class="istl">Stock</div><div class="istv" id="c-stock">${stock}</div></div>
-    <div class="ist"><div class="istl">In vendita</div><div class="istv" style="color:var(--yellow)" id="c-vend">${vend}</div></div>
-    <div class="ist"><div class="istl">Investimento</div><div class="istv neg" id="c-inv">€${totI.toFixed(0)}</div></div>
-    <div class="ist"><div class="istl">Val. eBay</div><div class="istv pos" id="c-ebay">€${totE.toFixed(0)}</div></div>
-    <div class="ist"><div class="istl">Profitto lat.</div><div class="istv" style="color:${profLatente>=0?'#4ade80':'#f87171'}" id="c-prof">${profLatente>=0?'+':''}€${profLatente.toFixed(0)}</div></div>
-    <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="c-sold">€${incassato.toFixed(0)}</div></div>
-  </div></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 6px">
-    <div class="flbl" style="margin:0">% progetto</div>
-    <input class="pct-inp" id="cpct" style="color:${p.color}" value="${ld('pct_carte',0)}%">
-  </div>
-  <div class="slbl">Carte (${inv.length}) <span style="color:${p.color};cursor:pointer" onclick="addCarta()">+ ADD</span></div>
-  <div class="card"><div class="ifil">
-    <button class="ib on" onclick="fC('tutti',this)">TUTTI</button>
-    <button class="ib" onclick="fC('In Stock',this)">STOCK</button>
-    <button class="ib" onclick="fC('In Vendita',this)">VENDITA</button>
-    <button class="ib" onclick="fC('Venduta',this)">VENDUTA</button>
-    <button class="ib" onclick="fC('One Piece',this)">ONE PIECE</button>
-    <button class="ib" onclick="fC('Pokémon',this)">POKÉMON</button>
-    <button class="ib" onclick="fC('Dragon Ball',this)">DBZ</button>
-    <button class="ib" style="color:var(--green);border-color:var(--green-glow)" onclick="sortCarte('ebay')">↓ VALORE</button>
-    <button class="ib" style="color:var(--red);border-color:var(--red-glow)" onclick="sortCarte('acquisto')">↓ COSTO</button></div>
-  <table><thead><tr><th>Nome</th><th>Serie</th><th>Acq.</th><th>eBay</th><th>Stato</th><th></th></tr></thead><tbody id="ctb"></tbody></table>
-  <div class="loadmore" id="lm" onclick="cPage+=20;renderCarteRows()">↓ MOSTRA ALTRE</div></div>`;
-  h+=goalsH('carte',ld('goals_carte',[]),ld('gchecks_carte',[]),p.color)+speseH('carte',ld('spese_carte',[]));
   // ── Task block ──
   const _carte_recur=ld('recur_carte',[]);
   const _carte_recurCh=ld('recurChecks_carte',{});
@@ -2549,6 +2523,32 @@ function buildCarte(p){
   const _agK2_carte='agenda_'+_carte_today2.toISOString().slice(0,10);
   h+=`<div class="arow"><input class="ain" id="agtask-inp-carte" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('carte','${_agK2_carte}')"><button class="abtn" onclick="addMiniCalTask('carte','${_agK2_carte}')">+ ADD</button></div></div></div></div>`;
   h+=goalsH('carte',_carte_goals,_carte_gc,_carte_color);
+  let h=`<div class="card" style="margin-bottom:10px"><div class="isg" style="grid-template-columns:repeat(3,1fr)">
+    <div class="ist"><div class="istl">Stock</div><div class="istv" id="c-stock">${stock}</div></div>
+    <div class="ist"><div class="istl">In vendita</div><div class="istv" style="color:var(--yellow)" id="c-vend">${vend}</div></div>
+    <div class="ist"><div class="istl">Investimento</div><div class="istv neg" id="c-inv">€${totI.toFixed(0)}</div></div>
+    <div class="ist"><div class="istl">Val. eBay</div><div class="istv pos" id="c-ebay">€${totE.toFixed(0)}</div></div>
+    <div class="ist"><div class="istl">Profitto lat.</div><div class="istv" style="color:${profLatente>=0?'#4ade80':'#f87171'}" id="c-prof">${profLatente>=0?'+':''}€${profLatente.toFixed(0)}</div></div>
+    <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="c-sold">€${incassato.toFixed(0)}</div></div>
+  </div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 6px">
+    <div class="flbl" style="margin:0">% progetto</div>
+    <input class="pct-inp" id="cpct" style="color:${p.color}" value="${ld('pct_carte',0)}%">
+  </div>
+  <div class="slbl">Carte (${inv.length}) <span style="color:${p.color};cursor:pointer" onclick="addCarta()">+ ADD</span></div>
+  <div class="card"><div class="ifil">
+    <button class="ib on" onclick="fC('tutti',this)">TUTTI</button>
+    <button class="ib" onclick="fC('In Stock',this)">STOCK</button>
+    <button class="ib" onclick="fC('In Vendita',this)">VENDITA</button>
+    <button class="ib" onclick="fC('Venduta',this)">VENDUTA</button>
+    <button class="ib" onclick="fC('One Piece',this)">ONE PIECE</button>
+    <button class="ib" onclick="fC('Pokémon',this)">POKÉMON</button>
+    <button class="ib" onclick="fC('Dragon Ball',this)">DBZ</button>
+    <button class="ib" style="color:var(--green);border-color:var(--green-glow)" onclick="sortCarte('ebay')">↓ VALORE</button>
+    <button class="ib" style="color:var(--red);border-color:var(--red-glow)" onclick="sortCarte('acquisto')">↓ COSTO</button></div>
+  <table><thead><tr><th>Nome</th><th>Serie</th><th>Acq.</th><th>eBay</th><th>Stato</th><th></th></tr></thead><tbody id="ctb"></tbody></table>
+  <div class="loadmore" id="lm" onclick="cPage+=20;renderCarteRows()">↓ MOSTRA ALTRE</div></div>`;
+  h+=goalsH('carte',ld('goals_carte',[]),ld('gchecks_carte',[]),p.color)+speseH('carte',ld('spese_carte',[]));
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_carte',this.value);toast()">${ld('note_carte','')}</textarea>`;
   setTimeout(renderCarteRows,0);
   return h;
@@ -3770,7 +3770,7 @@ function renderTodayFocus(){
   const el=document.getElementById('tab-oggi');if(!el)return;
   const today=new Date();today.setHours(0,0,0,0);
   const todayKey=new Date().toDateString();
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id));
+  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
   const agendaKey_today='agenda_'+today.toISOString().slice(0,10);
   const _habits=ld('habits',[]),_habDots=ld('habitDots',[]);
   const _todayDow2=(new Date().getDay()+6)%7;
@@ -3814,7 +3814,7 @@ function renderTodayFocus(){
     hasAnyTask=true;
     const allT=[
       ...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i})),
-      ...agTasks.map((t,i)=>({text:t.text,done:t.done,_type:'agenda',_ai:i}))
+      ...agTasks.map((t)=>{const _fi=getAgendaDay(today).indexOf(t);return{text:t.text,done:t.done,_type:'agenda',_ai:Math.max(0,_fi)};})
     ];
     const done=allT.filter(t=>t.done).length;
     h+=`<div style="background:${color};padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
@@ -3824,8 +3824,8 @@ function renderTodayFocus(){
     allT.forEach(t=>{
       const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${p.id}')`:
                `ckAgendaFocus('${agendaKey_today}',${t._ai})`;
-      h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface)" onclick="${fn}">
-        <div class="hd${t.done?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface)">
+        <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
         <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.text}</span>
         <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
       </div>`;
@@ -3840,8 +3840,8 @@ function renderTodayFocus(){
       <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">ALTRO</span>
     </div>`;
     freeTasks.forEach((t,i)=>{
-      h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer" onclick="ckAgendaFocus('${agendaKey_today}',${i})">
-        <div class="hd${t.done?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft)">
+        <div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
         <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1">${t.text}</span>
       </div>`;
     });
