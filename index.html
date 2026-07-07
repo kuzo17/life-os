@@ -2036,7 +2036,13 @@ function buildStd(p){
   const recurDone=recur.filter((_,i)=>recurChecks[todayKey+'_'+i]).length;
   const projDebtInfo=calcProjDebt(id);
   // ── 2 COLONNE: Ricorrenti | Task giornaliere ──
-  const _agTodayProj=getAgendaDay(today).filter(t=>t.projId===id);
+  // Usa il giorno selezionato nel mini-cal se presente
+  const _selDate=selKey?new Date(selKey.replace('agenda_','')):today;
+  _selDate.setHours(0,0,0,0);
+  const _agTodayProj=getAgendaDay(_selDate).filter(t=>t.projId===id);
+  const _agDateLabel=selKey&&selKey!==('agenda_'+today.toISOString().slice(0,10))
+    ?_selDate.getDate()+' '+monthNames[_selDate.getMonth()]
+    :'oggi';
   h+=`<div class="proj-2col"><div>`;
   h+=`<div class="slbl">Task ricorrenti
     <span style="font-size:9px;color:var(--text-faint)">${recurDone}/${recur.length} oggi</span>
@@ -2064,16 +2070,16 @@ function buildStd(p){
   h+=`<div class="arow"><input class="ain" id="recur-inp-${id}" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('${id}')"><button class="abtn" onclick="addRecur('${id}')">+ ADD</button></div></div></div>`;
   // ── COLONNA 2: Task giornaliere di oggi ──
   h+=`<div>`;
-  h+=`<div class="slbl">Task giornaliere
-    <span style="font-size:9px;color:var(--text-faint)">${_agTodayProj.filter(t=>t.done).length}/${_agTodayProj.length} oggi</span>
+  h+=`<div class="slbl">Task giornaliere · ${_agDateLabel}
+    <span style="font-size:9px;color:var(--text-faint)">${_agTodayProj.filter(t=>t.done).length}/${_agTodayProj.length}</span>
   </div>
   <div class="card" id="agtask-${id}">`;
   if(!_agTodayProj.length){
     h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
   }
   _agTodayProj.forEach((t,i)=>{
-    const _agKey='agenda_'+today.toISOString().slice(0,10);
-    const _allTasks=getAgendaDay(today);
+    const _agKey='agenda_'+_selDate.toISOString().slice(0,10);
+    const _allTasks=getAgendaDay(_selDate);
     const _realIdx=_allTasks.findIndex(x=>x.ts===t.ts&&x.text===t.text);
     h+=`<div class="row${t.done?' done':''}">
       <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agKey}',${_realIdx})" style="margin:0;flex-shrink:0"></div>
@@ -2081,7 +2087,8 @@ function buildStd(p){
       <button class="xb" onclick="delAgendaTaskAndRefresh('${_agKey}',${_realIdx},'${id}')">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')"><button class="abtn" onclick="addMiniCalTask('${id}','agenda_${today.toISOString().slice(0,10)}')">+ ADD</button></div>`;
+  const _agKey2='agenda_'+_selDate.toISOString().slice(0,10);
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${_agKey2}')"><button class="abtn" onclick="addMiniCalTask('${id}','${_agKey2}')">+ ADD</button></div>`;
   h+=`</div></div></div>`;
   // ── FULL WIDTH: Obiettivi settimanali ──
   // ── 2 COLONNE: Obiettivi settimana | Obiettivi progetto ──
@@ -2394,7 +2401,7 @@ function countOverdueExpenses(){
 function buildVinted(p){
   const inv=ld('vinInv',[]),sold=ld('vinSold',[]);
   const pot=vinPot(),soldTot=vinSoldTot(),qty=inv.reduce((a,i)=>a+i.qty,0);
-  let th='';
+  let h='';
   // ── Task block ──
   const _vinted_recur=ld('recur_vinted',[]);
   const _vinted_recurCh=ld('recurChecks_vinted',{});
@@ -2410,41 +2417,41 @@ function buildVinted(p){
   const _vinted_goals=ld('goals_vinted',[]);
   const _vinted_gc=ld('gchecks_vinted',[]);
   const _vinted_color=ld('proj_color_vinted',p.color);
-  th+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctDay===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctW===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
-  th+=`</div>`;
-  th+=`<div class="proj-2col">`;
-  th+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_vinted_recurDone}/${_vinted_recur.length} oggi</span></div><div class="card" id="recur-vinted">`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctDay===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_vinted_pctW===0?'var(--text-ghost)':_vinted_color}">${_vinted_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="proj-2col">`;
+  h+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_vinted_recurDone}/${_vinted_recur.length} oggi</span></div><div class="card" id="recur-vinted">`;
   _vinted_recur.forEach((t,i)=>{
     const done=!!_vinted_recurCh[_vinted_tk+'_'+i];
-    th+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
+    h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
       <div class="hd${done?' on':''}" onclick="ckRecur(${i},'vinted')" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'vinted',this.value)">
       <button class="xb" onclick="delRecur(${i},'vinted')">×</button></div>`;
   });
-  th+=`<div class="arow"><input class="ain" id="recur-inp-vinted" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('vinted')"><button class="abtn" onclick="addRecur('vinted')">+ ADD</button></div></div></div>`;
-  th+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_vinted_agToday.length} oggi</span></div><div class="card" id="agtask-vinted">`;
+  h+=`<div class="arow"><input class="ain" id="recur-inp-vinted" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('vinted')"><button class="abtn" onclick="addRecur('vinted')">+ ADD</button></div></div></div>`;
+  h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_vinted_agToday.length} oggi</span></div><div class="card" id="agtask-vinted">`;
   if(!_vinted_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
   _vinted_agToday.forEach((t,i)=>{
     const _agK='agenda_'+_vinted_today2.toISOString().slice(0,10);
     const _allT=getAgendaDay(_vinted_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
-    th+=`<div class="row${t.done?' done':''}">
+    h+=`<div class="row${t.done?' done':''}">
       <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agK}',${_ri})" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${_agK}',${_ri},this.value)">
       <button class="xb" onclick="delAgendaTaskAndRefresh('${_agK}',${_ri},'vinted')">×</button></div>`;
   });
   const _agK2_vinted='agenda_'+_vinted_today2.toISOString().slice(0,10);
-  th+=`<div class="arow"><input class="ain" id="agtask-inp-vinted" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('vinted','${_agK2_vinted}')"><button class="abtn" onclick="addMiniCalTask('vinted','${_agK2_vinted}')">+ ADD</button></div></div></div></div>`;
-  th+=goalsH('vinted',_vinted_goals,_vinted_gc,_vinted_color);
-  let h=`<div class="card" style="margin-bottom:10px"><div class="isg">
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-vinted" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('vinted','${_agK2_vinted}')"><button class="abtn" onclick="addMiniCalTask('vinted','${_agK2_vinted}')">+ ADD</button></div></div></div></div>`;
+  h+=goalsH('vinted',_vinted_goals,_vinted_gc,_vinted_color);
+  h+=`<div class="card" style="margin-bottom:10px"><div class="isg">
     <div class="ist"><div class="istl">Articoli</div><div class="istv" id="v-qty">${qty}</div></div>
     <div class="ist"><div class="istl">Potenziale</div><div class="istv pos" id="v-pot">€${pot.toFixed(0)}</div></div>
     <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="v-sold">€${soldTot.toFixed(2)}</div></div>
     <div class="ist"><div class="istl">Vendite</div><div class="istv" id="v-nsold">${sold.length}</div></div></div></div>
   <div style="display:flex;
-  h+=th;justify-content:space-between;align-items:center;margin:1rem 0 6px">
+justify-content:space-between;align-items:center;margin:1rem 0 6px">
     <div class="flbl" style="margin:0">% progetto</div>
     <input class="pct-inp" id="vpct" style="color:${p.color}" value="${ld('pct_vinted',0)}%">
   </div>
@@ -2482,7 +2489,7 @@ function buildCarte(p){
   const totI=inv.filter(c=>c.stato!=='Venduta').reduce((a,c)=>a+c.acquisto,0),totE=carteEbay();
   const profLatente=totE-totI;
   const incassato=carteSoldTot();
-  let th='';
+  let h='';
   // ── Task block ──
   const _carte_recur=ld('recur_carte',[]);
   const _carte_recurCh=ld('recurChecks_carte',{});
@@ -2498,35 +2505,35 @@ function buildCarte(p){
   const _carte_goals=ld('goals_carte',[]);
   const _carte_gc=ld('gchecks_carte',[]);
   const _carte_color=ld('proj_color_carte',p.color);
-  th+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctDay===0?'var(--text-ghost)':_carte_color}">${_carte_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctW===0?'var(--text-ghost)':_carte_color}">${_carte_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
-  th+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
-  th+=`</div>`;
-  th+=`<div class="proj-2col">`;
-  th+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_carte_recurDone}/${_carte_recur.length} oggi</span></div><div class="card" id="recur-carte">`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctDay===0?'var(--text-ghost)':_carte_color}">${_carte_pctDay}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OGGI</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:${_carte_pctW===0?'var(--text-ghost)':_carte_color}">${_carte_pctW}%</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">SETTIMANA</div></div>`;
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text-ghost)">—</div><div style="font-size:9px;color:var(--text-ghost);margin-top:3px">OB.SETT.</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="proj-2col">`;
+  h+=`<div><div class="slbl">Task ricorrenti <span style="font-size:9px;color:var(--text-faint)">${_carte_recurDone}/${_carte_recur.length} oggi</span></div><div class="card" id="recur-carte">`;
   _carte_recur.forEach((t,i)=>{
     const done=!!_carte_recurCh[_carte_tk+'_'+i];
-    th+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
+    h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent">
       <div class="hd${done?' on':''}" onclick="ckRecur(${i},'carte')" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'carte',this.value)">
       <button class="xb" onclick="delRecur(${i},'carte')">×</button></div>`;
   });
-  th+=`<div class="arow"><input class="ain" id="recur-inp-carte" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('carte')"><button class="abtn" onclick="addRecur('carte')">+ ADD</button></div></div></div>`;
-  th+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_carte_agToday.length} oggi</span></div><div class="card" id="agtask-carte">`;
+  h+=`<div class="arow"><input class="ain" id="recur-inp-carte" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('carte')"><button class="abtn" onclick="addRecur('carte')">+ ADD</button></div></div></div>`;
+  h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">0/${_carte_agToday.length} oggi</span></div><div class="card" id="agtask-carte">`;
   if(!_carte_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
   _carte_agToday.forEach((t,i)=>{
     const _agK='agenda_'+_carte_today2.toISOString().slice(0,10);
     const _allT=getAgendaDay(_carte_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
-    th+=`<div class="row${t.done?' done':''}">
+    h+=`<div class="row${t.done?' done':''}">
       <div class="hd${t.done?' on':''}" onclick="ckAgendaTask('${_agK}',${_ri})" style="margin:0;flex-shrink:0"></div>
       <input class="rt" value="${esc(t.text)}" onchange="edAgendaTask('${_agK}',${_ri},this.value)">
       <button class="xb" onclick="delAgendaTaskAndRefresh('${_agK}',${_ri},'carte')">×</button></div>`;
   });
   const _agK2_carte='agenda_'+_carte_today2.toISOString().slice(0,10);
-  th+=`<div class="arow"><input class="ain" id="agtask-inp-carte" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('carte','${_agK2_carte}')"><button class="abtn" onclick="addMiniCalTask('carte','${_agK2_carte}')">+ ADD</button></div></div></div></div>`;
-  th+=goalsH('carte',_carte_goals,_carte_gc,_carte_color);
-  let h=`<div class="card" style="margin-bottom:10px"><div class="isg" style="grid-template-columns:repeat(3,1fr)">
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-carte" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('carte','${_agK2_carte}')"><button class="abtn" onclick="addMiniCalTask('carte','${_agK2_carte}')">+ ADD</button></div></div></div></div>`;
+  h+=goalsH('carte',_carte_goals,_carte_gc,_carte_color);
+  h+=`<div class="card" style="margin-bottom:10px"><div class="isg" style="grid-template-columns:repeat(3,1fr)">
     <div class="ist"><div class="istl">Stock</div><div class="istv" id="c-stock">${stock}</div></div>
     <div class="ist"><div class="istl">In vendita</div><div class="istv" style="color:var(--yellow)" id="c-vend">${vend}</div></div>
     <div class="ist"><div class="istl">Investimento</div><div class="istv neg" id="c-inv">€${totI.toFixed(0)}</div></div>
@@ -2535,7 +2542,7 @@ function buildCarte(p){
     <div class="ist"><div class="istl">Incassato</div><div class="istv" style="color:var(--blue)" id="c-sold">€${incassato.toFixed(0)}</div></div>
   </div></div>
   <div style="display:flex;
-  h+=th;justify-content:space-between;align-items:center;margin:1rem 0 6px">
+justify-content:space-between;align-items:center;margin:1rem 0 6px">
     <div class="flbl" style="margin:0">% progetto</div>
     <input class="pct-inp" id="cpct" style="color:${p.color}" value="${ld('pct_carte',0)}%">
   </div>
