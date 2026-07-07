@@ -1347,7 +1347,7 @@ function renderHome(){
             <span style="width:6px;height:6px;border-radius:50%;background:${sc};flex-shrink:0;display:inline-block"></span>
             <span style="font-family:var(--mono);font-size:10px;color:${cs==='idle'?'var(--text-ghost)':sc};font-weight:${cs==='idle'?'400':'700'}">${cs==='idle'?'—':cs==='done'?'✓':t3done+'/'+t3tot+' oggi'}</span>
           </div>
-          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">${FIRE}${streak}d</span>`:''}
+          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">🔥${streak}d</span>`:''}
         </div>
         ${!p.hasInv?(()=>{
           const _ropen=ld('recur_'+p.id,[]).filter((_,i)=>!rc3[tk3+'_'+i]);
@@ -3805,7 +3805,6 @@ function renderTodayFocus(){
   const totalTot=totalOpen+totalDone;
 
   let h='<div style="margin-bottom:1rem">';
-  try{
   
     // ── SUMMARY compatto ──
     const _summaryColor=totalOpen===0&&totalTot>0?'var(--green)':totalOpen>0?'var(--red)':'var(--text-ghost)';
@@ -3945,7 +3944,7 @@ function renderTodayFocus(){
         h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:8px">
           <div class="hd${done?' on':''}" onclick="tDotToday(${hi},${_todayDow2})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
           <span style="font-size:11px;color:${done?'var(--text-dim)':'var(--text)'};${done?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${hb}</span>
-          ${streak>1?`<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">${FIRE}${streak}w</span>`:''}
+            ${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':''}
         </div>`;
       });
       h+='</div>';
@@ -3953,10 +3952,7 @@ function renderTodayFocus(){
   
     h+='</div>';
     el.innerHTML=h;
-  } catch(e){
-    console.error('renderTodayFocus error:',e);
-    h+='<div style="padding:20px;color:var(--red);font-size:12px">Errore caricamento tab Oggi: '+e.message+'</div>';
-  }
+
   el.innerHTML=h;
 }
 
