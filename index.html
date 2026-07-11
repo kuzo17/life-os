@@ -2688,7 +2688,10 @@ function allGetCatalogo(){
   return raw.map(e=>({
     id:e&&e.id?e.id:('ex_'+Math.random().toString(36).slice(2,9)),
     nome:(e&&typeof e.nome==='string')?e.nome:'Esercizio',
-    storia:(e&&Array.isArray(e.storia))?e.storia:[]
+    storia:(e&&Array.isArray(e.storia))?e.storia:[],
+    gruppiMuscolari:(e&&Array.isArray(e.gruppiMuscolari))?e.gruppiMuscolari:[],
+    recupero:(e&&typeof e.recupero==='string')?e.recupero:'',
+    noteEsercizio:(e&&typeof e.noteEsercizio==='string')?e.noteEsercizio:''
   }));
 }
 function allFindOrCreateCatEsercizio(nome){
@@ -3610,6 +3613,7 @@ function buildAllenamentoSchede(p){
       h+=`<div class="row" draggable="true" ondragstart="allDragStart(event,'${ex.id}')" style="cursor:grab">
         <span class="drag-handle">⠿</span>
         <span class="rt" style="cursor:pointer" onclick="allOpenEsercizio('${ex.id}')">${esc(ex.nome)}</span>
+        ${ex.gruppiMuscolari.length?`<span style="font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--red-glow);color:var(--red);flex-shrink:0">${ex.gruppiMuscolari[0]}${ex.gruppiMuscolari.length>1?' +'+(ex.gruppiMuscolari.length-1):''}</span>`:''}
         <span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${usedIn?usedIn+' sched.':'inutilizzato'}</span>
         <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);flex-shrink:0">${ex.storia.length} sess.</span>
         <button class="xb" onclick="allDelCatEsercizio('${ex.id}')" title="Elimina dal catalogo">×</button>
@@ -3635,6 +3639,25 @@ function buildEsercizioDetail(p,exId){
   let h=`<button class="back" onclick="allCloseEsercizio()" style="margin-bottom:14px">← TORNA ALLE SCHEDE</button>
   <div class="slbl" style="margin-top:0">
     <input value="${esc(ex.nome)}" onchange="allRenameCatEsercizio('${ex.id}',this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:16px;font-weight:700;outline:none;border-bottom:1px dashed var(--border);flex:1">
+  </div>`;
+
+  // ── Scheda esercizio: gruppi muscolari (tag liberi), recupero, note ──
+  h+=`<div class="slbl">Gruppi muscolari</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">`;
+  ex.gruppiMuscolari.forEach((g,gi)=>{
+    h+=`<span style="font-family:var(--sans);font-size:10px;font-weight:700;padding:5px 10px 5px 12px;border-radius:14px;border:1px solid var(--red);background:var(--red-glow);color:var(--red);display:inline-flex;align-items:center;gap:6px">${esc(g)}<span onclick="allRemoveGruppo('${ex.id}',${gi})" style="cursor:pointer;opacity:.7">×</span></span>`;
+  });
+  h+=`</div>
+  <div class="arow" style="margin-bottom:10px"><input class="ain" id="all-new-gruppo-${ex.id}" placeholder="+ aggiungi gruppo muscolare…" onkeydown="if(event.key==='Enter')allAddGruppo('${ex.id}')"><button class="abtn" onclick="allAddGruppo('${ex.id}')">+ ADD</button></div>`;
+
+  h+=`<div style="margin-bottom:10px">
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">RECUPERO CONSIGLIATO</div>
+    <input value="${esc(ex.recupero)}" placeholder="es. 2' oppure 60&quot;" onchange="allSetRecupero('${ex.id}',this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px;font-size:12px;color:var(--text);font-family:var(--mono)">
+  </div>`;
+
+  h+=`<div style="margin-bottom:14px">
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">NOTE <span style="color:var(--text-ghost)">(opzionale)</span></div>
+    <textarea onblur="allSetNoteEsercizio('${ex.id}',this.value)" placeholder="es. scapole addotte, petto in fuori…" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--text);resize:vertical">${esc(ex.noteEsercizio)}</textarea>
   </div>`;
 
   h+=`<div class="isg" style="margin-bottom:1rem">
@@ -3705,6 +3728,34 @@ function allRenameCatEsercizio(id,nuovoNome){
   sv('all_catalogo',cat);
   toast('RINOMINATO — storico conservato');
   openProj('allenamento');
+}
+function allAddGruppo(id){
+  const inp=document.getElementById('all-new-gruppo-'+id);
+  const val=inp?.value.trim();if(!val)return;
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  if(!ex.gruppiMuscolari.includes(val))ex.gruppiMuscolari.push(val);
+  sv('all_catalogo',cat);
+  openProj('allenamento');
+}
+function allRemoveGruppo(id,idx){
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.gruppiMuscolari.splice(idx,1);
+  sv('all_catalogo',cat);
+  openProj('allenamento');
+}
+function allSetRecupero(id,val){
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.recupero=val;
+  sv('all_catalogo',cat);toast();
+}
+function allSetNoteEsercizio(id,val){
+  const cat=allGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.noteEsercizio=val;
+  sv('all_catalogo',cat);toast();
 }
 function allDelCatEsercizio(id){
   modal('confirm','Eliminare questo esercizio dal catalogo? Verrà rimosso da tutte le schede e perderai lo storico pesi.',()=>{
@@ -5267,6 +5318,13 @@ function updateQCPreview(){
         <span style="color:var(--text);flex:1">${p7.nome}</span>
       </div>`;
     }
+    if(isQCCatalogoEsercizio(l)){
+      const p8=qcParseCatalogoEsercizio(l);
+      if(p8)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">📋 CATALOGO</span>
+        <span style="color:var(--text);flex:1">${p8.nome} — ${p8.gruppi.join(', ')||'nessun gruppo'} ${p8.recupero?'· '+p8.recupero:''}</span>
+      </div>`;
+    }
     if(isQCAllenamento(l)){
       const p=qcParseAllenamento(l);
       if(p)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
@@ -5457,6 +5515,21 @@ function qcParseAbitudine(line){
   return{nome:text,dayIdx:_dext.dayIdx};
 }
 
+// ── QC: catalogo esercizi bulk ──
+// Sintassi: "Nome | Gruppo1, Gruppo2 | Recupero | Note (opzionale)"
+function isQCCatalogoEsercizio(line){
+  return line.includes('|');
+}
+function qcParseCatalogoEsercizio(line){
+  const parts=line.split('|').map(p=>p.trim());
+  if(parts.length<2)return null;
+  const nome=parts[0];
+  if(!nome)return null;
+  const gruppi=parts[1]?parts[1].split(',').map(g=>g.trim()).filter(Boolean):[];
+  const recupero=parts[2]||'';
+  const note=parts[3]||'';
+  return{nome,gruppi,recupero,note};
+}
 function isQCAllenamento(line){
   // Ha formato NxM o Nkg e NON ha ":"
   return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
@@ -5627,6 +5700,23 @@ function submitQC(){
           }
           sv('str_schede',schedeStr);
         }
+        added++;return;
+      }
+    }
+    // Prova catalogo esercizio bulk (formato con pipe |)
+    if(isQCCatalogoEsercizio(line)){
+      const parsedCat=qcParseCatalogoEsercizio(line);
+      if(parsedCat){
+        const cat=allGetCatalogo();
+        let ex=cat.find(e=>allNormName(e.nome)===allNormName(parsedCat.nome));
+        if(!ex){
+          ex={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:parsedCat.nome,storia:[],gruppiMuscolari:[],recupero:'',noteEsercizio:''};
+          cat.push(ex);
+        }
+        if(parsedCat.gruppi.length)ex.gruppiMuscolari=parsedCat.gruppi;
+        if(parsedCat.recupero)ex.recupero=parsedCat.recupero;
+        if(parsedCat.note)ex.noteEsercizio=parsedCat.note;
+        sv('all_catalogo',cat);
         added++;return;
       }
     }
