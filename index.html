@@ -508,6 +508,9 @@ textarea::placeholder{color:var(--text-ghost);}
 <body>
 <div id="toast"></div>
 
+<!-- FITOS CONTEXTUAL FAB -->
+<button id="fitos-fab" onclick="fitosFabAction()" style="display:none;position:fixed;bottom:78px;bottom:calc(78px + env(safe-area-inset-bottom));right:24px;padding:0 18px;height:44px;border-radius:22px;background:var(--green);border:none;color:#0a0a0a;font-weight:800;font-size:12px;cursor:pointer;z-index:8000;box-shadow:0 4px 20px #0008;white-space:nowrap"></button>
+
 <!-- QUICK CAPTURE -->
 <button id="qc-fab" onclick="openQC()" title="Quick Capture (Ctrl+Space)" style="position:fixed;bottom:24px;bottom:calc(24px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--green);color:var(--green);font-size:20px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">⚡</button>
 
@@ -549,11 +552,13 @@ textarea::placeholder{color:var(--text-ghost);}
     <button class="tab" id="tab-prog-btn" onclick="showTab('progetti',this)">PROGETTI</button>
     <button class="tab" id="tab-oggi-btn" onclick="showTab('oggi',this)">OGGI</button>
     <button class="tab" onclick="showTab('agenda',this)">AGENDA</button>
+    <button class="tab" onclick="showTab('fitos',this)">FITOS</button>
     <button class="tab" onclick="showTab('finanze',this)">FINANZE</button>
   </div>
   <div id="tab-progetti" style="display:none"><div id="ph"></div></div>
   <div id="tab-oggi" style="display:none"></div>
   <div id="tab-agenda" style="display:none"><div id="agenda-view"></div></div>
+  <div id="tab-fitos" style="display:none"><div id="fitos-view"></div></div>
   <div id="tab-finanze" style="display:none"><div id="finanze-view"></div></div>
   <div id="home-extra">
   <div class="divider"></div>
@@ -910,13 +915,14 @@ const PD=[
   {id:'crypto',tag:'CRYPTO',color:'#f59e0b',sub:'Portfolio crypto',folder:'FINANZA & TRADING',hasInv:'crypto'},
   {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'},
   {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'allenamento'},
-  {id:'alimentazione',tag:'ALIMENTAZIONE',color:'#fb923c',sub:'Piano settimanale · peso corporeo',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'alimentazione'}
+  {id:'alimentazione',tag:'ALIMENTAZIONE',color:'#fb923c',sub:'Piano settimanale · peso corporeo',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'alimentazione'},
+  {id:'stretching',tag:'STRETCHING',color:'#a855f7',sub:'Routine settimanali · mobilità',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'stretching'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
 PD.forEach(p=>{
   const ov=ld('proj_folder_'+p.id,null);
   if(ov){
-    const validFolders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+    const validFolders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     if(validFolders.includes(ov))p.folder=ov;
     // se l'override non corrisponde a nessuna folder esistente (es. typo/corruzione), lo ignora e tiene il folder di default
   }
@@ -1084,6 +1090,7 @@ function showTab(name,btn){
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
   document.getElementById('tab-oggi').style.display=name==='oggi'?'block':'none';
   document.getElementById('tab-agenda').style.display=name==='agenda'?'block':'none';
+  document.getElementById('tab-fitos').style.display=name==='fitos'?'block':'none';
   document.getElementById('tab-finanze').style.display=name==='finanze'?'block':'none';
   // Nascondi sezioni home quando non si è su PROGETTI
   const homeExtra=document.getElementById('home-extra');
@@ -1098,6 +1105,7 @@ function showTab(name,btn){
     },100);
   }
   if(name==='oggi')renderTodayFocus();
+  if(name==='fitos')renderFitosTab();
 }
 const isTodayTabActive=()=>document.getElementById('tab-oggi')?.style.display!=='none';
 
@@ -1261,10 +1269,10 @@ function renderFinanze(){
 
 function renderHome(){
   syncAssets();
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const archived=ld('archived',[]);
   const customProjs=ld('customProjs',[]);
-  const allProjs=[...PD,...customProjs];
+  const allProjs=[...PD,...customProjs].filter(p=>p.id!=='allenamento'&&p.id!=='alimentazione'&&p.id!=='stretching');
   let h='';
   if(!_homeFolder){
     // ── VISTA FOLDER CARD ──
@@ -1411,6 +1419,12 @@ function updateTodayBadge(){
     const checksOggi=ld('alim_checksOggi',{})[todayKey]||{};
     open+=scheda.pasti.filter((_,i)=>!checksOggi[allWeekdayIdx(today)+'_'+i]).length;
   }
+  if(!archived.includes('stretching')){
+    const schede=strGetSchede();
+    const scheda=schede[allWeekdayIdx(today)];
+    const checksOggi=ld('str_checksOggi',{})[todayKey]||{};
+    open+=scheda.esercizi.filter((_,i)=>!checksOggi[allWeekdayIdx(today)+'_'+i]).length;
+  }
   btn.textContent=open?`OGGI (${open})`:'OGGI ✓';
 }
 
@@ -1430,7 +1444,7 @@ function folderDragLeave(e){e.currentTarget.classList.remove('folder-drag-over')
 function folderDrop(e,fi){
   e.currentTarget.classList.remove('folder-drag-over');
   if(_folderDragIdx===null||_folderDragIdx===fi){_folderDragIdx=null;return;}
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const [moved]=folders.splice(_folderDragIdx,1);
   folders.splice(fi,0,moved);
   sv('folders',folders);
@@ -1439,13 +1453,13 @@ function folderDrop(e,fi){
 }
 function addFolder(){
   modal('prompt','Nome folder:',name=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     folders.push(name.trim().toUpperCase());sv('folders',folders);renderHome();toast('FOLDER CREATA');
   });
 }
 function renameFolder(fi,name){
   if(!name||!name.trim())return;
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const old=folders[fi];folders[fi]=name.trim().toUpperCase();sv('folders',folders);
   const orders=ld('projOrders',{});if(orders[old]){orders[folders[fi]]=orders[old];delete orders[old];sv('projOrders',orders);}
   const allProjs=[...PD,...ld('customProjs',[])];
@@ -1454,7 +1468,7 @@ function renameFolder(fi,name){
 }
 function delFolder(fi){
   modal('confirm','Eliminare la folder? I progetti verranno archiviati.',()=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     const f=folders[fi];
     const allProjs=[...PD,...ld('customProjs',[])];
     const archived=ld('archived',[]);
@@ -1832,17 +1846,56 @@ function highlight(text,q){const i=text.toLowerCase().indexOf(q.toLowerCase());i
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('srch-res').style.display='none';});
 
 // ── OPEN PROJECT ─────────────────────────────────────────
+function updateFitosFab(hasInv){
+  const fab=document.getElementById('fitos-fab');
+  if(!fab)return;
+  const labels={
+    fitos:'+ Registra peso',
+    allenamento:'▶ Continua allenamento',
+    alimentazione:'+ Registra pasto',
+    stretching:'▶ Avvia routine'
+  };
+  if(labels[hasInv]){
+    fab.style.display='block';
+    fab.textContent=labels[hasInv];
+    fab.dataset.ctx=hasInv;
+  } else {
+    fab.style.display='none';
+  }
+}
+function fitosFabAction(){
+  const ctx=document.getElementById('fitos-fab')?.dataset.ctx;
+  if(ctx==='fitos'){
+    const inp=document.getElementById('alim-peso-inp');
+    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+    else openProj('alimentazione');
+  } else if(ctx==='allenamento'){
+    allStartFocusMode();
+  } else if(ctx==='alimentazione'){
+    const inp=document.getElementById('alim-peso-inp');
+    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+  } else if(ctx==='stretching'){
+    const today=new Date();
+    const todayIdx=allWeekdayIdx(today);
+    sv('str_selSchedaIdx',todayIdx);
+    openProj('stretching');
+    toast('Scheda di oggi caricata');
+  }
+}
 function openProj(id){
   _lastScrollY=window.scrollY;
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   p.color=ld('proj_color_'+p.id,p.color); // usa colore custom se salvato
+  updateFitosFab(p.hasInv);
   document.getElementById('home').style.display='none';
   const dv=document.getElementById('det');dv.style.display='block';
   cPage=20;cFilter='tutti';
   let pct;
   if(p.hasInv==='allenamento')pct=allCalcPctOggi();
   else if(p.hasInv==='alimentazione')pct=alimCalcPctOggi();
+  else if(p.hasInv==='stretching')pct=strCalcPctOggi();
+  else if(p.hasInv==='fitos')pct=fitosCalcPctOggi();
   else pct=p.hasInv?ld('pct_'+id,0):calcPct(id);
   const _detStreak=p.hasInv?0:calcProjStreak(p.id);
   const _detAge=getAge(p.id);
@@ -1865,7 +1918,9 @@ function openProj(id){
     +'<div class="ring-num" id="dpct" style="color:'+p.color+';font-size:15px">'+pct+'%</div>'
     +'</div></div></div>';
 
-  if(p.hasInv==='vinted')h+=buildVinted(p);
+  if(p.hasInv==='fitos')h+=buildFitos(p);
+  else if(p.hasInv==='stretching')h+=buildStretching(p);
+  else if(p.hasInv==='vinted')h+=buildVinted(p);
   else if(p.hasInv==='carte')h+=buildCarte(p);
   else if(p.hasInv==='risparmio')h+=buildRisparmio(p);
   else if(p.hasInv==='crypto')h+=buildCrypto(p);
@@ -1893,6 +1948,7 @@ function openProj(id){
 }
 function closeProj(){
   document.getElementById('home').style.display='block';
+  const _fabEl=document.getElementById('fitos-fab');if(_fabEl)_fabEl.style.display='none';
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
   const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
@@ -2696,6 +2752,758 @@ function alimCalcPctOggi(){
 }
 
 // ── ROUTER vista interna: 'schede' | 'esercizio' ──
+function renderFitosTab(){
+  const el=document.getElementById('fitos-view');if(!el)return;
+  el.innerHTML=buildFitos();
+}
+function fitosCalcStreak(schedeKey,checksKey){
+  const schede=schedeKey==='str'?strGetSchede():allGetSchede();
+  const checksAll=ld(checksKey,{});
+  const today=new Date();today.setHours(0,0,0,0);
+  let streak=0;
+  for(let i=0;i<30;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dIdx=allWeekdayIdx(d);
+    const scheda=schede[dIdx];
+    if(!scheda.esercizi.length){if(i===0)continue;else break;}
+    const dChecks=checksAll[d.toDateString()]||{};
+    const done=scheda.esercizi.every((_,j)=>dChecks[dIdx+'_'+j]);
+    if(done)streak++;
+    else if(i>0)break;
+  }
+  return streak;
+}
+function fitosCalcPctOggi(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayIdx=allWeekdayIdx(today);
+  const todayKey=today.toDateString();
+  const schedeAll=allGetSchede();const schedaAll=schedeAll[todayIdx];
+  const chAll=ld('all_checksOggi',{})[todayKey]||{};
+  const allTot=schedaAll.esercizi.length;
+  const allDone=schedaAll.esercizi.filter((_,i)=>chAll[todayIdx+'_'+i]).length;
+  const schedeAlim=alimGetSchede();const schedaAlim=schedeAlim[todayIdx];
+  const chAlim=ld('alim_checksOggi',{})[todayKey]||{};
+  const pastiCon=schedaAlim.pasti.filter(x=>x.testo.trim());
+  const alimTot=pastiCon.length;
+  const alimDone=pastiCon.filter(x=>chAlim[todayIdx+'_'+schedaAlim.pasti.indexOf(x)]).length;
+  const schedeStr=strGetSchede();const schedaStr=schedeStr[todayIdx];
+  const chStr=ld('str_checksOggi',{})[todayKey]||{};
+  const strTot=schedaStr.esercizi.length;
+  const strDone=schedaStr.esercizi.filter((_,i)=>chStr[todayIdx+'_'+i]).length;
+  const totTasks=allTot+alimTot+strTot;
+  const doneTasks=allDone+alimDone+strDone;
+  return totTasks?Math.round(doneTasks/totTasks*100):0;
+}
+function buildFitos(p){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayIdx=allWeekdayIdx(today);
+  const todayKey=today.toDateString();
+
+  // ── Peso attuale (fonte: registro peso in Alimentazione) ──
+  const pesoStoria=ld('alim_pesoStoria',[]);
+  const lastPeso=pesoStoria[pesoStoria.length-1];
+
+  // ── Stato Allenamento oggi ──
+  const schede=allGetSchede();
+  const schedaAll=schede[todayIdx];
+  const checksAll=ld('all_checksOggi',{})[todayKey]||{};
+  const allDone=schedaAll.esercizi.filter((_,i)=>checksAll[todayIdx+'_'+i]).length;
+  const allTot=schedaAll.esercizi.length;
+  const allStatus=allTot===0?'Riposo':allDone===allTot?'Completato':allDone+'/'+allTot+' esercizi';
+
+  // ── Stato Alimentazione oggi ──
+  const schedeAlim=alimGetSchede();
+  const schedaAlim=schedeAlim[todayIdx];
+  const checksAlim=ld('alim_checksOggi',{})[todayKey]||{};
+  const pastiConTesto=schedaAlim.pasti.filter(x=>x.testo.trim());
+  const alimDone=pastiConTesto.filter(x=>checksAlim[todayIdx+'_'+schedaAlim.pasti.indexOf(x)]).length;
+  const alimTot=pastiConTesto.length;
+
+  // ── Stato Stretching oggi ──
+  const schedeStr=strGetSchede();
+  const schedaStr=schedeStr[todayIdx];
+  const checksStr=ld('str_checksOggi',{})[todayKey]||{};
+  const strDone=schedaStr.esercizi.filter((_,i)=>checksStr[todayIdx+'_'+i]).length;
+  const strTot=schedaStr.esercizi.length;
+
+  // ── Azione principale ──
+  let primaryAction='Tutto fatto per oggi';
+  let primaryTarget=null;
+  if(allTot>0&&allDone<allTot){primaryAction='Continua allenamento — '+schedaAll.nome;primaryTarget='allenamento';}
+  else if(alimTot>0&&alimDone<alimTot){primaryAction='Completa pasti pianificati';primaryTarget='alimentazione';}
+  else if(strTot>0&&strDone<strTot){primaryAction='Fai stretching — '+schedaStr.nome;primaryTarget='stretching';}
+
+  let h=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px">`;
+
+  const allStreak=fitosCalcStreak('all','all_checksOggi');
+  const strStreak=fitosCalcStreak('str','str_checksOggi');
+  const _30dAgo=new Date(today);_30dAgo.setDate(today.getDate()-30);
+  const pesoPre30=pesoStoria.filter(x=>new Date(x.dataKey)<=_30dAgo);
+  const pesoRif30=pesoPre30.length?pesoPre30[pesoPre30.length-1]:pesoStoria[0];
+  const pesoDelta30=lastPeso&&pesoRif30&&pesoRif30!==lastPeso?(lastPeso.peso-pesoRif30.peso):0;
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">PESO ATTUALE</div>
+    <div style="display:flex;align-items:baseline;gap:6px">
+      <span style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--text)">${lastPeso?lastPeso.peso+' kg':'—'}</span>
+      ${pesoDelta30!==0?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${pesoDelta30<0?'var(--green)':'var(--red)'}">${pesoDelta30>0?'+':''}${pesoDelta30.toFixed(1)}kg</span>`:''}
+    </div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${pesoDelta30!==0?'ultimi 30 giorni':(lastPeso?lastPeso.data:'nessuna registrazione')}</div>
+  </div>`;
+
+  h+=`</div>`;
+
+  h+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">`;
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer" onclick="openProj('allenamento')">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">ALLENAMENTO</div>
+    <div style="font-size:14px;font-weight:700;color:${allTot>0&&allDone===allTot?'var(--green)':'var(--text)'}">${schedaAll.nome}</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${allStatus}${allStreak>1?` · 🔥${allStreak}g`:''}</div>
+  </div>`;
+
+  const _todayKcal=schedaAlim.pasti.reduce((s,x)=>s+(x.kcal||0),0);
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer" onclick="openProj('alimentazione')">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">ALIMENTAZIONE</div>
+    <div style="font-size:14px;font-weight:700;color:${alimTot>0&&alimDone===alimTot?'var(--green)':'var(--text)'}">${alimDone}/${alimTot} pasti</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${_todayKcal>0?_todayKcal+' kcal':(alimTot===0?'nessun pasto pianificato':'oggi')}</div>
+  </div>`;
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer" onclick="openProj('stretching')">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">STRETCHING</div>
+    <div style="font-size:14px;font-weight:700;color:${strTot>0&&strDone===strTot?'var(--green)':'var(--text)'}">${schedaStr.nome}</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${strTot===0?'Riposo':strDone+'/'+strTot+' routine'}${strStreak>1?` · 🔥${strStreak}g`:''}</div>
+  </div>`;
+
+  h+=`</div>`;
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;${primaryTarget?'cursor:pointer':''}"${primaryTarget?` onclick="openProj('${primaryTarget}')"`:''}>
+    <div>
+      <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:3px">AZIONE PRINCIPALE</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text)">${primaryAction}</div>
+    </div>
+    ${primaryTarget?'<span style="font-size:18px;color:var(--text-faint)">→</span>':''}
+  </div>`;
+
+  // ── Mini-grafico peso + riepilogo settimana ──
+  h+=`<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-bottom:16px">`;
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:8px">ANDAMENTO PESO</div>`;
+  const pesoRecenti=pesoStoria.slice(-10);
+  if(pesoRecenti.length<2){
+    h+=`<div style="font-size:11px;color:var(--text-ghost);padding:10px 0">Servono almeno 2 registrazioni.</div>`;
+  } else {
+    const vals=pesoRecenti.map(x=>x.peso);
+    const min=Math.min(...vals),max=Math.max(...vals);
+    const range=max-min||1;
+    const w=220,hh=50;
+    const points=vals.map((v,i)=>{
+      const x=(i/(vals.length-1))*w;
+      const y=hh-((v-min)/range)*hh;
+      return x+','+y;
+    }).join(' ');
+    h+=`<svg width="100%" height="50" viewBox="0 0 ${w} ${hh}" style="display:block">
+      <polyline points="${points}" fill="none" stroke="${p.color}" stroke-width="2"/>
+    </svg>`;
+  }
+  h+=`</div>`;
+
+  const weekGoals=ld('weekGoals_allenamento',[]);
+  let weekAllCount=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dIdx=allWeekdayIdx(d);
+    const dSch=schede[dIdx];
+    const dCh=ld('all_checksOggi',{})[d.toDateString()]||{};
+    if(dSch.esercizi.length&&dSch.esercizi.every((_,j)=>dCh[dIdx+'_'+j]))weekAllCount++;
+  }
+  let weekStrCount=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dIdx=allWeekdayIdx(d);
+    const dSch=schedeStr[dIdx];
+    const dCh=ld('str_checksOggi',{})[d.toDateString()]||{};
+    if(dSch.esercizi.length&&dSch.esercizi.every((_,j)=>dCh[dIdx+'_'+j]))weekStrCount++;
+  }
+  let weekPastiDone=0,weekPastiTot=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dIdx=allWeekdayIdx(d);
+    const dSch=schedeAlim[dIdx];
+    const dPasti=dSch.pasti.filter(x=>x.testo.trim());
+    const dCh=ld('alim_checksOggi',{})[d.toDateString()]||{};
+    weekPastiTot+=dPasti.length;
+    weekPastiDone+=dPasti.filter(x=>dCh[dIdx+'_'+dSch.pasti.indexOf(x)]).length;
+  }
+
+  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:8px">SETTIMANA</div>
+    <div style="font-size:12px;color:var(--text);margin-bottom:4px">Allen. <b style="font-weight:800">${weekAllCount}/7</b></div>
+    <div style="font-size:12px;color:var(--text);margin-bottom:4px">Stretch <b style="font-weight:800">${weekStrCount}/7</b></div>
+    <div style="font-size:12px;color:var(--text)">Pasti <b style="font-weight:800">${weekPastiDone}/${weekPastiTot}</b></div>
+  </div>`;
+
+  h+=`</div>`;
+
+  h+=`<div class="slbl">Moduli</div>`;
+  h+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">`;
+  const modules=[
+    {label:'Allenamento',target:'allenamento'},
+    {label:'Alimentazione',target:'alimentazione'},
+    {label:'Stretching',target:'stretching'}
+  ];
+  modules.forEach(m=>{
+    h+=`<div style="border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer" onclick="openProj('${m.target}')">
+      <div style="font-size:11px;color:var(--text-dim);font-weight:600">${m.label}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════
+// STRETCHING & MOBILITÀ — modulo gemello di Allenamento
+// (no pesi, no RIR, no PR — solo durata e completamento)
+// ══════════════════════════════════════════════════════════
+function strGetCatalogo(){
+  const raw=ld('str_catalogo',null);
+  if(!Array.isArray(raw))return[];
+  return raw.map(e=>({
+    id:e&&e.id?e.id:('str_'+Math.random().toString(36).slice(2,9)),
+    nome:(e&&typeof e.nome==='string')?e.nome:'Routine',
+    storia:(e&&Array.isArray(e.storia))?e.storia:[]
+  }));
+}
+function strFindOrCreateCatEsercizio(nome){
+  const norm=allNormName(nome);
+  const cat=strGetCatalogo();
+  let ex=cat.find(e=>allNormName(e.nome)===norm);
+  if(ex)return{id:ex.id,isNew:false};
+  const newEx={id:'str_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:nome.trim(),storia:[]};
+  cat.push(newEx);
+  sv('str_catalogo',cat);
+  return{id:newEx.id,isNew:true};
+}
+function strCatEsercizioById(id){return strGetCatalogo().find(e=>e.id===id)||null;}
+function strEsercizioNome(catId){const ex=strCatEsercizioById(catId);return ex?ex.nome:'(routine eliminata)';}
+
+function strGetSchede(){
+  const raw=ld('str_schede',null);
+  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,esercizi:[]}));
+  schede=schede.map((s,i)=>({
+    nome:(s&&typeof s.nome==='string')?s.nome:ALL_GG[i],
+    esercizi:(s&&Array.isArray(s.esercizi))?s.esercizi.map(es=>({
+      catId:es&&es.catId?es.catId:null,
+      durata:es&&typeof es.durata==='number'?es.durata:0
+    })):[]
+  }));
+  return schede;
+}
+
+function strCalcPctOggi(){
+  const schede=strGetSchede();
+  const todayIdx=allWeekdayIdx(new Date());
+  const scheda=schede[todayIdx];
+  const checksOggi=ld('str_checksOggi',{})[new Date().toDateString()]||{};
+  const tot=scheda.esercizi.length;
+  const done=scheda.esercizi.filter((_,i)=>checksOggi[todayIdx+'_'+i]).length;
+  return tot?Math.round(done/tot*100):0;
+}
+
+function buildStretching(p){
+  const view=ld('str_view',{mode:'schede',exId:null});
+  if(view.mode==='esercizio'&&view.exId)return strBuildEsercizioDetail(p,view.exId);
+  return strBuildSchede(p);
+}
+
+function strBuildSchede(p){
+  const schede=strGetSchede();
+  const catalogo=strGetCatalogo();
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  const todayKey=today.toDateString();
+  const checksOggi=ld('str_checksOggi',{});
+  const selIdx=ld('str_selSchedaIdx',todayIdx);
+
+  let h=`<div class="slbl">ROUTINE SETTIMANALI</div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
+  schede.forEach((s,i)=>{
+    const isToday=i===todayIdx;
+    const isSel=i===selIdx;
+    h+=`<div onclick="strSelectScheda(${i})" ondragover="event.preventDefault();this.style.borderColor='var(--green)'" ondragleave="this.style.borderColor=''" ondrop="strDropOnScheda(event,${i})" style="background:${isSel?'var(--green-glow)':'var(--surface2)'};border:1px solid ${isSel?'var(--green)':isToday?'var(--green-glow)':'var(--border)'};border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer">
+      <div style="font-family:var(--mono);font-size:8px;color:${isToday?'var(--green)':'var(--text-faint)'}">${s.nome.slice(0,3).toUpperCase()}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:${s.esercizi.length?'var(--green)':'var(--text-ghost)'};margin-top:2px">${s.esercizi.length||'—'}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  const scheda=schede[selIdx];
+  const isSelToday=selIdx===todayIdx;
+  const todayChecks=checksOggi[todayKey]||{};
+  const doneCount=isSelToday?scheda.esercizi.filter((_,i)=>todayChecks[selIdx+'_'+i]).length:0;
+  const allDone=isSelToday&&scheda.esercizi.length>0&&doneCount===scheda.esercizi.length;
+
+  h+=`<div class="slbl">
+    <input id="str-nome-scheda" value="${esc(scheda.nome)}" onchange="strRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed var(--border)">
+    ${isSelToday?`<span style="font-size:9px;color:${allDone?'var(--green)':'var(--text-faint)'}">${doneCount}/${scheda.esercizi.length} oggi${allDone?' ✓':''}</span>`:''}
+  </div>
+  <div class="card" id="str-esercizi" ondragover="event.preventDefault()" ondrop="strDropOnScheda(event,${selIdx})">`;
+
+  if(!scheda.esercizi.length){
+    h+=`<div style="padding:14px;font-size:12px;color:var(--text-ghost);text-align:center">Nessuna routine in questa scheda.<br>Aggiungine dal catalogo qui sotto.</div>`;
+  }
+  scheda.esercizi.forEach((es,i)=>{
+    const ex=strCatEsercizioById(es.catId);
+    const nome=ex?ex.nome:'(routine eliminata)';
+    const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
+    h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:center">
+      ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="strToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
+      <span class="rt" style="flex:1 1 140px;min-width:120px;color:${ex?'var(--text)':'var(--red)'};cursor:${ex?'pointer':'default'}" ${ex?`onclick="strOpenEsercizio('${es.catId}')"`:''}>${esc(nome)}</span>
+      <input type="number" value="${es.durata||0}" placeholder="min" id="str-durata-${selIdx}-${i}" onchange="strEdValori(${selIdx},${i},this.value)" style="width:56px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--green);text-align:center;font-family:var(--mono)">
+      <span style="font-size:9px;color:var(--text-ghost);font-family:var(--mono)">min</span>
+      <button class="xb" onclick="strDelEsercizio(${selIdx},${i})" style="flex-shrink:0">×</button>
+    </div>`;
+  });
+  h+=`<div class="arow"><button class="abtn" onclick="strOpenPicker(${selIdx})" style="width:100%;text-align:center">+ AGGIUNGI DAL CATALOGO</button></div></div>`;
+
+  let weekDone=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dKey=d.toDateString();
+    const dIdx=allWeekdayIdx(d);
+    const dScheda=schede[dIdx];
+    const dChecks=checksOggi[dKey]||{};
+    if(dScheda.esercizi.length&&dScheda.esercizi.every((_,j)=>dChecks[dIdx+'_'+j]))weekDone++;
+  }
+  const totMinuti=scheda.esercizi.reduce((s,e)=>s+(e.durata||0),0);
+  h+=`<div class="isg" style="margin:14px 0"><div class="ist"><div class="istl">Ultimi 7gg</div><div class="istv" style="color:${p.color}">${weekDone}/7</div></div><div class="ist"><div class="istl">Durata</div><div class="istv">${totMinuti} min</div></div><div class="ist"><div class="istl">Routine</div><div class="istv">${scheda.esercizi.length} eserc.</div></div></div>`;
+
+  h+=`<div class="slbl">CATALOGO ROUTINE <span style="font-size:9px;color:var(--text-ghost)">${catalogo.length} totali · trascina su una scheda</span></div>
+  <div class="arow"><input class="ain" id="str-new-ex-inp" placeholder="+ nuova routine nel catalogo…" onkeydown="if(event.key==='Enter')strCreateCatEsercizio()"><button class="abtn" onclick="strCreateCatEsercizio()">+ ADD</button></div>
+  <div class="card" style="margin-top:6px">`;
+  if(!catalogo.length){
+    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessuna routine ancora.</div>`;
+  } else {
+    catalogo.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(ex=>{
+      const usedIn=schede.filter(s=>s.esercizi.some(e=>e.catId===ex.id)).length;
+      h+=`<div class="row" draggable="true" ondragstart="strDragStart(event,'${ex.id}')" style="cursor:grab">
+        <span class="drag-handle">⠿</span>
+        <span class="rt" style="cursor:pointer" onclick="strOpenEsercizio('${ex.id}')">${esc(ex.nome)}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${usedIn?usedIn+' sched.':'inutilizzata'}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);flex-shrink:0">${ex.storia.length} sess.</span>
+        <button class="xb" onclick="strDelCatEsercizio('${ex.id}')">×</button>
+      </div>`;
+    });
+  }
+  h+=`</div>`;
+
+  h+=goalsH('stretching',ld('goals_stretching',[]),ld('gchecks_stretching',[]),p.color);
+  h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_stretching',this.value);toast()">${ld('note_stretching','')}</textarea>`;
+  return h;
+}
+
+function strBuildEsercizioDetail(p,exId){
+  const ex=strCatEsercizioById(exId);
+  if(!ex){sv('str_view',{mode:'schede',exId:null});return strBuildSchede(p);}
+  const hist=ex.storia;
+
+  let h=`<button class="back" onclick="strCloseEsercizio()" style="margin-bottom:14px">← TORNA ALLE SCHEDE</button>
+  <div class="slbl" style="margin-top:0">
+    <input value="${esc(ex.nome)}" onchange="strRenameCatEsercizio('${ex.id}',this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:16px;font-weight:700;outline:none;border-bottom:1px dashed var(--border);flex:1">
+  </div>`;
+
+  h+=`<div class="isg" style="margin-bottom:1rem"><div class="ist"><div class="istl">Sessioni totali</div><div class="istv">${hist.length}</div></div></div>`;
+
+  h+=`<div class="slbl">STORICO SESSIONI</div><div class="card">`;
+  if(!hist.length){
+    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessuna sessione registrata ancora.</div>`;
+  } else {
+    hist.slice().reverse().forEach(s2=>{
+      h+=`<div class="row"><span style="font-family:var(--mono);font-size:11px;color:var(--text-faint);width:70px;flex-shrink:0">${s2.data}</span><span class="rt">${s2.durata} min</span></div>`;
+    });
+  }
+  h+=`</div>`;
+  h+=`<div class="arow" style="margin-top:1rem;border-top:none"><button class="abtn" onclick="strDelCatEsercizio('${ex.id}')" style="color:var(--red)">ELIMINA QUESTA ROUTINE DAL CATALOGO</button></div>`;
+  return h;
+}
+function strOpenEsercizio(exId){sv('str_view',{mode:'esercizio',exId});openProj('stretching');}
+function strCloseEsercizio(){sv('str_view',{mode:'schede',exId:null});openProj('stretching');}
+
+function strSelectScheda(i){sv('str_selSchedaIdx',i);openProj('stretching');}
+function strRenameScheda(i,v){
+  const schede=strGetSchede();
+  schede[i].nome=v;sv('str_schede',schede);toast();
+}
+function strCreateCatEsercizio(){
+  const inp=document.getElementById('str-new-ex-inp');
+  const nome=inp?.value.trim();if(!nome)return;
+  const{isNew}=strFindOrCreateCatEsercizio(nome);
+  if(inp)inp.value='';
+  openProj('stretching');
+  toast(isNew?'ROUTINE CREATA':'Esiste già nel catalogo');
+}
+function strRenameCatEsercizio(id,nuovoNome){
+  nuovoNome=nuovoNome.trim();if(!nuovoNome)return;
+  const cat=strGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.nome=nuovoNome;
+  sv('str_catalogo',cat);
+  toast('RINOMINATA');
+  openProj('stretching');
+}
+function strDelCatEsercizio(id){
+  modal('confirm','Eliminare questa routine dal catalogo? Verrà rimossa da tutte le schede.',()=>{
+    const cat=strGetCatalogo().filter(e=>e.id!==id);
+    sv('str_catalogo',cat);
+    const schede=strGetSchede();
+    schede.forEach(s=>{s.esercizi=s.esercizi.filter(e=>e.catId!==id);});
+    sv('str_schede',schede);
+    sv('str_view',{mode:'schede',exId:null});
+    openProj('stretching');toast('ELIMINATA DAL CATALOGO');
+  });
+}
+function strOpenPicker(schedaIdx){
+  const cat=strGetCatalogo();
+  if(!cat.length){toast('Crea prima qualche routine nel catalogo');return;}
+  const schede=strGetSchede();
+  const presentIds=new Set(schede[schedaIdx].esercizi.map(e=>e.catId));
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const list=cat.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).map(ex=>{
+    const already=presentIds.has(ex.id);
+    return `<label style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border-soft);cursor:${already?'default':'pointer'};opacity:${already?.4:1}">
+      <input type="checkbox" data-exid="${ex.id}" ${already?'checked disabled':''} style="width:16px;height:16px;accent-color:var(--green)">
+      <span style="flex:1;font-size:13px;color:var(--text)">${esc(ex.nome)}</span>
+      ${already?'<span style="font-size:9px;color:var(--text-ghost);font-family:var(--mono)">già presente</span>':''}
+    </label>`;
+  }).join('');
+  ov.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:12px;padding:18px;max-width:380px;width:100%;max-height:75vh;display:flex;flex-direction:column">
+    <div style="font-family:var(--sans);font-weight:700;font-size:13px;color:var(--text);margin-bottom:10px">Aggiungi routine alla scheda</div>
+    <div style="overflow-y:auto;flex:1" id="str-picker-list">${list}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+      <button id="str-picker-ok" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">AGGIUNGI</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#str-picker-ok').onclick=()=>{
+    const checked=[...ov.querySelectorAll('input[type=checkbox]:checked:not(:disabled)')].map(c=>c.dataset.exid);
+    if(checked.length){
+      const s2=strGetSchede();
+      checked.forEach(catId=>s2[schedaIdx].esercizi.push({catId,durata:0}));
+      sv('str_schede',s2);
+      toast(checked.length+' routine aggiunte');
+    }
+    ov.remove();
+    openProj('stretching');
+  };
+}
+let _strDragExId=null;
+function strDragStart(e,exId){_strDragExId=exId;e.dataTransfer.effectAllowed='copy';}
+function strDropOnScheda(e,schedaIdx){
+  e.preventDefault();
+  e.currentTarget.style.borderColor='';
+  if(!_strDragExId)return;
+  const schede=strGetSchede();
+  if(schede[schedaIdx].esercizi.some(es=>es.catId===_strDragExId)){
+    toast('Routine già presente in questa scheda');
+    _strDragExId=null;return;
+  }
+  schede[schedaIdx].esercizi.push({catId:_strDragExId,durata:0});
+  sv('str_schede',schede);
+  _strDragExId=null;
+  openProj('stretching');
+  toast('AGGIUNTA ALLA SCHEDA');
+}
+function strEdValori(schedaIdx,i,v){
+  const schede=strGetSchede();
+  schede[schedaIdx].esercizi[i].durata=parseFloat(v)||0;
+  sv('str_schede',schede);toast();
+}
+function strDelEsercizio(schedaIdx,i){
+  const schede=strGetSchede();
+  schede[schedaIdx].esercizi.splice(i,1);
+  sv('str_schede',schede);
+  const checksOggi=ld('str_checksOggi',{});
+  Object.keys(checksOggi).forEach(dateKey=>{
+    const day=checksOggi[dateKey];
+    const newDay={};
+    Object.keys(day).forEach(k=>{
+      const[sIdx,eIdx]=k.split('_').map(Number);
+      if(sIdx!==schedaIdx)newDay[k]=day[k];
+      else if(eIdx<i)newDay[k]=day[k];
+      else if(eIdx>i)newDay[sIdx+'_'+(eIdx-1)]=day[k];
+    });
+    checksOggi[dateKey]=newDay;
+  });
+  sv('str_checksOggi',checksOggi);
+  openProj('stretching');
+}
+function strToggleCheck(schedaIdx,i){
+  const schede=strGetSchede();
+  const es=schede[schedaIdx].esercizi[i];
+  const todayKey=new Date().toDateString();
+  const checksOggi=ld('str_checksOggi',{});
+  if(!checksOggi[todayKey])checksOggi[todayKey]={};
+  const isChecked=!!checksOggi[todayKey][schedaIdx+'_'+i];
+  const cat=strGetCatalogo();
+  const ex=cat.find(e=>e.id===es.catId);
+
+  if(isChecked){
+    delete checksOggi[todayKey][schedaIdx+'_'+i];
+    if(ex){
+      const hist=ex.storia;
+      if(hist.length&&hist[hist.length-1].dataKey===todayKey)hist.pop();
+      sv('str_catalogo',cat);
+    }
+  } else {
+    const durataEl=document.getElementById(`str-durata-${schedaIdx}-${i}`);
+    const durata=durataEl?parseFloat(durataEl.value)||0:es.durata||0;
+    es.durata=durata;
+    sv('str_schede',schede);
+    if(ex){
+      ex.storia.push({dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),durata});
+      sv('str_catalogo',cat);
+    }
+    checksOggi[todayKey][schedaIdx+'_'+i]=true;
+  }
+  sv('str_checksOggi',checksOggi);
+  if(isTodayTabActive())renderTodayFocus();
+  else openProj('stretching');
+  renderHome();
+  const allDone=schede[schedaIdx].esercizi.every((_,j)=>checksOggi[todayKey]&&checksOggi[todayKey][schedaIdx+'_'+j]);
+  if(allDone&&!isChecked)toast('🎉 ROUTINE COMPLETATA');
+}
+
+// ══════════════════════════════════════════════════════════
+// FOCUS MODE ALLENAMENTO — modalità guidata a schermo intero
+// Flusso: Start → Serie → Recupero → Serie → ... → Fine esercizio → Esercizio successivo → Fine allenamento
+// ══════════════════════════════════════════════════════════
+let _focusState=null; // {schedaIdx, exIdx, serieCorrente, fase:'serie'|'recupero'|'pausa', timerInterval, tempoRestante, paused}
+
+function allStartFocusMode(){
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  const schede=allGetSchede();
+  const scheda=schede[todayIdx];
+  if(!scheda.esercizi.length){toast('Nessun esercizio in questa scheda');return;}
+  _focusState={
+    schedaIdx:todayIdx,
+    exIdx:0,
+    serieCorrente:1,
+    fase:'serie',
+    timerInterval:null,
+    tempoRestante:0,
+    paused:false,
+    restDuration:90
+  };
+  renderFocusMode();
+}
+
+function allCloseFocusMode(){
+  if(_focusState?.timerInterval)clearInterval(_focusState.timerInterval);
+  _focusState=null;
+  const ov=document.getElementById('focus-overlay');
+  if(ov)ov.remove();
+  renderHome();
+  if(document.getElementById('det')?.style.display!=='none')openProj('allenamento');
+}
+
+function focusCurrentExercise(){
+  if(!_focusState)return null;
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  return scheda.esercizi[_focusState.exIdx]||null;
+}
+
+function focusSkipExercise(){
+  if(!_focusState)return;
+  if(_focusState.timerInterval)clearInterval(_focusState.timerInterval);
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  _focusState.exIdx++;
+  _focusState.serieCorrente=1;
+  _focusState.fase='serie';
+  if(_focusState.exIdx>=scheda.esercizi.length){
+    focusFinishWorkout();
+    return;
+  }
+  renderFocusMode();
+}
+
+function focusCompleteSerie(){
+  if(!_focusState)return;
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  const es=scheda.esercizi[_focusState.exIdx];
+  const totSerie=es.serie||1;
+
+  if(_focusState.serieCorrente>=totSerie){
+    // fine esercizio corrente -> registra storia + passa al prossimo
+    const cat=allGetCatalogo();
+    const catEx=cat.find(e=>e.id===es.catId);
+    if(catEx){
+      const todayKey=new Date().toDateString();
+      const existing=catEx.storia.findIndex(s=>s.dataKey===todayKey);
+      const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso:es.peso,reps:es.reps,serie:es.serie};
+      if(existing>=0)catEx.storia[existing]=entry;else catEx.storia.push(entry);
+      sv('all_catalogo',cat);
+    }
+    // segna check nella scheda giornaliera
+    const chOggi=ld('all_checksOggi',{});
+    const todayKey2=new Date().toDateString();
+    if(!chOggi[todayKey2])chOggi[todayKey2]={};
+    chOggi[todayKey2][_focusState.schedaIdx+'_'+_focusState.exIdx]=true;
+    sv('all_checksOggi',chOggi);
+
+    _focusState.exIdx++;
+    _focusState.serieCorrente=1;
+    _focusState.fase='serie';
+    if(_focusState.exIdx>=scheda.esercizi.length){
+      focusFinishWorkout();
+      return;
+    }
+    renderFocusMode();
+  } else {
+    // avvia recupero prima della prossima serie
+    _focusState.fase='recupero';
+    _focusState.tempoRestante=_focusState.restDuration;
+    _focusState.paused=false;
+    renderFocusMode();
+    focusStartTimer();
+  }
+}
+
+function focusStartTimer(){
+  if(_focusState.timerInterval)clearInterval(_focusState.timerInterval);
+  _focusState.timerInterval=setInterval(()=>{
+    if(_focusState.paused)return;
+    _focusState.tempoRestante--;
+    const el=document.getElementById('focus-timer-display');
+    if(el)el.textContent=focusFormatTime(_focusState.tempoRestante);
+    const ring=document.getElementById('focus-timer-ring');
+    if(ring){
+      const pct=_focusState.tempoRestante/_focusState.restDuration;
+      const circ=2*Math.PI*54;
+      ring.setAttribute('stroke-dashoffset',circ*(1-pct));
+    }
+    if(_focusState.tempoRestante<=0){
+      clearInterval(_focusState.timerInterval);
+      _focusState.serieCorrente++;
+      _focusState.fase='serie';
+      renderFocusMode();
+      if(navigator.vibrate)navigator.vibrate(200);
+    }
+  },1000);
+}
+
+function focusTogglePause(){
+  if(!_focusState)return;
+  _focusState.paused=!_focusState.paused;
+  const btn=document.getElementById('focus-pause-btn');
+  if(btn)btn.textContent=_focusState.paused?'▶':'⏸';
+}
+
+function focusAddTime(sec){
+  if(!_focusState||_focusState.fase!=='recupero')return;
+  _focusState.tempoRestante+=sec;
+  const el=document.getElementById('focus-timer-display');
+  if(el)el.textContent=focusFormatTime(_focusState.tempoRestante);
+}
+
+function focusFormatTime(sec){
+  sec=Math.max(0,sec);
+  const m=Math.floor(sec/60);
+  const s=sec%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+
+function focusFinishWorkout(){
+  if(_focusState?.timerInterval)clearInterval(_focusState.timerInterval);
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  const ov=document.getElementById('focus-overlay');
+  if(ov){
+    ov.innerHTML=`<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px">
+      <div style="font-size:40px;margin-bottom:16px">🎉</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px">Allenamento completato</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:24px">${scheda.nome} — ${scheda.esercizi.length} esercizi</div>
+      <button onclick="allCloseFocusMode()" style="background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:14px 28px;border-radius:12px;font-size:14px;cursor:pointer">FATTO</button>
+    </div>`;
+  }
+  toast('🎉 ALLENAMENTO COMPLETATO');
+}
+
+function renderFocusMode(){
+  let ov=document.getElementById('focus-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='focus-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column';
+    document.body.appendChild(ov);
+  }
+  if(!_focusState){ov.remove();return;}
+
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  const es=scheda.esercizi[_focusState.exIdx];
+  if(!es){focusFinishWorkout();return;}
+  const nome=allEsercizioNome(es.catId);
+  const totSerie=es.serie||1;
+  const progressPct=Math.round(((_focusState.exIdx)/scheda.esercizi.length)*100);
+
+  let h=`<div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+    <button onclick="allCloseFocusMode()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer">✕ Esci</button>
+    <span style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4)">${_focusState.exIdx+1}/${scheda.esercizi.length}</span>
+  </div>`;
+
+  h+=`<div style="height:2px;background:rgba(255,255,255,.1);margin:0 20px 20px">
+    <div style="height:2px;background:var(--green);width:${progressPct}%;transition:width .3s"></div>
+  </div>`;
+
+  h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">`;
+
+  if(_focusState.fase==='serie'){
+    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:10px;text-transform:uppercase">${nome}</div>
+      <div style="font-size:48px;font-weight:800;color:#fff;margin-bottom:6px">Serie ${_focusState.serieCorrente}/${totSerie}</div>
+      <div style="font-family:var(--mono);font-size:16px;color:var(--green);margin-bottom:40px">${es.reps||'?'} rip. · ${es.peso||'?'} kg</div>
+      <button onclick="focusCompleteSerie()" style="background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:18px 48px;border-radius:16px;font-size:16px;cursor:pointer;margin-bottom:16px">
+        ${_focusState.serieCorrente>=totSerie?'✓ FINE ESERCIZIO':'✓ SERIE COMPLETATA'}
+      </button>
+      <button onclick="focusSkipExercise()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer">Salta esercizio →</button>`;
+  } else if(_focusState.fase==='recupero'){
+    const circ=2*Math.PI*54;
+    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:20px;text-transform:uppercase">Recupero</div>
+      <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
+        <svg width="140" height="140" viewBox="0 0 140 140" style="transform:rotate(-90deg)">
+          <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/>
+          <circle id="focus-timer-ring" cx="70" cy="70" r="54" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="${circ}" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:32px;font-weight:800;color:#fff" id="focus-timer-display">${focusFormatTime(_focusState.tempoRestante)}</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <button onclick="focusAddTime(15)" style="background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;cursor:pointer">+15s</button>
+        <button id="focus-pause-btn" onclick="focusTogglePause()" style="background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 20px;border-radius:10px;font-size:14px;cursor:pointer">⏸</button>
+        <button onclick="focusAddTime(-15)" style="background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;cursor:pointer">-15s</button>
+      </div>
+      <button onclick="_focusState.tempoRestante=0" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer">Salta recupero →</button>`;
+  }
+
+  h+=`</div>`;
+  ov.innerHTML=h;
+
+  if(_focusState.fase==='recupero'){
+    const ring=document.getElementById('focus-timer-ring');
+    if(ring){
+      const circ=2*Math.PI*54;
+      const pct=_focusState.tempoRestante/_focusState.restDuration;
+      ring.setAttribute('stroke-dashoffset',circ*(1-pct));
+    }
+  }
+}
+
 function buildAllenamento(p){
   const view=ld('all_view',{mode:'schede',exId:null});
   if(view.mode==='esercizio'&&view.exId)return buildEsercizioDetail(p,view.exId);
@@ -2711,7 +3519,12 @@ function buildAllenamentoSchede(p){
   const checksOggi=ld('all_checksOggi',{});
   const selIdx=ld('all_selSchedaIdx',todayIdx);
 
-  let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
+  const _todayHasEx=schede[todayIdx].esercizi.length>0;
+  let h='';
+  if(_todayHasEx){
+    h+=`<button onclick="allStartFocusMode()" style="width:100%;background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ALLENAMENTO DI OGGI</button>`;
+  }
+  h+=`<div class="slbl">SCHEDE SETTIMANALI</div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
   schede.forEach((s,i)=>{
     const isToday=i===todayIdx;
@@ -2750,10 +3563,19 @@ function buildAllenamentoSchede(p){
     h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:center">
       ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="allToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
       <span class="rt" style="flex:1 1 140px;min-width:120px;color:${ex?'var(--text)':'var(--red)'};cursor:${ex?'pointer':'default'}" ${ex?`onclick="allOpenEsercizio('${es.catId}')"`:''}>${esc(nome)}</span>
-      <input type="number" value="${curSerie}" placeholder="serie" id="all-serie-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'serie',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        <span style="font-size:7px;color:var(--text-ghost);text-transform:uppercase;letter-spacing:.04em">Serie</span>
+        <input type="number" value="${curSerie}" placeholder="0" id="all-serie-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'serie',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
+      </div>
       <span style="color:var(--text-ghost);font-size:11px">×</span>
-      <input type="number" value="${curReps}" placeholder="reps" id="all-reps-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'reps',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
-      <input type="number" value="${curPeso}" placeholder="kg" id="all-peso-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'peso',this.value)" style="width:54px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--green);text-align:center;font-family:var(--mono)">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        <span style="font-size:7px;color:var(--text-ghost);text-transform:uppercase;letter-spacing:.04em">Rip.</span>
+        <input type="number" value="${curReps}" placeholder="0" id="all-reps-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'reps',this.value)" style="width:48px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)">
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        <span style="font-size:7px;color:var(--text-ghost);text-transform:uppercase;letter-spacing:.04em">Peso</span>
+        <input type="number" value="${curPeso}" placeholder="kg" id="all-peso-${selIdx}-${i}" onchange="allEdValori(${selIdx},${i},'peso',this.value)" style="width:54px;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:11px;color:var(--green);text-align:center;font-family:var(--mono)">
+      </div>
       <span style="font-size:9px;color:var(--text-ghost);font-family:var(--mono)">kg</span>
       <button class="xb" onclick="allDelEsercizio(${selIdx},${i})" style="flex-shrink:0">×</button>
     </div>`;
@@ -3023,12 +3845,19 @@ function allToggleCheck(schedaIdx,i){
 const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
 function alimGetSchede(){
   const raw=ld('alim_schede',null);
-  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))}));
+  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:'',kcal:0,p:0,c:0,f:0}))}));
   schede=schede.map((s,i)=>({
     nome:(s&&typeof s.nome==='string')?s.nome:ALL_GG[i],
     pasti:(s&&Array.isArray(s.pasti)&&s.pasti.length===ALIM_SLOT_NAMES.length)
-      ?s.pasti.map((p,j)=>({slot:(p&&p.slot)||ALIM_SLOT_NAMES[j],testo:(p&&typeof p.testo==='string')?p.testo:''}))
-      :ALIM_SLOT_NAMES.map(s=>({slot:s,testo:''}))
+      ?s.pasti.map((p,j)=>({
+          slot:(p&&p.slot)||ALIM_SLOT_NAMES[j],
+          testo:(p&&typeof p.testo==='string')?p.testo:'',
+          kcal:(p&&typeof p.kcal==='number')?p.kcal:0,
+          p:(p&&typeof p.p==='number')?p.p:0,
+          c:(p&&typeof p.c==='number')?p.c:0,
+          f:(p&&typeof p.f==='number')?p.f:0
+        }))
+      :ALIM_SLOT_NAMES.map(s=>({slot:s,testo:'',kcal:0,p:0,c:0,f:0}))
   }));
   return schede;
 }
@@ -3041,8 +3870,30 @@ function buildAlimentazione(p){
   const checksOggi=ld('alim_checksOggi',{}); // {dateKey: {schedaIdx_pastoIdx: true}}
   const selIdx=ld('alim_selSchedaIdx',todayIdx);
   const pesoStoria=ld('alim_pesoStoria',[]); // [{dataKey,data,peso}]
+  const fitosSettings=ld('fitos_settings',{targetCalories:0,targetProtein:0,targetCarbs:0,targetFat:0});
 
-  let h=`<div class="slbl">SCHEDE SETTIMANALI</div>
+  let h='';
+  // ── Totale macro di oggi ──
+  const _todaySchedaMacro=schede[todayIdx];
+  const _todayTotKcal=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.kcal||0),0);
+  const _todayTotP=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.p||0),0);
+  const _todayTotC=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.c||0),0);
+  const _todayTotF=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.f||0),0);
+  if(_todayTotKcal>0||fitosSettings.targetCalories>0){
+    h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <span style="font-family:var(--mono);font-size:16px;font-weight:800;color:${p.color}">${_todayTotKcal}${fitosSettings.targetCalories?' / '+fitosSettings.targetCalories:''} kcal</span>
+        <span style="font-size:9px;color:var(--text-ghost)">oggi</span>
+      </div>
+      <div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--text-faint)">
+        <span>${_todayTotP}${fitosSettings.targetProtein?'/'+fitosSettings.targetProtein:''}P</span>
+        <span>${_todayTotC}${fitosSettings.targetCarbs?'/'+fitosSettings.targetCarbs:''}C</span>
+        <span>${_todayTotF}${fitosSettings.targetFat?'/'+fitosSettings.targetFat:''}F</span>
+      </div>
+    </div>`;
+  }
+
+  h+=`<div class="slbl">SCHEDE SETTIMANALI</div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
   schede.forEach((s,i)=>{
     const isToday=i===todayIdx;
@@ -3069,10 +3920,17 @@ function buildAlimentazione(p){
 
   scheda.pasti.forEach((pasto,i)=>{
     const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
-    h+=`<div class="row${isChecked?' done':''}">
+    h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap">
       ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
       <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);width:70px;flex-shrink:0">${esc(pasto.slot)}</span>
       <input class="rt" value="${esc(pasto.testo)}" placeholder="cosa mangiare…" onchange="alimEdPasto(${selIdx},${i},this.value)">
+      <button onclick="alimToggleMacroEdit(${selIdx},${i})" style="font-family:var(--mono);font-size:9px;color:${(pasto.kcal||pasto.p||pasto.c||pasto.f)?'var(--green)':'var(--text-ghost)'};background:none;border:none;cursor:pointer;flex-shrink:0">${(pasto.kcal||pasto.p||pasto.c||pasto.f)?pasto.kcal+'kcal':'+ macro'}</button>
+      ${ld('alim_macroEditOpen_'+selIdx+'_'+i,false)?`<div style="width:100%;display:flex;gap:6px;padding:6px 0 2px 26px">
+        <input type="number" placeholder="kcal" value="${pasto.kcal||''}" onchange="alimEdMacro(${selIdx},${i},'kcal',this.value)" style="width:56px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
+        <input type="number" placeholder="P" value="${pasto.p||''}" onchange="alimEdMacro(${selIdx},${i},'p',this.value)" style="width:44px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
+        <input type="number" placeholder="C" value="${pasto.c||''}" onchange="alimEdMacro(${selIdx},${i},'c',this.value)" style="width:44px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
+        <input type="number" placeholder="F" value="${pasto.f||''}" onchange="alimEdMacro(${selIdx},${i},'f',this.value)" style="width:44px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
+      </div>`:''}
     </div>`;
   });
   h+=`</div>`;
@@ -3120,6 +3978,18 @@ function alimEdPasto(schedaIdx,i,v){
   const schede=alimGetSchede();
   schede[schedaIdx].pasti[i].testo=v;
   sv('alim_schede',schede);toast();
+}
+function alimToggleMacroEdit(schedaIdx,i){
+  const key='alim_macroEditOpen_'+schedaIdx+'_'+i;
+  sv(key,!ld(key,false));
+  openProj('alimentazione');
+}
+function alimEdMacro(schedaIdx,i,field,v){
+  const schede=alimGetSchede();
+  schede[schedaIdx].pasti[i][field]=parseFloat(v)||0;
+  sv('alim_schede',schede);
+  openProj('alimentazione');
+  toast();
 }
 function alimToggleCheck(schedaIdx,i){
   const todayKey=new Date().toDateString();
@@ -3953,10 +4823,38 @@ function renderTodayFocus(){
       }
       h+='</div>';
     }
-  
+
+    // Stretching
+    if(!ld('archived',[]).includes('stretching')){
+      const schedeStr=strGetSchede();
+      const dIdxStr=allWeekdayIdx(today);
+      const schedaStr=schedeStr[dIdxStr];
+      const chStr=ld('str_checksOggi',{})[todayKey]||{};
+      const strColor=ld('proj_color_stretching','#a855f7');
+      const strDoneN=schedaStr.esercizi.filter((_,i)=>chStr[dIdxStr+'_'+i]).length;
+      h+=`<div style="background:${strColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
+      h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.06em">STRETCHING — ${schedaStr.nome.toUpperCase()}</span>
+        <span style="font-size:9px;color:rgba(255,255,255,.5);font-weight:600">${strDoneN}/${schedaStr.esercizi.length}</span>
+      </div>`;
+      if(!schedaStr.esercizi.length){
+        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.4)">Riposo</div>';
+      } else {
+        schedaStr.esercizi.forEach((es,i)=>{
+          const isChecked=!!chStr[dIdxStr+'_'+i];
+          h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer" onclick="strToggleCheck(${dIdxStr},${i})">
+            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
+            <span style="font-size:12px;color:${isChecked?'rgba(255,255,255,.35)':'rgba(255,255,255,.85)'};${isChecked?'text-decoration:line-through':''}flex:1">${strEsercizioNome(es.catId)}</span>
+            ${es.durata?`<span style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.6);flex-shrink:0">${es.durata}min</span>`:''}
+          </div>`;
+        });
+      }
+      h+='</div>';
+    }
+
     h+='</div>'; // fine col dx
     h+='</div>'; // fine 2col body
-  
+
     // ── ABITUDINI pill grid ──
     if(_habits.length){
       h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">';
@@ -4069,7 +4967,7 @@ function quickAddToCard(id){
 }
 
 function migrateData(){
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING','ALIMENTAZIONE & ALLENAMENTO']);
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   if(!folders.includes('FINANZA & TRADING')){folders.push('FINANZA & TRADING');sv('folders',folders);}
   if(!folders.includes('ALIMENTAZIONE & ALLENAMENTO')){folders.push('ALIMENTAZIONE & ALLENAMENTO');sv('folders',folders);}
   // Rimuove "Allenamento" dalle abitudini se presente (ora è un progetto a parte)
@@ -4332,6 +5230,43 @@ function updateQCPreview(){
         <span style="color:var(--text);flex:1">${p2.text}</span>
       </div>`;
     }
+    if(isQCPeso(l)){
+      const p3=qcParsePeso(l);
+      if(p3)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--yellow);min-width:80px;flex-shrink:0">⚖️ PESO</span>
+        <span style="color:var(--text);flex:1">${p3.peso} kg</span>
+      </div>`;
+    }
+    if(isQCStretching(l)){
+      const p4=qcParseStretching(l);
+      if(p4)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--purple);min-width:80px;flex-shrink:0">🧘 ${DAY_NAMES_IT[p4.dayIdx]}</span>
+        <span style="color:var(--text-faint)">STRETCHING</span>
+        <span style="color:var(--text);flex:1">${p4.fattoOnly?'segna tutto fatto':p4.nome+' '+(p4.durata?p4.durata+'min':'')}</span>
+      </div>`;
+    }
+    if(isQCCarta(l)){
+      const p5=qcParseCarta(l);
+      if(p5)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--orange);min-width:80px;flex-shrink:0">🃏 CARTA</span>
+        <span style="color:var(--text);flex:1">${p5.azione==='vendi'?'Vendi':'Acquista'} ${p5.nome} ${p5.prezzo?'€'+p5.prezzo:''}</span>
+      </div>`;
+    }
+    if(isQCFinanza(l)){
+      const p6=qcParseFinanza(l);
+      if(p6)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:${p6.tipo==='entrata'?'var(--green)':'var(--red)'};min-width:80px;flex-shrink:0">${p6.tipo==='entrata'?'↑':'↓'} ${p6.tipo.toUpperCase()}</span>
+        <span style="color:var(--text);flex:1">${p6.desc} — €${p6.importo} (${p6.asset})</span>
+      </div>`;
+    }
+    if(isQCAbitudine(l)){
+      const p7=qcParseAbitudine(l);
+      if(p7)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--yellow);min-width:80px;flex-shrink:0">✓ ${DAY_NAMES_IT[p7.dayIdx]}</span>
+        <span style="color:var(--text-faint)">ABITUDINE</span>
+        <span style="color:var(--text);flex:1">${p7.nome}</span>
+      </div>`;
+    }
     if(isQCAllenamento(l)){
       const p=qcParseAllenamento(l);
       if(p)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
@@ -4367,28 +5302,23 @@ function updateQCPreview(){
 // ── QC: parser allenamento ──
 // Sintassi: "squat 4x10 80kg #lunedì" o "squat 4x10 80kg" (oggi)
 function qcParseAllenamento(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
   let text=line.trim();
-  let dayIdx=allWeekdayIdx(new Date());
-  // Estrai #giorno (supporta accenti)
-  const dayMatch=text.match(/#([a-zA-Zàèéìòù]+)/i);
-  if(dayMatch){
-    const d=dayMatch[1].toLowerCase();
-    if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
-    text=text.replace(dayMatch[0],'').trim();
-  }
+  const _dext=qcExtractDayIdx(text,allWeekdayIdx(new Date()));
+  let dayIdx=_dext.dayIdx;
+  text=_dext.clean;
   // Estrai NxM (serie x reps)
   const srMatch=text.match(/(\d+)[x×](\d+)/i);
   const serie=srMatch?parseInt(srMatch[1]):0;
   const reps=srMatch?parseInt(srMatch[2]):0;
   if(srMatch)text=text.replace(srMatch[0],'').trim();
-  // Estrai peso (numero seguito da kg o solo numero alla fine)
-  const pesoMatch=text.match(/(\d+(?:\.\d+)?)\s*kg?/i);
-  const peso=pesoMatch?parseFloat(pesoMatch[1]):0;
+  // Estrai peso, supporta anche +N/-N come delta relativo
+  const pesoMatch=text.match(/([+-]?\d+(?:\.\d+)?)\s*kg?/i);
+  let peso=pesoMatch?parseFloat(pesoMatch[1]):0;
+  const isRelative=pesoMatch&&(pesoMatch[1].startsWith('+')||pesoMatch[1].startsWith('-'));
   if(pesoMatch)text=text.replace(pesoMatch[0],'').trim();
   const nome=text.trim();
   if(!nome)return null;
-  return{nome,serie,reps,peso,dayIdx};
+  return{nome,serie,reps,peso,dayIdx,pesoRelativo:isRelative};
 }
 
 // Sintassi: "pranzo: riso e pollo #lunedì" o "pranzo: riso e pollo"
@@ -4443,6 +5373,90 @@ function qcParseObiettivo(line){
   text=text.replace(/!\S+/g,'').trim();
   return{text,projId};
 }
+function qcExtractDayIdx(text,defaultIdx){
+  // Riconosce sia #giorno che "DD mese" e ritorna {dayIdx, cleanText}
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
+  let dayIdx=defaultIdx;
+  let clean=text;
+  // Prova #giorno
+  const hashMatch=clean.match(/#([a-zA-Zàèéìòù]+)/i);
+  if(hashMatch){
+    const d=hashMatch[1].toLowerCase();
+    if(DAY_MAP[d]!==undefined){
+      dayIdx=DAY_MAP[d];
+      clean=clean.replace(hashMatch[0],'').trim();
+      return{dayIdx,clean};
+    }
+  }
+  // Prova "DD mese" (anche a inizio riga, es "7 luglio squat 4x10")
+  const dateMatch=clean.match(/\b(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)\b/i);
+  if(dateMatch){
+    const today=new Date();
+    const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
+    dayIdx=allWeekdayIdx(targetDate);
+    clean=clean.replace(dateMatch[0],'').trim();
+  }
+  return{dayIdx,clean};
+}
+// ── QC: carte eBay ──
+// Sintassi: "carta Nome €N" (acquisto) oppure "vendi carta Nome €N"
+function isQCCarta(line){
+  return /^(carta|vendi carta|venduta carta)\s+/i.test(line.trim());
+}
+function qcParseCarta(line){
+  let text=line.trim();
+  const isVendi=/^vendi\s+carta|^venduta\s+carta/i.test(text);
+  text=text.replace(/^(vendi\s+carta|venduta\s+carta|carta)\s+/i,'');
+  const prezzoMatch=text.match(/€?\s*(\d+(?:[.,]\d+)?)\s*€?/);
+  const prezzo=prezzoMatch?parseFloat(prezzoMatch[1].replace(',','.')):0;
+  if(prezzoMatch)text=text.replace(prezzoMatch[0],'').trim();
+  const nome=text.trim();
+  if(!nome)return null;
+  return{nome,prezzo,azione:isVendi?'vendi':'acquisto'};
+}
+
+// ── QC: finanze ──
+// Sintassi: "entrata: descrizione €N asset" oppure "uscita: descrizione €N asset"
+function isQCFinanza(line){
+  return /^(entrata|uscita)\s*:/i.test(line.trim());
+}
+function qcParseFinanza(line){
+  let text=line.trim();
+  const tipoMatch=text.match(/^(entrata|uscita)\s*:\s*/i);
+  if(!tipoMatch)return null;
+  const tipo=tipoMatch[1].toLowerCase();
+  text=text.replace(tipoMatch[0],'');
+  const prezzoMatch=text.match(/€?\s*(\d+(?:[.,]\d+)?)\s*€?/);
+  const importo=prezzoMatch?parseFloat(prezzoMatch[1].replace(',','.')):0;
+  if(prezzoMatch)text=text.replace(prezzoMatch[0],'').trim();
+  // Ultimo token è l'asset (es "Liquidità", "Risparmi")
+  const assets=ld('assets',[]);
+  let asset=assets[0]?.l||'Liquidità';
+  let desc=text;
+  const foundAsset=assets.find(a=>text.toLowerCase().includes(a.l.toLowerCase()));
+  if(foundAsset){
+    asset=foundAsset.l;
+    desc=text.replace(new RegExp(foundAsset.l,'i'),'').trim();
+  }
+  if(!desc)return null;
+  return{tipo,desc,importo,asset};
+}
+
+// ── QC: abitudini ──
+// Sintassi: "abitudine: nome fatta" oppure "nome abitudine fatta #giorno"
+function isQCAbitudine(line){
+  return /fatt[oa]\s*$/i.test(line.trim())&&!isQCStretchingFatto(line);
+}
+function qcParseAbitudine(line){
+  let text=line.trim();
+  const _dext=qcExtractDayIdx(text,(new Date().getDay()+6)%7);
+  text=_dext.clean;
+  text=text.replace(/fatt[oa]\s*$/i,'').replace(/^abitudine\s*:\s*/i,'').trim();
+  if(!text)return null;
+  return{nome:text,dayIdx:_dext.dayIdx};
+}
+
 function isQCAllenamento(line){
   // Ha formato NxM o Nkg e NON ha ":"
   return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
@@ -4454,6 +5468,47 @@ function isQCAlimentazione(line){
   if(colonIdx<0)return false;
   const slot=line.slice(0,colonIdx).trim().toLowerCase();
   return SLOTS.some(s=>slot.startsWith(s));
+}
+
+// ── QC: peso corporeo ──
+// Sintassi: "peso 61.3" / "peso: 61.3" / "peso 61.3 12 luglio" / "peso 61.3 #lunedì"
+function isQCPeso(line){
+  return /^peso\s*:?\s*\d+([.,]\d+)?/i.test(line.trim());
+}
+function qcParsePeso(line){
+  let text=line.trim();
+  const m=text.match(/^peso\s*:?\s*(\d+(?:[.,]\d+)?)/i);
+  if(!m)return null;
+  const peso=parseFloat(m[1].replace(',','.'));
+  text=text.replace(m[0],'').trim();
+  const _dext=qcExtractDayIdx(text,null);
+  return{peso,dayIdx:_dext.dayIdx};
+}
+
+// ── QC: stretching ──
+// Sintassi: "nome routine 20min #giorno" oppure "stretching fatto" / "stretching fatto #giorno"
+function isQCStretchingFatto(line){
+  return /^stretching\s+fatt[oa]/i.test(line.trim());
+}
+function isQCStretching(line){
+  if(isQCStretchingFatto(line))return true;
+  // formato "nome Nmin" (senza x, senza kg — per distinguerlo da allenamento)
+  return /\d+\s*min\b/i.test(line)&&!/[x×]\d+/i.test(line);
+}
+function qcParseStretching(line){
+  let text=line.trim();
+  const _dext=qcExtractDayIdx(text,allWeekdayIdx(new Date()));
+  let dayIdx=_dext.dayIdx;
+  text=_dext.clean;
+  if(isQCStretchingFatto(text)){
+    return{fattoOnly:true,dayIdx};
+  }
+  const durMatch=text.match(/(\d+)\s*min/i);
+  const durata=durMatch?parseInt(durMatch[1]):0;
+  if(durMatch)text=text.replace(durMatch[0],'').trim();
+  const nome=text.trim();
+  if(!nome)return null;
+  return{nome,durata,dayIdx,fattoOnly:false};
 }
 
 function submitQC(){
@@ -4487,6 +5542,94 @@ function submitQC(){
         added++;return;
       }
     }
+    // Prova peso corporeo
+    if(isQCPeso(line)){
+      const parsedPeso=qcParsePeso(line);
+      if(parsedPeso){
+        let pesoDate=new Date();
+        if(parsedPeso.dayIdx!==null&&parsedPeso.dayIdx!==undefined){
+          const todayIdxNow=allWeekdayIdx(new Date());
+          const diff=(parsedPeso.dayIdx-todayIdxNow+7)%7;
+          pesoDate=new Date();pesoDate.setDate(pesoDate.getDate()+diff);
+        }
+        const storia=ld('alim_pesoStoria',[]);
+        storia.push({dataKey:pesoDate.toDateString(),data:pesoDate.toLocaleDateString('it-IT'),peso:parsedPeso.peso});
+        sv('alim_pesoStoria',storia);
+        added++;return;
+      }
+    }
+    // Prova carte eBay
+    if(isQCCarta(line)){
+      const parsedCarta=qcParseCarta(line);
+      if(parsedCarta){
+        const inv=ld('carteInv',[]);
+        if(parsedCarta.azione==='vendi'){
+          const idx3=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(parsedCarta.nome))||allNormName(parsedCarta.nome).includes(allNormName(c.nome)));
+          if(idx3>=0){inv[idx3].stato='Venduta';inv[idx3].vendita=parsedCarta.prezzo;}
+        } else {
+          inv.unshift({nome:parsedCarta.nome,serie:'Pokémon',lingua:'ITA',acquisto:parsedCarta.prezzo||0,ebay:parsedCarta.prezzo||0,vendita:0,stato:'In Stock'});
+        }
+        sv('carteInv',inv);
+        added++;return;
+      }
+    }
+    // Prova finanze (entrata/uscita)
+    if(isQCFinanza(line)){
+      const parsedFin=qcParseFinanza(line);
+      if(parsedFin){
+        const assets=ld('assets',[]);
+        const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===parsedFin.asset.toLowerCase());
+        if(assetIdx>=0){
+          assets[assetIdx].v+=parsedFin.tipo==='entrata'?parsedFin.importo:-parsedFin.importo;
+          sv('assets',assets);
+          const log=ld('txLog',[]);
+          log.unshift({tipo:parsedFin.tipo,desc:parsedFin.desc,importo:parsedFin.importo,asset:parsedFin.asset,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
+          sv('txLog',log);
+        }
+        added++;return;
+      }
+    }
+    // Prova abitudine
+    if(isQCAbitudine(line)){
+      const parsedHab=qcParseAbitudine(line);
+      if(parsedHab){
+        const habits=ld('habits',[]);
+        const habIdx=habits.findIndex(h=>allNormName(h).includes(allNormName(parsedHab.nome))||allNormName(parsedHab.nome).includes(allNormName(h)));
+        if(habIdx>=0){
+          const dots=ld('habitDots',[]);
+          if(!dots[habIdx])dots[habIdx]=Array(7).fill(false);
+          dots[habIdx][parsedHab.dayIdx]=true;
+          sv('habitDots',dots);
+        }
+        added++;return;
+      }
+    }
+    // Prova stretching
+    if(isQCStretching(line)){
+      const parsedStr=qcParseStretching(line);
+      if(parsedStr){
+        const schedeStr=strGetSchede();
+        const schedaStr=schedeStr[parsedStr.dayIdx];
+        if(parsedStr.fattoOnly){
+          // Segna tutte le routine della scheda del giorno come completate
+          const todayKeyStr=new Date().toDateString();
+          const chOggi=ld('str_checksOggi',{});
+          if(!chOggi[todayKeyStr])chOggi[todayKeyStr]={};
+          schedaStr.esercizi.forEach((_,idx2)=>{chOggi[todayKeyStr][parsedStr.dayIdx+'_'+idx2]=true;});
+          sv('str_checksOggi',chOggi);
+        } else {
+          const{id:catIdStr}=strFindOrCreateCatEsercizio(parsedStr.nome);
+          let esIdxStr=schedaStr.esercizi.findIndex(e=>e.catId===catIdStr);
+          if(esIdxStr<0){
+            schedaStr.esercizi.push({catId:catIdStr,durata:parsedStr.durata});
+          } else if(parsedStr.durata){
+            schedaStr.esercizi[esIdxStr].durata=parsedStr.durata;
+          }
+          sv('str_schede',schedeStr);
+        }
+        added++;return;
+      }
+    }
     // Prova allenamento
     if(isQCAllenamento(line)){
       const parsed=qcParseAllenamento(line);
@@ -4498,10 +5641,12 @@ function submitQC(){
         // Cerca esercizio nella scheda
         let esIdx=scheda.esercizi.findIndex(e=>e.catId===catId);
         if(esIdx<0){
-          scheda.esercizi.push({catId,peso:parsed.peso,reps:parsed.reps,serie:parsed.serie});
+          scheda.esercizi.push({catId,peso:parsed.pesoRelativo?parsed.peso:parsed.peso,reps:parsed.reps,serie:parsed.serie});
           esIdx=scheda.esercizi.length-1;
         } else {
-          if(parsed.peso)scheda.esercizi[esIdx].peso=parsed.peso;
+          if(parsed.peso){
+            scheda.esercizi[esIdx].peso=parsed.pesoRelativo?Math.max(0,(scheda.esercizi[esIdx].peso||0)+parsed.peso):parsed.peso;
+          }
           if(parsed.reps)scheda.esercizi[esIdx].reps=parsed.reps;
           if(parsed.serie)scheda.esercizi[esIdx].serie=parsed.serie;
         }
