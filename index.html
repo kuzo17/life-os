@@ -341,6 +341,9 @@ td select{background:var(--surface2);border:1px solid var(--border);color:var(--
 .av:focus{border-bottom:1px solid var(--border-hover);}
 textarea{width:100%;font-size:13px;color:var(--text);background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--r-md);padding:13px;resize:none;font-family:var(--sans);line-height:1.6;box-shadow:var(--sh-card);transition:border-color .15s;}
 textarea:focus{outline:none;border-color:var(--border-hover);box-shadow:0 0 0 3px var(--border-soft);}
+select:focus{outline:none;border-color:var(--border-hover);box-shadow:0 0 0 3px var(--border-soft);}
+.xb:hover{color:var(--red)!important;}
+.hd:hover{border-color:var(--green);}
 textarea::placeholder{color:var(--text-ghost);}
 .pct-inp{font-family:var(--mono);font-size:13px;background:transparent;border:1px solid var(--border);border-radius:6px;color:inherit;padding:4px 9px;width:58px;text-align:center;outline:none;}
 
@@ -395,9 +398,15 @@ textarea::placeholder{color:var(--text-ghost);}
   top:0;
   z-index:100;
   background:var(--glass);backdrop-filter:blur(16px);
-  padding:11px 0 11px 2px;
-  margin:0 0 1.1rem -2px;
+  padding:11px 2px 11px 2px;
+  margin:0 0 1.1rem 0;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  scroll-snap-type:x proximity;
 }
+.tabs::-webkit-scrollbar{display:none;}
+.tabs .tab{flex-shrink:0;scroll-snap-align:start;}
 .tab{
   font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 17px;border-radius:10px;
   cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);
@@ -483,6 +492,12 @@ textarea::placeholder{color:var(--text-ghost);}
 .ag-task-dragging{opacity:.4;}
 
 /* ── Desktop font scale ── */
+[draggable="true"]{touch-action:none;-webkit-user-select:none;user-select:none;}
+.touch-drop-hover{outline:2px dashed var(--green)!important;outline-offset:-2px;background:var(--green-glow)!important;}
+@media(max-width:400px){
+  #focus-overlay .serie-num{font-size:36px!important;}
+  #focus-overlay .focus-complete-btn{padding:16px 28px!important;font-size:14px!important;}
+}
 @media(min-width:768px){
   body{font-size:16px;}
   .dn{font-size:26px!important;}
@@ -1619,7 +1634,7 @@ function renderAgenda(){
 
   // ── Vista settimana compatta ──
   let h='<div style="margin-bottom:12px">';
-  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px">';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px">';
   for(let i=0;i<7;i++){
     const d=new Date(today);
     const dow=today.getDay()===0?6:today.getDay()-1;
@@ -1629,10 +1644,18 @@ function renderAgenda(){
     const done=tasks.filter(t=>t.done).length;
     const isToday=d.getTime()===today.getTime();
     const isPast=d<today;
-    h+=`<div onclick="scrollToAgendaDay('${key}')" style="background:${isToday?'rgba(74,222,128,.1)':'var(--surface2)'};border:1px solid ${isToday?'var(--green)':'var(--border)'};border-radius:9px;padding:7px 4px;text-align:center;cursor:pointer;transition:border-color .15s,transform .15s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-      <div style="font-family:var(--mono);font-size:8px;color:${isToday?'var(--green)':'var(--text-faint)'};margin-bottom:3px">${['L','M','M','G','V','S','D'][i]}</div>
-      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${isToday?'var(--green)':isPast?'var(--text-ghost)':'#ccc'}">${d.getDate()}</div>
-      ${tasks.length?`<div style="font-family:var(--mono);font-size:9px;color:${isPast?'var(--text-ghost)':'var(--green)'};margin-top:2px">${isToday?done+'/'+tasks.length:tasks.length}</div>`:'<div style="height:14px"></div>'}
+    const isEmpty=tasks.length===0;
+    const isFull=tasks.length>0&&done===tasks.length;
+    const isPartial=tasks.length>0&&done>0&&done<tasks.length;
+    let bg='var(--surface2)',border='var(--border)';
+    if(isToday){bg='rgba(74,222,128,.12)';border='var(--green)';}
+    else if(isFull){bg='rgba(74,222,128,.06)';border='rgba(74,222,128,.4)';}
+    else if(isPartial){bg='rgba(251,191,36,.06)';border='rgba(251,191,36,.35)';}
+    else if(!isEmpty&&isPast){bg='rgba(239,68,68,.05)';border='rgba(239,68,68,.3)';}
+    h+=`<div onclick="scrollToAgendaDay('${key}')" style="background:${bg};border:1px solid ${border};border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color .15s,transform .15s;position:relative" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div style="font-family:var(--mono);font-size:8px;font-weight:700;color:${isToday?'var(--green)':'var(--text-faint)'};margin-bottom:4px;letter-spacing:.04em">${['L','M','M','G','V','S','D'][i]}</div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:800;color:${isToday?'var(--green)':isPast?'var(--text-ghost)':'var(--text-dim)'};margin-bottom:4px">${d.getDate()}</div>
+      ${isEmpty?'<div style="font-size:8px;color:var(--text-ghost)">—</div>':`<div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${isFull?'var(--green)':isPartial?'#fbbf24':isPast?'var(--red)':'var(--text-faint)'}">${done}/${tasks.length}</div>`}
     </div>`;
   }
   h+='</div>';
@@ -1700,6 +1723,7 @@ function renderAgenda(){
         const _canDrag=!isProjTask&&!isRecur;
         h+=`<div class="row${t.done?' done':''}" ${_canDrag?`draggable="true" ondragstart="agDragStart(event,'${key}',${idx},'${esc(t.text)}','${t.projId||''}')" ondragend="agDragEnd(event)"`:''} style="cursor:${_canDrag?'grab':'default'}">
           <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
+          ${!isProjTask&&!isRecur?`<input type="time" value="${t.time||''}" onchange="setAgendaTaskTime('${key}',${idx},this.value)" style="background:transparent;border:none;color:var(--text-ghost);font-family:var(--mono);font-size:9px;padding:0;width:52px;flex-shrink:0;cursor:pointer">`:(t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:'')}
           ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
           <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
           ${typeLabel?`<span style="font-family:var(--mono);font-size:8px;color:${typeColor};padding:0 4px;flex-shrink:0">${typeLabel}</span>`:''}
@@ -1724,6 +1748,7 @@ function renderAgenda(){
               <option value="">— nessun progetto</option>
               ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
             </select>
+            <input type="time" id="ag-time-${key}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:6px;border-radius:8px;outline:none;flex:0 0 auto;width:76px">
             <button class="abtn" onclick="addAgendaTask('${key}');document.getElementById('ag-form-${key}').style.display='none'" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px;flex-shrink:0">+ ADD</button>
           </div>
         </div>
@@ -1752,15 +1777,27 @@ function scrollToAgendaDay(key){
 function addAgendaTask(key){
   const inp=document.getElementById('ag-inp-'+key);
   const projSel=document.getElementById('ag-proj-'+key);
+  const timeInp=document.getElementById('ag-time-'+key);
   const text=inp?.value.trim();if(!text)return;
   const projId=projSel?.value||'';
+  const time=timeInp?.value||'';
   const dateStr=key.replace('agenda_','');
   const date=new Date(dateStr);
   const tasks=getAgendaDay(date);
-  tasks.push({text,projId,done:false,ts:Date.now(),type:'day'});
+  tasks.push({text,projId,done:false,ts:Date.now(),type:'day',pri:'none',time});
   setAgendaDay(date,tasks);
   if(inp)inp.value='';
+  if(timeInp)timeInp.value='';
   renderAgenda();toast();
+}
+function setAgendaTaskTime(key,i,time){
+  const dateStr=key.replace('agenda_','');
+  const date=new Date(dateStr);
+  const tasks=getAgendaDay(date);
+  if(!tasks[i])return;
+  tasks[i].time=time;
+  setAgendaDay(date,tasks);
+  toast();
 }
 
 function ckAgendaTask(key,i){
@@ -1851,7 +1888,7 @@ function updateFitosFab(hasInv){
   if(!fab)return;
   const labels={
     fitos:'+ Registra peso',
-    allenamento:'▶ Continua allenamento',
+    allenamento:'▶ Avvia allenamento',
     alimentazione:'+ Registra pasto',
     stretching:'▶ Avvia routine'
   };
@@ -1863,23 +1900,30 @@ function updateFitosFab(hasInv){
     fab.style.display='none';
   }
 }
+function focusFirstEmptyPasto(){
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  sv('alim_selSchedaIdx',todayIdx);
+  const schede=alimGetSchede();
+  const scheda=schede[todayIdx];
+  const emptyIdx=scheda.pasti.findIndex(p=>!p.testo.trim());
+  setTimeout(()=>{
+    const targetId=emptyIdx>=0?('alim-pasto-'+todayIdx+'-'+emptyIdx):('alim-peso-inp');
+    const inp=document.getElementById(targetId);
+    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+  },80);
+}
 function fitosFabAction(){
   const ctx=document.getElementById('fitos-fab')?.dataset.ctx;
   if(ctx==='fitos'){
-    const inp=document.getElementById('alim-peso-inp');
-    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
-    else openProj('alimentazione');
+    openProj('alimentazione');
+    focusFirstEmptyPasto();
   } else if(ctx==='allenamento'){
     allStartFocusMode();
   } else if(ctx==='alimentazione'){
-    const inp=document.getElementById('alim-peso-inp');
-    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+    focusFirstEmptyPasto();
   } else if(ctx==='stretching'){
-    const today=new Date();
-    const todayIdx=allWeekdayIdx(today);
-    sv('str_selSchedaIdx',todayIdx);
-    openProj('stretching');
-    toast('Scheda di oggi caricata');
+    strStartFocusMode();
   }
 }
 function openProj(id){
@@ -1957,16 +2001,92 @@ function closeProj(){
 }
 let _swipeStartX=0,_swipeStartY=0,_swipeTracking=false;
 document.addEventListener('touchstart',e=>{
-  if(!window.matchMedia('(max-width:768px)').matches||document.getElementById('det').style.display==='none'||e.touches.length!==1)return;
+  if(_focusState||!window.matchMedia('(max-width:768px)').matches||document.getElementById('det').style.display==='none'||e.touches.length!==1)return;
   const t=e.touches[0];
   _swipeStartX=t.clientX;_swipeStartY=t.clientY;_swipeTracking=t.clientX<=50;
 },{passive:true});
 document.addEventListener('touchend',e=>{
-  if(!_swipeTracking||!e.changedTouches.length)return;
+  if(_focusState||!_swipeTracking||!e.changedTouches.length)return;
   const t=e.changedTouches[0],dx=t.clientX-_swipeStartX,dy=t.clientY-_swipeStartY;
   _swipeTracking=false;
   if(dx>=70&&Math.abs(dx)>Math.abs(dy)*1.5)closeProj();
 },{passive:true});
+// ══════════════════════════════════════════════════════════
+// TOUCH DRAG POLYFILL — riusa gli handler ondragstart/ondrop esistenti
+// su dispositivi touch (mobile/tablet), dove il drag HTML5 nativo non funziona
+// ══════════════════════════════════════════════════════════
+(function(){
+  let _tdEl=null,_tdDragging=false,_tdStartX=0,_tdStartY=0,_tdGhost=null,_tdHoldTimer=null;
+  const THRESH=10;
+
+  function runInline(el,attrName,evt){
+    const code=el.getAttribute(attrName);
+    if(!code)return;
+    try{ new Function('event',code).call(el,evt); }
+    catch(e){ console.warn('touch-drag handler error:',e); }
+  }
+
+  document.addEventListener('touchstart',e=>{
+    const el=e.target.closest('[draggable="true"]');
+    if(!el)return;
+    _tdEl=el;_tdDragging=false;
+    const t=e.touches[0];
+    _tdStartX=t.clientX;_tdStartY=t.clientY;
+  },{passive:true});
+
+  document.addEventListener('touchmove',e=>{
+    if(!_tdEl)return;
+    const t=e.touches[0];
+    const dx=t.clientX-_tdStartX,dy=t.clientY-_tdStartY;
+    if(!_tdDragging){
+      if(Math.abs(dx)>THRESH||Math.abs(dy)>THRESH){
+        _tdDragging=true;
+        const fakeEvt={dataTransfer:{effectAllowed:'',setData(){},getData(){return'';}},currentTarget:_tdEl,preventDefault(){},stopPropagation(){}};
+        runInline(_tdEl,'ondragstart',fakeEvt);
+        _tdEl.style.opacity='.35';
+        _tdGhost=_tdEl.cloneNode(true);
+        _tdGhost.style.cssText='position:fixed;pointer-events:none;z-index:99999;opacity:.9;width:'+_tdEl.offsetWidth+'px;transform:scale(.96);box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:8px;left:'+t.clientX+'px;top:'+t.clientY+'px;';
+        document.body.appendChild(_tdGhost);
+      }
+    }
+    if(_tdDragging){
+      e.preventDefault();
+      if(_tdGhost){
+        _tdGhost.style.left=(t.clientX-_tdGhost.offsetWidth/2)+'px';
+        _tdGhost.style.top=(t.clientY-24)+'px';
+      }
+      document.querySelectorAll('.touch-drop-hover').forEach(x=>x.classList.remove('touch-drop-hover'));
+      const under=document.elementFromPoint(t.clientX,t.clientY);
+      const dropTarget=under&&under.closest('[ondrop]');
+      if(dropTarget)dropTarget.classList.add('touch-drop-hover');
+    }
+  },{passive:false});
+
+  document.addEventListener('touchend',e=>{
+    if(!_tdEl)return;
+    if(_tdDragging){
+      const t=e.changedTouches[0];
+      document.querySelectorAll('.touch-drop-hover').forEach(x=>x.classList.remove('touch-drop-hover'));
+      const under=document.elementFromPoint(t.clientX,t.clientY);
+      const dropTarget=under&&under.closest('[ondrop]');
+      if(dropTarget){
+        const fakeEvt={preventDefault(){},stopPropagation(){},currentTarget:dropTarget,dataTransfer:{getData(){return'';}}};
+        runInline(dropTarget,'ondrop',fakeEvt);
+      }
+      _tdEl.style.opacity='';
+      if(_tdGhost){_tdGhost.remove();_tdGhost=null;}
+    }
+    _tdEl=null;_tdDragging=false;
+  },{passive:true});
+
+  document.addEventListener('touchcancel',()=>{
+    if(_tdEl)_tdEl.style.opacity='';
+    if(_tdGhost){_tdGhost.remove();_tdGhost=null;}
+    document.querySelectorAll('.touch-drop-hover').forEach(x=>x.classList.remove('touch-drop-hover'));
+    _tdEl=null;_tdDragging=false;
+  },{passive:true});
+})();
+
 const _statCharts={};
 function toggleStatChart(id){
   sv('statChartOpen_'+id,!ld('statChartOpen_'+id,false));
@@ -2975,8 +3095,15 @@ function strGetCatalogo(){
   return raw.map(e=>({
     id:e&&e.id?e.id:('str_'+Math.random().toString(36).slice(2,9)),
     nome:(e&&typeof e.nome==='string')?e.nome:'Routine',
-    storia:(e&&Array.isArray(e.storia))?e.storia:[]
+    storia:(e&&Array.isArray(e.storia))?e.storia:[],
+    noteEsercizio:(e&&typeof e.noteEsercizio==='string')?e.noteEsercizio:''
   }));
+}
+function strSetNoteEsercizio(id,val){
+  const cat=strGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex.noteEsercizio=val;
+  sv('str_catalogo',cat);toast();
 }
 function strFindOrCreateCatEsercizio(nome){
   const norm=allNormName(nome);
@@ -3029,7 +3156,12 @@ function strBuildSchede(p){
   const checksOggi=ld('str_checksOggi',{});
   const selIdx=ld('str_selSchedaIdx',todayIdx);
 
-  let h=`<div class="slbl">ROUTINE SETTIMANALI</div>
+  const _todayHasStrEx=schede[todayIdx].esercizi.length>0;
+  let h='';
+  if(_todayHasStrEx){
+    h+=`<button onclick="strStartFocusMode()" style="width:100%;background:var(--purple);border:none;color:#fff;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ROUTINE DI OGGI</button>`;
+  }
+  h+=`<div class="slbl">ROUTINE SETTIMANALI</div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
   schede.forEach((s,i)=>{
     const isToday=i===todayIdx;
@@ -3117,6 +3249,11 @@ function strBuildEsercizioDetail(p,exId){
   </div>`;
 
   h+=`<div class="isg" style="margin-bottom:1rem"><div class="ist"><div class="istl">Sessioni totali</div><div class="istv">${hist.length}</div></div></div>`;
+
+  h+=`<div style="margin-bottom:14px">
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">CONSIGLI <span style="color:var(--text-ghost)">(opzionale)</span></div>
+    <textarea onblur="strSetNoteEsercizio('${ex.id}',this.value)" placeholder="es. respira lentamente, non forzare…" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--text);resize:vertical">${esc(ex.noteEsercizio)}</textarea>
+  </div>`;
 
   h+=`<div class="slbl">STORICO SESSIONI</div><div class="card">`;
   if(!hist.length){
@@ -3299,14 +3436,22 @@ function allStartFocusMode(){
     timerInterval:null,
     tempoRestante:0,
     paused:false,
-    restDuration:90
+    restDuration:90,
+    showConsigli:false,
+    suggerimento:null
   };
+  document.body.style.overflow='hidden';
+  document.body.style.position='fixed';
+  document.body.style.width='100%';
   renderFocusMode();
 }
 
 function allCloseFocusMode(){
   if(_focusState?.timerInterval)clearInterval(_focusState.timerInterval);
   _focusState=null;
+  document.body.style.overflow='';
+  document.body.style.position='';
+  document.body.style.width='';
   const ov=document.getElementById('focus-overlay');
   if(ov)ov.remove();
   renderHome();
@@ -3321,13 +3466,17 @@ function focusCurrentExercise(){
 }
 
 function focusSkipExercise(){
-  if(!_focusState)return;
+  if(!_focusState||_focusActionLock)return;
+  _focusActionLock=true;
+  setTimeout(()=>{_focusActionLock=false;},400);
   if(_focusState.timerInterval)clearInterval(_focusState.timerInterval);
   const schede=allGetSchede();
   const scheda=schede[_focusState.schedaIdx];
   _focusState.exIdx++;
   _focusState.serieCorrente=1;
   _focusState.fase='serie';
+  _focusState.showConsigli=false;
+  _focusState.suggerimento=null;
   if(_focusState.exIdx>=scheda.esercizi.length){
     focusFinishWorkout();
     return;
@@ -3335,19 +3484,37 @@ function focusSkipExercise(){
   renderFocusMode();
 }
 
+let _focusActionLock=false;
+function focusParseRecupero(str){
+  if(!str)return 90;
+  const m=str.match(/(\d+)/);
+  if(!m)return 90;
+  const num=parseInt(m[1]);
+  return str.includes("'")||/min/i.test(str)?num*60:num;
+}
 function focusCompleteSerie(){
-  if(!_focusState)return;
+  if(!_focusState||_focusActionLock)return;
+  _focusActionLock=true;
+  setTimeout(()=>{_focusActionLock=false;},400);
   const schede=allGetSchede();
   const scheda=schede[_focusState.schedaIdx];
   const es=scheda.esercizi[_focusState.exIdx];
   const totSerie=es.serie||1;
 
   if(_focusState.serieCorrente>=totSerie){
-    // fine esercizio corrente -> registra storia + passa al prossimo
+    // fine esercizio corrente -> registra storia + calcola suggerimento + passa al prossimo
     const cat=allGetCatalogo();
     const catEx=cat.find(e=>e.id===es.catId);
+    let suggerimento=null;
     if(catEx){
       const todayKey=new Date().toDateString();
+      const prevStoria=catEx.storia.filter(s=>s.dataKey!==todayKey);
+      const lastSess=prevStoria[prevStoria.length-1];
+      if(lastSess&&lastSess.peso===es.peso){
+        suggerimento={tipo:'aumenta',msg:'Stesso peso della scorsa volta — prova ad aumentare di 2kg alla prossima sessione.'};
+      } else if(lastSess&&es.peso>lastSess.peso){
+        suggerimento={tipo:'ottimo',msg:'Hai aumentato il carico rispetto all\'ultima volta. Continua così.'};
+      }
       const existing=catEx.storia.findIndex(s=>s.dataKey===todayKey);
       const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso:es.peso,reps:es.reps,serie:es.serie};
       if(existing>=0)catEx.storia[existing]=entry;else catEx.storia.push(entry);
@@ -3363,13 +3530,18 @@ function focusCompleteSerie(){
     _focusState.exIdx++;
     _focusState.serieCorrente=1;
     _focusState.fase='serie';
+    _focusState.showConsigli=false;
+    _focusState.suggerimento=suggerimento;
     if(_focusState.exIdx>=scheda.esercizi.length){
       focusFinishWorkout();
       return;
     }
     renderFocusMode();
   } else {
-    // avvia recupero prima della prossima serie
+    // avvia recupero prima della prossima serie, usa il tempo consigliato dal catalogo se presente
+    const cat=allGetCatalogo();
+    const catEx=cat.find(e=>e.id===es.catId);
+    _focusState.restDuration=catEx&&catEx.recupero?focusParseRecupero(catEx.recupero):90;
     _focusState.fase='recupero';
     _focusState.tempoRestante=_focusState.restDuration;
     _focusState.paused=false;
@@ -3415,6 +3587,20 @@ function focusAddTime(sec){
   if(el)el.textContent=focusFormatTime(_focusState.tempoRestante);
 }
 
+function focusAdjustPeso(delta){
+  if(!_focusState)return;
+  const schede=allGetSchede();
+  const scheda=schede[_focusState.schedaIdx];
+  const es=scheda.esercizi[_focusState.exIdx];
+  es.peso=Math.max(0,(es.peso||0)+delta);
+  sv('all_schede',schede);
+  renderFocusMode();
+}
+function focusToggleConsigli(){
+  if(!_focusState)return;
+  _focusState.showConsigli=!_focusState.showConsigli;
+  renderFocusMode();
+}
 function focusFormatTime(sec){
   sec=Math.max(0,sec);
   const m=Math.floor(sec/60);
@@ -3468,10 +3654,43 @@ function renderFocusMode(){
   h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">`;
 
   if(_focusState.fase==='serie'){
-    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:10px;text-transform:uppercase">${nome}</div>
-      <div style="font-size:48px;font-weight:800;color:#fff;margin-bottom:6px">Serie ${_focusState.serieCorrente}/${totSerie}</div>
-      <div style="font-family:var(--mono);font-size:16px;color:var(--green);margin-bottom:40px">${es.reps||'?'} rip. · ${es.peso||'?'} kg</div>
-      <button onclick="focusCompleteSerie()" style="background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:18px 48px;border-radius:16px;font-size:16px;cursor:pointer;margin-bottom:16px">
+    const catFull=allGetCatalogo();
+    const catExFull=catFull.find(e=>e.id===es.catId);
+    const todayKeyNow=new Date().toDateString();
+    const prevStoriaNow=catExFull?catExFull.storia.filter(s=>s.dataKey!==todayKeyNow):[];
+    const lastPerf=prevStoriaNow[prevStoriaNow.length-1];
+
+    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:10px;text-transform:uppercase">${nome}</div>`;
+
+    if(_focusState.suggerimento&&_focusState.exIdx>0){
+      h+=`<div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 14px;margin-bottom:14px;font-size:11px;color:${_focusState.suggerimento.tipo==='ottimo'?'var(--green)':'#fbbf24'}">${_focusState.suggerimento.tipo==='ottimo'?'✓':'💡'} ${_focusState.suggerimento.msg}</div>`;
+    }
+
+    h+=`<div class="serie-num" style="font-size:48px;font-weight:800;color:#fff;margin-bottom:6px">Serie ${_focusState.serieCorrente}/${totSerie}</div>`;
+
+    h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="font-family:var(--mono);font-size:16px;color:var(--green)">${es.reps||'?'} rip. ·</span>
+      <span style="font-family:var(--mono);font-size:16px;color:var(--green)">${es.peso||'0'} kg</span>
+      <button onclick="focusAdjustPeso(-2.5)" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:14px;cursor:pointer">−</button>
+      <button onclick="focusAdjustPeso(2.5)" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:14px;cursor:pointer">+</button>
+    </div>`;
+
+    if(lastPerf){
+      h+=`<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px">Ultima volta: ${lastPerf.peso}kg × ${lastPerf.reps} — ${lastPerf.data}</div>`;
+    }
+
+    if(catExFull&&catExFull.noteEsercizio){
+      h+=`<div style="margin-bottom:20px">
+        <button onclick="focusToggleConsigli()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;margin:0 auto">
+          ${_focusState.showConsigli?'▲':'▼'} Consigli
+        </button>
+        ${_focusState.showConsigli?`<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:8px;max-width:280px;line-height:1.5">${esc(catExFull.noteEsercizio)}</div>`:''}
+      </div>`;
+    } else {
+      h+=`<div style="margin-bottom:20px"></div>`;
+    }
+
+    h+=`<button class="focus-complete-btn" onclick="focusCompleteSerie()" style="background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:18px 48px;border-radius:16px;font-size:16px;cursor:pointer;margin-bottom:16px">
         ${_focusState.serieCorrente>=totSerie?'✓ FINE ESERCIZIO':'✓ SERIE COMPLETATA'}
       </button>
       <button onclick="focusSkipExercise()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer">Salta esercizio →</button>`;
@@ -3502,6 +3721,238 @@ function renderFocusMode(){
     if(ring){
       const circ=2*Math.PI*54;
       const pct=_focusState.tempoRestante/_focusState.restDuration;
+      ring.setAttribute('stroke-dashoffset',circ*(1-pct));
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FOCUS MODE STRETCHING — gemello dell'allenamento, timer durata invece di serie/recupero
+// ══════════════════════════════════════════════════════════
+let _strFocusState=null; // {schedaIdx, exIdx, fase:'attivo'|'pausa', timerInterval, tempoRestante, paused, showConsigli}
+
+function strStartFocusMode(){
+  const today=new Date();
+  const todayIdx=allWeekdayIdx(today);
+  const schede=strGetSchede();
+  const scheda=schede[todayIdx];
+  if(!scheda.esercizi.length){toast('Nessuna routine in questa scheda');return;}
+  _strFocusState={
+    schedaIdx:todayIdx,
+    exIdx:0,
+    fase:'attivo',
+    timerInterval:null,
+    tempoRestante:0,
+    tempoTotale:0,
+    paused:false,
+    showConsigli:false
+  };
+  document.body.style.overflow='hidden';
+  document.body.style.position='fixed';
+  document.body.style.width='100%';
+  renderStrFocusMode();
+}
+
+function strCloseFocusMode(){
+  if(_strFocusState?.timerInterval)clearInterval(_strFocusState.timerInterval);
+  _strFocusState=null;
+  document.body.style.overflow='';
+  document.body.style.position='';
+  document.body.style.width='';
+  const ov=document.getElementById('str-focus-overlay');
+  if(ov)ov.remove();
+  renderHome();
+  if(document.getElementById('det')?.style.display!=='none')openProj('stretching');
+}
+
+let _strFocusActionLock=false;
+function strFocusSkipExercise(){
+  if(!_strFocusState||_strFocusActionLock)return;
+  _strFocusActionLock=true;
+  setTimeout(()=>{_strFocusActionLock=false;},400);
+  if(_strFocusState.timerInterval)clearInterval(_strFocusState.timerInterval);
+  const schede=strGetSchede();
+  const scheda=schede[_strFocusState.schedaIdx];
+  _strFocusState.exIdx++;
+  _strFocusState.fase='attivo';
+  _strFocusState.showConsigli=false;
+  if(_strFocusState.exIdx>=scheda.esercizi.length){
+    strFocusFinishWorkout();
+    return;
+  }
+  renderStrFocusMode();
+}
+
+function strFocusCompleteExercise(){
+  if(!_strFocusState||_strFocusActionLock)return;
+  _strFocusActionLock=true;
+  setTimeout(()=>{_strFocusActionLock=false;},400);
+  if(_strFocusState.timerInterval)clearInterval(_strFocusState.timerInterval);
+
+  const schede=strGetSchede();
+  const scheda=schede[_strFocusState.schedaIdx];
+  const es=scheda.esercizi[_strFocusState.exIdx];
+
+  const cat=strGetCatalogo();
+  const catEx=cat.find(e=>e.id===es.catId);
+  if(catEx){
+    const todayKey=new Date().toDateString();
+    const existing=catEx.storia.findIndex(s=>s.dataKey===todayKey);
+    const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),durata:es.durata||0};
+    if(existing>=0)catEx.storia[existing]=entry;else catEx.storia.push(entry);
+    sv('str_catalogo',cat);
+  }
+  const chOggi=ld('str_checksOggi',{});
+  const todayKey2=new Date().toDateString();
+  if(!chOggi[todayKey2])chOggi[todayKey2]={};
+  chOggi[todayKey2][_strFocusState.schedaIdx+'_'+_strFocusState.exIdx]=true;
+  sv('str_checksOggi',chOggi);
+
+  _strFocusState.exIdx++;
+  _strFocusState.fase='attivo';
+  _strFocusState.showConsigli=false;
+  if(_strFocusState.exIdx>=scheda.esercizi.length){
+    strFocusFinishWorkout();
+    return;
+  }
+  renderStrFocusMode();
+}
+
+function strFocusStartTimer(){
+  const schede=strGetSchede();
+  const scheda=schede[_strFocusState.schedaIdx];
+  const es=scheda.esercizi[_strFocusState.exIdx];
+  const durataSec=(es.durata||1)*60;
+  _strFocusState.tempoTotale=durataSec;
+  _strFocusState.tempoRestante=durataSec;
+  _strFocusState.fase='timer';
+  _strFocusState.paused=false;
+  renderStrFocusMode();
+  if(_strFocusState.timerInterval)clearInterval(_strFocusState.timerInterval);
+  _strFocusState.timerInterval=setInterval(()=>{
+    if(_strFocusState.paused)return;
+    _strFocusState.tempoRestante--;
+    const el=document.getElementById('str-focus-timer-display');
+    if(el)el.textContent=focusFormatTime(_strFocusState.tempoRestante);
+    const ring=document.getElementById('str-focus-timer-ring');
+    if(ring){
+      const circ=2*Math.PI*54;
+      const pct=_strFocusState.tempoRestante/_strFocusState.tempoTotale;
+      ring.setAttribute('stroke-dashoffset',circ*(1-pct));
+    }
+    if(_strFocusState.tempoRestante<=0){
+      clearInterval(_strFocusState.timerInterval);
+      if(navigator.vibrate)navigator.vibrate(200);
+      strFocusCompleteExercise();
+    }
+  },1000);
+}
+
+function strFocusTogglePause(){
+  if(!_strFocusState)return;
+  _strFocusState.paused=!_strFocusState.paused;
+  const btn=document.getElementById('str-focus-pause-btn');
+  if(btn)btn.textContent=_strFocusState.paused?'▶':'⏸';
+}
+
+function strFocusToggleConsigli(){
+  if(!_strFocusState)return;
+  _strFocusState.showConsigli=!_strFocusState.showConsigli;
+  renderStrFocusMode();
+}
+
+function strFocusFinishWorkout(){
+  if(_strFocusState?.timerInterval)clearInterval(_strFocusState.timerInterval);
+  const schede=strGetSchede();
+  const scheda=schede[_strFocusState.schedaIdx];
+  const ov=document.getElementById('str-focus-overlay');
+  if(ov){
+    ov.innerHTML=`<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px">
+      <div style="font-size:40px;margin-bottom:16px">🧘</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px">Routine completata</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:24px">${scheda.nome} — ${scheda.esercizi.length} esercizi</div>
+      <button onclick="strCloseFocusMode()" style="background:var(--purple);border:none;color:#fff;font-weight:800;padding:14px 28px;border-radius:12px;font-size:14px;cursor:pointer">FATTO</button>
+    </div>`;
+  }
+  toast('🧘 STRETCHING COMPLETATO');
+}
+
+function renderStrFocusMode(){
+  let ov=document.getElementById('str-focus-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='str-focus-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column';
+    document.body.appendChild(ov);
+  }
+  if(!_strFocusState){ov.remove();return;}
+
+  const schede=strGetSchede();
+  const scheda=schede[_strFocusState.schedaIdx];
+  const es=scheda.esercizi[_strFocusState.exIdx];
+  if(!es){strFocusFinishWorkout();return;}
+  const nome=strEsercizioNome(es.catId);
+  const progressPct=Math.round(((_strFocusState.exIdx)/scheda.esercizi.length)*100);
+
+  const catFull=strGetCatalogo();
+  const catExFull=catFull.find(e=>e.id===es.catId);
+
+  let h=`<div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+    <button onclick="strCloseFocusMode()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer">✕ Esci</button>
+    <span style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4)">${_strFocusState.exIdx+1}/${scheda.esercizi.length}</span>
+  </div>`;
+
+  h+=`<div style="height:2px;background:rgba(255,255,255,.1);margin:0 20px 20px">
+    <div style="height:2px;background:var(--purple);width:${progressPct}%;transition:width .3s"></div>
+  </div>`;
+
+  h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">`;
+
+  if(_strFocusState.fase==='attivo'){
+    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:14px;text-transform:uppercase">Prossima routine</div>
+      <div class="serie-num" style="font-size:38px;font-weight:800;color:#fff;margin-bottom:10px">${nome}</div>
+      <div style="font-family:var(--mono);font-size:16px;color:var(--purple);margin-bottom:24px">${es.durata||'?'} min</div>`;
+
+    if(catExFull&&catExFull.noteEsercizio){
+      h+=`<div style="margin-bottom:24px">
+        <button onclick="strFocusToggleConsigli()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;margin:0 auto">
+          ${_strFocusState.showConsigli?'▲':'▼'} Consigli
+        </button>
+        ${_strFocusState.showConsigli?`<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:8px;max-width:280px;line-height:1.5">${esc(catExFull.noteEsercizio)}</div>`:''}
+      </div>`;
+    } else {
+      h+=`<div style="margin-bottom:24px"></div>`;
+    }
+
+    h+=`<button class="focus-complete-btn" onclick="strFocusStartTimer()" style="background:var(--purple);border:none;color:#fff;font-weight:800;padding:18px 48px;border-radius:16px;font-size:16px;cursor:pointer;margin-bottom:16px">
+        ▶ INIZIA
+      </button>
+      <button onclick="strFocusSkipExercise()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer">Salta →</button>`;
+  } else if(_strFocusState.fase==='timer'){
+    const circ=2*Math.PI*54;
+    h+=`<div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:10px;text-transform:uppercase">${nome}</div>
+      <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
+        <svg width="140" height="140" viewBox="0 0 140 140" style="transform:rotate(-90deg)">
+          <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/>
+          <circle id="str-focus-timer-ring" cx="70" cy="70" r="54" fill="none" stroke="var(--purple)" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="${circ}" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:32px;font-weight:800;color:#fff" id="str-focus-timer-display">${focusFormatTime(_strFocusState.tempoRestante)}</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <button id="str-focus-pause-btn" onclick="strFocusTogglePause()" style="background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 20px;border-radius:10px;font-size:14px;cursor:pointer">⏸</button>
+      </div>
+      <button onclick="strFocusCompleteExercise()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer">✓ Fatto in anticipo →</button>`;
+  }
+
+  h+=`</div>`;
+  ov.innerHTML=h;
+
+  if(_strFocusState.fase==='timer'){
+    const ring=document.getElementById('str-focus-timer-ring');
+    if(ring){
+      const circ=2*Math.PI*54;
+      const pct=_strFocusState.tempoRestante/_strFocusState.tempoTotale;
       ring.setAttribute('stroke-dashoffset',circ*(1-pct));
     }
   }
@@ -3924,17 +4375,26 @@ function buildAlimentazione(p){
   const fitosSettings=ld('fitos_settings',{targetCalories:0,targetProtein:0,targetCarbs:0,targetFat:0});
 
   let h='';
-  // ── Totale macro di oggi ──
+  // ── Totale macro CONSUMATI oggi (solo pasti spuntati) ──
   const _todaySchedaMacro=schede[todayIdx];
-  const _todayTotKcal=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.kcal||0),0);
-  const _todayTotP=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.p||0),0);
-  const _todayTotC=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.c||0),0);
-  const _todayTotF=_todaySchedaMacro.pasti.reduce((s,x)=>s+(x.f||0),0);
-  if(_todayTotKcal>0||fitosSettings.targetCalories>0){
+  const _todayChecksNow=ld('alim_checksOggi',{})[todayKey]||{};
+  const _consumedPasti=_todaySchedaMacro.pasti.filter((x,j)=>_todayChecksNow[todayIdx+'_'+j]);
+  const _plannedPasti=_todaySchedaMacro.pasti.filter(x=>x.testo.trim());
+  const _todayTotKcal=_consumedPasti.reduce((s,x)=>s+(x.kcal||0),0);
+  const _todayTotP=_consumedPasti.reduce((s,x)=>s+(x.p||0),0);
+  const _todayTotC=_consumedPasti.reduce((s,x)=>s+(x.c||0),0);
+  const _todayTotF=_consumedPasti.reduce((s,x)=>s+(x.f||0),0);
+  const _plannedTotKcal=_plannedPasti.reduce((s,x)=>s+(x.kcal||0),0);
+  if(_plannedTotKcal>0||fitosSettings.targetCalories>0){
+    const _kcalTarget=fitosSettings.targetCalories||_plannedTotKcal||1;
+    const _kcalPct=Math.min(100,Math.round(_todayTotKcal/_kcalTarget*100));
     h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
-        <span style="font-family:var(--mono);font-size:16px;font-weight:800;color:${p.color}">${_todayTotKcal}${fitosSettings.targetCalories?' / '+fitosSettings.targetCalories:''} kcal</span>
-        <span style="font-size:9px;color:var(--text-ghost)">oggi</span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:var(--mono);font-size:16px;font-weight:800;color:${p.color}">${_todayTotKcal}${fitosSettings.targetCalories?' / '+fitosSettings.targetCalories:(_plannedTotKcal?' / '+_plannedTotKcal:'')} kcal</span>
+        <span style="font-size:9px;color:var(--text-ghost)">consumati oggi</span>
+      </div>
+      <div style="height:6px;background:var(--border-soft);border-radius:3px;overflow:hidden;margin-bottom:10px">
+        <div style="height:100%;width:${_kcalPct}%;background:${p.color};transition:width .4s"></div>
       </div>
       <div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--text-faint)">
         <span>${_todayTotP}${fitosSettings.targetProtein?'/'+fitosSettings.targetProtein:''}P</span>
@@ -3974,7 +4434,7 @@ function buildAlimentazione(p){
     h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap">
       ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
       <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);width:70px;flex-shrink:0">${esc(pasto.slot)}</span>
-      <input class="rt" value="${esc(pasto.testo)}" placeholder="cosa mangiare…" onchange="alimEdPasto(${selIdx},${i},this.value)">
+      <input class="rt" id="alim-pasto-${selIdx}-${i}" value="${esc(pasto.testo)}" placeholder="cosa mangiare…" onchange="alimEdPasto(${selIdx},${i},this.value)">
       <button onclick="alimToggleMacroEdit(${selIdx},${i})" style="font-family:var(--mono);font-size:9px;color:${(pasto.kcal||pasto.p||pasto.c||pasto.f)?'var(--green)':'var(--text-ghost)'};background:none;border:none;cursor:pointer;flex-shrink:0">${(pasto.kcal||pasto.p||pasto.c||pasto.f)?pasto.kcal+'kcal':'+ macro'}</button>
       ${ld('alim_macroEditOpen_'+selIdx+'_'+i,false)?`<div style="width:100%;display:flex;gap:6px;padding:6px 0 2px 26px">
         <input type="number" placeholder="kcal" value="${pasto.kcal||''}" onchange="alimEdMacro(${selIdx},${i},'kcal',this.value)" style="width:56px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
@@ -4346,9 +4806,9 @@ function populateAssetSelects(){
     else if(a.length)el.value=a[0].l;
   });
 }
-function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();renderAssets();renderCharts();updateOv();renderPatTarget();toast();}
+function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();if(k==='v')savePatSnapshot(false);renderAssets();renderCharts();updateOv();renderPatTarget();renderPatChart();toast();}
 function delAsset(i){const a=ld('assets',[]);if(a[i]&&a[i].special)return toast('Asset speciale non eliminabile');a.splice(i,1);sv('assets',a);renderAssets();renderCharts();renderPatTarget();}
-function addAsset(){const a=ld('assets',[]);a.push({l:'Nuovo asset',v:0});sv('assets',a);renderAssets();renderCharts();}
+function addAsset(){const a=ld('assets',[]);a.push({l:'Nuovo asset',v:0});sv('assets',a);savePatSnapshot(false);renderAssets();renderCharts();renderPatChart();}
 
 // ── FINANCE ──────────────────────────────────────────────
 // ── SISTEMA FINANZIARIO ──────────────────────────────────
@@ -4417,7 +4877,8 @@ function registraMovimento(){
   logTx(tipo,desc,imp,asset);
   document.getElementById('reg-desc').value='';
   document.getElementById('reg-imp').value='';
-  renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();
+  savePatSnapshot(false);
+  renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
   toast(wentNegative?'⚠ '+asset+' in negativo':(tipo==='entrata'?'+€'+imp+' → '+asset:'-€'+imp+' da '+asset));
 }
 function registraEntrata(){const el=document.getElementById('reg-tipo');if(el)el.value='entrata';registraMovimento();}
@@ -4432,9 +4893,10 @@ function deleteTx(ts){
     moveAsset(tx.asset, tx.tipo==='entrata'?-tx.importo:tx.importo);
     log.splice(idx,1);
     sv('txLog',log);
+    savePatSnapshot(false);
     renderAssets();renderTxMonth();
     if(txLogVisible){txLogVisible=false;toggleTxLog();}
-    updateOv();renderTopbar();renderCharts();renderPatTarget();
+    updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
     toast('TRANSAZIONE ANNULLATA');
   });
 }
@@ -4758,7 +5220,24 @@ function renderTodayFocus(){
         ${Array.from({length:Math.min(totalTot,16)},(_,i)=>`<div style="width:5px;height:5px;border-radius:50%;background:${i<totalDone?'var(--green)':'var(--border-hover)'}"></div>`).join('')}
       </div>
     </div>`;
-  
+
+    // ── TASK IN RITARDO DA IERI ──
+    const _yesterday=new Date(today);_yesterday.setDate(today.getDate()-1);
+    const _overdueTasks=getAgendaDay(_yesterday).filter(t=>!t.done);
+    if(_overdueTasks.length){
+      h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:10px;padding:10px 14px;margin-bottom:12px">
+        <div style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--red);letter-spacing:.06em;margin-bottom:6px">⚠ IN RITARDO DA IERI (${_overdueTasks.length})</div>`;
+      _overdueTasks.forEach((t,i)=>{
+        const _yKey='agenda_'+_yesterday.toISOString().slice(0,10);
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+          <div class="hd" onclick="ckAgendaFocus('${_yKey}',${i});renderTodayFocus()" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer;border-color:var(--red)"></div>
+          <span style="font-size:12px;color:var(--text);flex:1">${t.text}</span>
+          <button onclick="moveTaskToToday('${_yKey}',${i})" style="font-family:var(--mono);font-size:9px;color:var(--red);background:none;border:1px solid var(--red);border-radius:4px;padding:2px 6px;cursor:pointer">→ OGGI</button>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
     // ── BODY 2 COLONNE ──
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px">';
   
@@ -4773,10 +5252,15 @@ function renderTodayFocus(){
       const agTasks=getAgendaDay(today).filter(t=>t.projId===p.id);
       if(!recur.length&&!agTasks.length)return;
       hasAnyTask=true;
+      const _recurPriArr=ld('recurpri_'+p.id,[]);
       const allT=[
-        ...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i})),
-        ...agTasks.map((t)=>{const _fi=getAgendaDay(today).findIndex(x=>x.ts===t.ts&&x.text===t.text&&x.projId===t.projId);return{text:t.text,done:t.done,_type:'agenda',_ai:_fi};})
-      ];
+        ...recur.map((text,i)=>({text,done:!!recurCh[todayKey+'_'+i],_type:'recur',_i:i,pri:_recurPriArr[i]||'none'})),
+        ...agTasks.map((t)=>{const _fi=getAgendaDay(today).findIndex(x=>x.ts===t.ts&&x.text===t.text&&x.projId===t.projId);return{text:t.text,done:t.done,_type:'agenda',_ai:_fi,pri:t.pri||'none',_key:agendaKey_today,time:t.time||''};})
+      ].sort((a,b)=>{
+        const order={high:0,medium:1,none:2};
+        if(a.done!==b.done)return a.done?1:-1;
+        return order[a.pri]-order[b.pri];
+      });
       const done=allT.filter(t=>t.done).length;
       h+=`<div style="background:${color};padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;cursor:pointer" onclick="openProj('${p.id}')">
         <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.04em">${p.tag}</span>
@@ -4785,9 +5269,13 @@ function renderTodayFocus(){
       allT.forEach(t=>{
         const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${p.id}')`:
                  `ckAgendaFocus('${agendaKey_today}',${t._ai})`;
-        h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface)">
+        const priFn=t._type==='recur'?`cycleRecurPri(${t._i},'${p.id}')`:`cycleAgendaTaskPri('${agendaKey_today}',${t._ai})`;
+        const priColor=t.pri==='high'?'var(--red)':t.pri==='medium'?'var(--yellow)':'transparent';
+        h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface);border-left:3px solid ${priColor}">
           <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
           <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.text}</span>
+          ${t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:''}
+          <span onclick="${priFn}" style="font-size:11px;color:${priColor==='transparent'?'var(--text-ghost)':priColor};cursor:pointer;flex-shrink:0;padding:2px 4px">${t.pri==='high'?'🔴':t.pri==='medium'?'🟡':'○'}</span>
           <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
         </div>`;
       });
@@ -4805,6 +5293,7 @@ function renderTodayFocus(){
         h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft)">
           <div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
           <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1">${t.text}</span>
+          ${t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:''}
         </div>`;
       });
     }
@@ -4940,6 +5429,31 @@ function ckRecurFocus(i,id){
   const k=todayKey+'_'+i;
   ch[k]=!ch[k];sv('recurChecks_'+id,ch);
   renderTodayFocus();renderHome();toast();
+}
+function moveTaskToToday(key,i){
+  const dateStr=key.replace('agenda_','');
+  const fromDate=new Date(dateStr);
+  const tasks=getAgendaDay(fromDate);
+  const task=tasks[i];
+  if(!task)return;
+  tasks.splice(i,1);
+  setAgendaDay(fromDate,tasks);
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayTasks=getAgendaDay(today);
+  todayTasks.push({...task,ts:Date.now()});
+  setAgendaDay(today,todayTasks);
+  renderTodayFocus();
+  toast('SPOSTATA A OGGI');
+}
+function cycleAgendaTaskPri(key,i){
+  const dateStr=key.replace('agenda_','');
+  const date=new Date(dateStr);
+  const tasks=getAgendaDay(date);
+  if(!tasks[i])return;
+  const cur=tasks[i].pri||'none';
+  tasks[i].pri=cur==='none'?'medium':cur==='medium'?'high':'none';
+  setAgendaDay(date,tasks);
+  if(isTodayTabActive())renderTodayFocus();else renderAgenda();
 }
 function ckAgendaFocus(key,i){
   const dateStr=key.replace('agenda_','');
@@ -5318,6 +5832,21 @@ function updateQCPreview(){
         <span style="color:var(--text);flex:1">${p7.nome}</span>
       </div>`;
     }
+    if(isQCSchedaGiorno(l)){
+      const p9=qcParseSchedaGiorno(l);
+      if(p9)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--green);min-width:80px;flex-shrink:0">📅 ${DAY_NAMES_IT[p9.dayIdx]}</span>
+        <span style="color:var(--text-faint)">SCHEDA</span>
+        <span style="color:var(--text);flex:1">${p9.esercizi.join(', ')}</span>
+      </div>`;
+    }
+    if(isQCCopiaGiorno(l)){
+      const p10=qcParseCopiaGiorno(l);
+      if(p10)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
+        <span style="color:var(--blue);min-width:80px;flex-shrink:0">📋 COPIA</span>
+        <span style="color:var(--text);flex:1">${DAY_NAMES_IT[p10.fromDayIdx]} → ${DAY_NAMES_IT[p10.toDayIdx]}</span>
+      </div>`;
+    }
     if(isQCCatalogoEsercizio(l)){
       const p8=qcParseCatalogoEsercizio(l);
       if(p8)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #1e1e1e">
@@ -5343,6 +5872,38 @@ function updateQCPreview(){
           <span style="color:var(--text);flex:1">${SLOT_NAMES[p.slotIdx]}: ${p.cibo}</span>
         </div>`;
       }
+    }
+    // ── Validazione: intent riconosciuto ma parsing fallito → segnala errore chiaro ──
+    const trimmed=l.trim();
+    if(/^peso\s*:?\s*/i.test(trimmed)&&!isQCPeso(trimmed)){
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #1e1e1e;background:rgba(239,68,68,.08)">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
+        <span style="color:var(--text-faint);flex:1">Peso non valido — usa "peso 78.4"</span>
+      </div>`;
+    }
+    if(/^scheda\s+/i.test(trimmed)&&!isQCSchedaGiorno(trimmed)){
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #1e1e1e;background:rgba(239,68,68,.08)">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
+        <span style="color:var(--text-faint);flex:1">Giorno non riconosciuto — usa "scheda lunedì: esercizio1, esercizio2"</span>
+      </div>`;
+    }
+    if(/^copia\s+/i.test(trimmed)&&!isQCCopiaGiorno(trimmed)){
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #1e1e1e;background:rgba(239,68,68,.08)">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
+        <span style="color:var(--text-faint);flex:1">Formato non valido — usa "copia lunedì su giovedì"</span>
+      </div>`;
+    }
+    if(/^(entrata|uscita)\s*:/i.test(trimmed)&&!isQCFinanza(trimmed)){
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #1e1e1e;background:rgba(239,68,68,.08)">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
+        <span style="color:var(--text-faint);flex:1">Movimento non valido</span>
+      </div>`;
+    }
+    if(trimmed.includes('|')&&!qcParseCatalogoEsercizio(trimmed)){
+      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #1e1e1e;background:rgba(239,68,68,.08)">
+        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
+        <span style="color:var(--text-faint);flex:1">Formato catalogo non valido — usa "Nome | Gruppi | Recupero"</span>
+      </div>`;
     }
     const p=parseQCLine(l,allProjs);
     const dateLabel=p.isRecur?'ricorrente':_qcDateLabel(p.targetDate||fallbackDate);
@@ -5526,10 +6087,59 @@ function qcParseCatalogoEsercizio(line){
   const nome=parts[0];
   if(!nome)return null;
   const gruppi=parts[1]?parts[1].split(',').map(g=>g.trim()).filter(Boolean):[];
-  const recupero=parts[2]||'';
-  const note=parts[3]||'';
+  let recupero='',note='';
+  if(parts[2]&&/^\d+\s*['"]|^\d+\s*(min|sec)/i.test(parts[2])){
+    recupero=parts[2];
+    note=parts[3]||'';
+  } else if(parts[2]){
+    note=parts[2];
+  }
   return{nome,gruppi,recupero,note};
 }
+// ── QC: assegna piu esercizi del catalogo a un giorno in un colpo ──
+// Sintassi: "scheda lunedì: panca piana, rematore, military press"
+function isQCSchedaGiorno(line){
+  return /^scheda\s+/i.test(line.trim())&&line.includes(':');
+}
+function qcParseSchedaGiorno(line){
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
+  let text=line.trim().replace(/^scheda\s+/i,'');
+  const colonIdx=text.indexOf(':');
+  if(colonIdx<0)return null;
+  let giornoRaw=text.slice(0,colonIdx).trim().toLowerCase();
+  let dayIdx=null;
+  if(DAY_MAP[giornoRaw]!==undefined){
+    dayIdx=DAY_MAP[giornoRaw];
+  } else {
+    const dateMatch=giornoRaw.match(/(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)/i);
+    if(dateMatch){
+      const today=new Date();
+      const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
+      dayIdx=allWeekdayIdx(targetDate);
+    }
+  }
+  if(dayIdx===null)return null;
+  const esercizi=text.slice(colonIdx+1).split(',').map(e=>e.trim()).filter(Boolean);
+  if(!esercizi.length)return null;
+  return{dayIdx,esercizi};
+}
+
+// ── QC: copia scheda giorno su un altro giorno ──
+// Sintassi: "copia lunedì su giovedì"
+function isQCCopiaGiorno(line){
+  return /^copia\s+.+\s+su\s+/i.test(line.trim());
+}
+function qcParseCopiaGiorno(line){
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  const m=line.trim().match(/^copia\s+(.+?)\s+su\s+(.+)$/i);
+  if(!m)return null;
+  const fromD=DAY_MAP[m[1].trim().toLowerCase()];
+  const toD=DAY_MAP[m[2].trim().toLowerCase()];
+  if(fromD===undefined||toD===undefined)return null;
+  return{fromDayIdx:fromD,toDayIdx:toD};
+}
+
 function isQCAllenamento(line){
   // Ha formato NxM o Nkg e NON ha ":"
   return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
@@ -5700,6 +6310,42 @@ function submitQC(){
           }
           sv('str_schede',schedeStr);
         }
+        added++;return;
+      }
+    }
+    // Prova assegnazione bulk scheda giorno
+    if(isQCSchedaGiorno(line)){
+      const parsedSched=qcParseSchedaGiorno(line);
+      if(parsedSched){
+        const cat=allGetCatalogo();
+        const schede=allGetSchede();
+        const scheda=schede[parsedSched.dayIdx];
+        let assegnati=0;
+        parsedSched.esercizi.forEach(nomeEs=>{
+          const ex=cat.find(e=>allNormName(e.nome)===allNormName(nomeEs)||allNormName(e.nome).includes(allNormName(nomeEs))||allNormName(nomeEs).includes(allNormName(e.nome)));
+          if(!ex)return;
+          if(scheda.esercizi.some(e=>e.catId===ex.id))return; // già presente
+          const lastHist=ex.storia[ex.storia.length-1];
+          scheda.esercizi.push({
+            catId:ex.id,
+            peso:lastHist?lastHist.peso:0,
+            reps:lastHist?lastHist.reps:0,
+            serie:lastHist?lastHist.serie:3
+          });
+          assegnati++;
+        });
+        sv('all_schede',schede);
+        added+=assegnati;
+        return;
+      }
+    }
+    // Prova copia giorno
+    if(isQCCopiaGiorno(line)){
+      const parsedCopia=qcParseCopiaGiorno(line);
+      if(parsedCopia){
+        const schede=allGetSchede();
+        schede[parsedCopia.toDayIdx].esercizi=schede[parsedCopia.fromDayIdx].esercizi.map(e=>({...e}));
+        sv('all_schede',schede);
         added++;return;
       }
     }
