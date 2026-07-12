@@ -1604,11 +1604,19 @@ function agDayDrop(e,toKey){
 function setAgendaFilter(v){_agendaFilter=v;renderAgenda();}
 
 // Ritorna task per un giorno: agenda libere + ricorrenti dei progetti (solo per oggi)
+function sortByTime(tasks){
+  return tasks.slice().sort((a,b)=>{
+    if(a.time&&b.time)return a.time.localeCompare(b.time);
+    if(a.time&&!b.time)return -1;
+    if(!a.time&&b.time)return 1;
+    return 0;
+  });
+}
 function getAgendaDayFull(day,allProjs){
   const today=new Date();today.setHours(0,0,0,0);
   const isToday=day.getTime()===today.getTime();
   const agendaTasks=getAgendaDay(day).map(t=>({...t,_src:'agenda'}));
-  if(!isToday) return agendaTasks;
+  if(!isToday) return sortByTime(agendaTasks);
   // Aggiungi solo le ricorrenti dei progetti.
   // Le task giornaliere inserite manualmente restano salvate nel giorno specifico dell'agenda.
   const todayKey=new Date().toDateString();
@@ -1622,7 +1630,7 @@ function getAgendaDayFull(day,allProjs){
         projTasks.push({text,projId:p.id,done:!!recurCh[todayKey+'_'+i],_src:'proj',_type:'recur',_projIdx:i});
     });
   });
-  return [...agendaTasks,...projTasks];
+  return sortByTime([...agendaTasks,...projTasks]);
 }
 
 function renderAgenda(){
@@ -1723,7 +1731,7 @@ function renderAgenda(){
         const _canDrag=!isProjTask&&!isRecur;
         h+=`<div class="row${t.done?' done':''}" ${_canDrag?`draggable="true" ondragstart="agDragStart(event,'${key}',${idx},'${esc(t.text)}','${t.projId||''}')" ondragend="agDragEnd(event)"`:''} style="cursor:${_canDrag?'grab':'default'}">
           <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
-          ${!isProjTask&&!isRecur?`<input type="time" value="${t.time||''}" onchange="setAgendaTaskTime('${key}',${idx},this.value)" style="background:transparent;border:none;color:var(--text-ghost);font-family:var(--mono);font-size:9px;padding:0;width:52px;flex-shrink:0;cursor:pointer">`:(t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:'')}
+          ${!isProjTask&&!isRecur?`<select onchange="setAgendaTaskTime('${key}',${idx},this.value)" style="background:transparent;border:none;color:var(--text-dim);font-family:var(--mono);font-size:12px;font-weight:700;padding:0;width:58px;flex-shrink:0;cursor:pointer">${timeSelectOptions(t.time||'')}</select>`:(t.time?`<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:'')}
           ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
           <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
           ${typeLabel?`<span style="font-family:var(--mono);font-size:8px;color:${typeColor};padding:0 4px;flex-shrink:0">${typeLabel}</span>`:''}
@@ -1748,7 +1756,7 @@ function renderAgenda(){
               <option value="">— nessun progetto</option>
               ${allProjs.map(p=>`<option value="${esc(p.id)}">${esc(p.tag)}</option>`).join('')}
             </select>
-            <input type="time" id="ag-time-${key}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:6px;border-radius:8px;outline:none;flex:0 0 auto;width:76px">
+            <select id="ag-time-${key}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:6px;border-radius:8px;outline:none;flex:0 0 auto;width:76px">${timeSelectOptions('')}</select>
             <button class="abtn" onclick="addAgendaTask('${key}');document.getElementById('ag-form-${key}').style.display='none'" style="border:1px solid var(--border);padding:5px 11px;border-radius:8px;flex-shrink:0">+ ADD</button>
           </div>
         </div>
@@ -2180,7 +2188,9 @@ function buildStd(p){
   }
   h+=`</div>`;
   const selKey=ld('miniCalSel_'+id,'');
-  if(selKey){
+  const _selDateCheck=selKey?new Date(selKey.replace('agenda_','')):null;
+  const _selIsTodayCheck=_selDateCheck&&_selDateCheck.getTime()===today.getTime();
+  if(selKey&&!_selIsTodayCheck){
     const selDate=new Date(selKey.replace('agenda_',''));
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
     const allSelTasks=getAgendaDay(selDate);
@@ -2292,7 +2302,9 @@ function buildStd(p){
     </div>`;
   });
   const _agKey2='agenda_'+_selDate.toISOString().slice(0,10);
-  h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addMiniCalTask('${id}','${_agKey2}')"><button class="abtn" onclick="addMiniCalTask('${id}','${_agKey2}')">+ ADD</button></div>`;
+  h+=`<div class="arow"><input class="ain" id="agtask-inp-${id}" placeholder="+ task oggi…" onkeydown="if(event.key==='Enter')addAgTaskCol2('${id}','${_agKey2}')">
+    <select id="agtask-time-${id}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:9px;padding:6px;border-radius:8px;outline:none;flex:0 0 auto;width:64px">${timeSelectOptions('')}</select>
+    <button class="abtn" onclick="addAgTaskCol2('${id}','${_agKey2}')">+ ADD</button></div>`;
   h+=`</div></div></div>`;
   // ── FULL WIDTH: Obiettivi settimanali ──
   // ── 2 COLONNE: Obiettivi settimana | Obiettivi progetto ──
@@ -2346,6 +2358,29 @@ function toggleMiniCalDay(projId,key){
   const cur=ld('miniCalSel_'+projId,'');
   sv('miniCalSel_'+projId,cur===key?'':key);
   openProj(projId);
+}
+function timeSelectOptions(selected){
+  let opts='<option value="">— nessun orario</option>';
+  for(let h=0;h<24;h++){
+    for(let m=0;m<60;m+=30){
+      const t=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+      opts+='<option value="'+t+'"'+(t===selected?' selected':'')+'>'+t+'</option>';
+    }
+  }
+  return opts;
+}
+function addAgTaskCol2(projId,key){
+  const inp=document.getElementById('agtask-inp-'+projId);
+  const timeSel=document.getElementById('agtask-time-'+projId);
+  const text=inp?.value.trim();if(!text)return;
+  const time=timeSel?.value||'';
+  const dateStr=key.replace('agenda_','');
+  const date=new Date(dateStr);
+  const tasks=getAgendaDay(date);
+  tasks.push({text,projId,done:false,ts:Date.now(),type:'day',pri:'none',time});
+  setAgendaDay(date,tasks);
+  if(inp)inp.value='';
+  openProj(projId);toast();
 }
 function addMiniCalTask(projId,key){
   const inp=document.getElementById('mcal-inp-'+projId);
@@ -3156,10 +3191,11 @@ function strBuildSchede(p){
   const checksOggi=ld('str_checksOggi',{});
   const selIdx=ld('str_selSchedaIdx',todayIdx);
 
-  const _todayHasStrEx=schede[todayIdx].esercizi.length>0;
+  const _selSchedaHasStrEx=schede[selIdx].esercizi.length>0;
+  const _isSelTodayStr=selIdx===todayIdx;
   let h='';
-  if(_todayHasStrEx){
-    h+=`<button onclick="strStartFocusMode()" style="width:100%;background:var(--purple);border:none;color:#fff;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ROUTINE DI OGGI</button>`;
+  if(_selSchedaHasStrEx){
+    h+=`<button onclick="strStartFocusMode()" style="width:100%;background:var(--purple);border:none;color:#fff;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ROUTINE${_isSelTodayStr?' DI OGGI':' — '+schede[selIdx].nome.toUpperCase()}</button>`;
   }
   h+=`<div class="slbl">ROUTINE SETTIMANALI</div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
@@ -3425,11 +3461,12 @@ let _focusState=null; // {schedaIdx, exIdx, serieCorrente, fase:'serie'|'recuper
 function allStartFocusMode(){
   const today=new Date();
   const todayIdx=allWeekdayIdx(today);
+  const selIdx=ld('all_selSchedaIdx',todayIdx);
   const schede=allGetSchede();
-  const scheda=schede[todayIdx];
+  const scheda=schede[selIdx];
   if(!scheda.esercizi.length){toast('Nessun esercizio in questa scheda');return;}
   _focusState={
-    schedaIdx:todayIdx,
+    schedaIdx:selIdx,
     exIdx:0,
     serieCorrente:1,
     fase:'serie',
@@ -3734,11 +3771,12 @@ let _strFocusState=null; // {schedaIdx, exIdx, fase:'attivo'|'pausa', timerInter
 function strStartFocusMode(){
   const today=new Date();
   const todayIdx=allWeekdayIdx(today);
+  const selIdx=ld('str_selSchedaIdx',todayIdx);
   const schede=strGetSchede();
-  const scheda=schede[todayIdx];
+  const scheda=schede[selIdx];
   if(!scheda.esercizi.length){toast('Nessuna routine in questa scheda');return;}
   _strFocusState={
-    schedaIdx:todayIdx,
+    schedaIdx:selIdx,
     exIdx:0,
     fase:'attivo',
     timerInterval:null,
@@ -3973,10 +4011,11 @@ function buildAllenamentoSchede(p){
   const checksOggi=ld('all_checksOggi',{});
   const selIdx=ld('all_selSchedaIdx',todayIdx);
 
-  const _todayHasEx=schede[todayIdx].esercizi.length>0;
+  const _selSchedaHasEx=schede[selIdx].esercizi.length>0;
+  const _isSelToday=selIdx===todayIdx;
   let h='';
-  if(_todayHasEx){
-    h+=`<button onclick="allStartFocusMode()" style="width:100%;background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ALLENAMENTO DI OGGI</button>`;
+  if(_selSchedaHasEx){
+    h+=`<button onclick="allStartFocusMode()" style="width:100%;background:var(--green);border:none;color:#0a0a0a;font-weight:800;padding:14px;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:14px">▶ AVVIA ALLENAMENTO${_isSelToday?' DI OGGI':' — '+schede[selIdx].nome.toUpperCase()}</button>`;
   }
   h+=`<div class="slbl">SCHEDE SETTIMANALI</div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem">`;
@@ -5274,7 +5313,7 @@ function renderTodayFocus(){
         h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface);border-left:3px solid ${priColor}">
           <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
           <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.text}</span>
-          ${t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:''}
+          ${t.time?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:''}
           <span onclick="${priFn}" style="font-size:11px;color:${priColor==='transparent'?'var(--text-ghost)':priColor};cursor:pointer;flex-shrink:0;padding:2px 4px">${t.pri==='high'?'🔴':t.pri==='medium'?'🟡':'○'}</span>
           <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
         </div>`;
@@ -5293,7 +5332,7 @@ function renderTodayFocus(){
         h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border-soft)">
           <div class="hd${t.done?' on':''}" onclick="ckAgendaFocus('${agendaKey_today}',${i})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
           <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1">${t.text}</span>
-          ${t.time?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${t.time}</span>`:''}
+          ${t.time?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:''}
         </div>`;
       });
     }
