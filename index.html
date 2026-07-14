@@ -576,9 +576,9 @@ textarea::placeholder{color:var(--text-ghost);}
   <div class="tabs">
     <button class="tab" id="tab-prog-btn" onclick="showTab('progetti',this)">PROGETTI</button>
     <button class="tab" id="tab-oggi-btn" onclick="showTab('oggi',this)">OGGI</button>
-    <button class="tab" onclick="showTab('agenda',this)">AGENDA</button>
-    <button class="tab" onclick="showTab('fitos',this)">FITOS</button>
-    <button class="tab" onclick="showTab('finanze',this)">FINANZE</button>
+    <button class="tab" id="tab-agenda-btn" onclick="showTab('agenda',this)">AGENDA</button>
+    <button class="tab" id="tab-fitos-btn" onclick="showTab('fitos',this)">FITOS</button>
+    <button class="tab" id="tab-finanze-btn" onclick="showTab('finanze',this)">FINANZE</button>
   </div>
   <div id="tab-progetti" style="display:none"><div id="ph"></div></div>
   <div id="tab-oggi" style="display:none"></div>
@@ -1139,7 +1139,10 @@ function renderTopbar(){
 }
 document.getElementById('foot').textContent='GIOVANNI · LIFE OS · '+D.getFullYear();
 
+let _currentTab='progetti'; // v1 FIX navigazione: traccia il tab attivo per il pulsante Indietro
+let _returnToTab='progetti'; // v1 FIX navigazione: tab da cui si è aperta la scheda progetto
 function showTab(name,btn){
+  _currentTab=name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('tab-progetti').style.display=name==='progetti'?'block':'none';
@@ -1445,6 +1448,7 @@ function renderHome(){
       const sc=cs==='done'?'var(--green)':cs==='progress'?'var(--yellow)':cs==='open'?'var(--red)':'var(--border-hover)';
       const pri=getPri(p.id);
       const projDebt=p.hasInv?0:calcProjDebt(p.id).total;
+      const _goalsActive=p.hasInv?0:ld('goals_'+p.id,p.goals0||[]).filter((_,gi)=>!ld('gchecks_'+p.id,[])[gi]).length;
       h+=`<div class="pc" draggable="true" ondragstart="dragProjStart(event,'${p.id}')" ondragover="event.preventDefault()" ondrop="dropProjOnCard(event,'${p.id}')" onclick="openProj('${p.id}')">
         <div class="acc" style="background:${color}" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)"></div>
         <div class="pc-actions">
@@ -1465,6 +1469,7 @@ function renderHome(){
           </div>
           ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow)">🔥${streak}d</span>`:''}
         </div>
+        ${_goalsActive>0?`<div style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);margin-top:2px">${_goalsActive} obiettiv${_goalsActive===1?'o':'i'}</div>`:''}
         ${!p.hasInv?(()=>{
           const _ropen=act3.filter(i=>!rc3[tk3+'_'+i]).map(i=>recur3[i]); // v1: solo previste oggi
           return _ropen.length?`<div style="margin-top:8px;border-top:1px solid var(--border-soft);padding-top:7px">`
@@ -2032,7 +2037,8 @@ function agendaBulkApplyMove(targetDate,isDuplicate){
     setAgendaDay(targetDate,targetTasks);
   });
   _agendaSelection.clear();_agendaSelectMode=false;
-  renderAgenda();renderHome();
+  if(isTodayTabActive())renderTodayFocus();else renderAgenda(); // v1: azioni bulk richiamabili anche dal tab Oggi
+  renderHome();
   toast((isDuplicate?'DUPLICATE ':'SPOSTATE ')+moved+' task');
 }
 function agendaBulkDelete(){
@@ -2054,7 +2060,8 @@ function agendaBulkDelete(){
       setAgendaDay(date,tasks);
     });
     _agendaSelection.clear();_agendaSelectMode=false;
-    renderAgenda();renderHome();
+    if(isTodayTabActive())renderTodayFocus();else renderAgenda(); // v1: azioni bulk richiamabili anche dal tab Oggi
+  renderHome();
     toast('TASK ELIMINATE');
   });
 }
@@ -2165,6 +2172,9 @@ function fitosFabAction(){
 }
 function openProj(id){
   _lastScrollY=window.scrollY;
+  // v1 FIX navigazione: memorizza da quale tab si proviene, solo al primo ingresso
+  // (non ad ogni refresh interno, altrimenti sovrascriverebbe il punto di provenienza reale)
+  if(document.getElementById('home').style.display!=='none')_returnToTab=_currentTab;
   const allProjs=[...PD,...ld('customProjs',[])];
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   p.color=ld('proj_color_'+p.id,p.color); // usa colore custom se salvato
@@ -2234,7 +2244,9 @@ function closeProj(){
   const _fabEl=document.getElementById('fitos-fab');if(_fabEl)_fabEl.style.display='none';
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
-  const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
+  const _btnIds={progetti:'tab-prog-btn',oggi:'tab-oggi-btn',agenda:'tab-agenda-btn',fitos:'tab-fitos-btn',finanze:'tab-finanze-btn'};
+  const _pb=document.getElementById(_btnIds[_returnToTab]||'tab-prog-btn');
+  if(_pb)showTab(_returnToTab,_pb);
   syncAssets();renderHome();renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
   setTimeout(()=>window.scrollTo(0,_lastScrollY),0);
 }
@@ -2574,6 +2586,16 @@ function buildStd(p){
   h+=goalsH(id,goals,gc,p.color);
   h+=`</div></div>`;
   h+=speseH(id,sp);
+  // v1 SPEC: statistiche utili — streak, recuperate, perdonate (dati già gestiti dal sistema debiti/streak)
+  const _statStreak=calcProjStreak(id);
+  const _debtRecovered=Object.values(ld('debt_recovered_'+id,{})).reduce((s,n)=>s+n,0);
+  const _debtForgivenCount=Object.values(ld('debt_forgiven_'+id,{})).filter(Boolean).length+(ld('debt_week_forgiven_'+id,false)?1:0);
+  h+=`<div class="slbl">Statistiche</div>
+  <div class="isg" style="margin-bottom:1rem;grid-template-columns:repeat(3,1fr)">
+    <div class="ist"><div class="istl">Streak</div><div class="istv" style="color:var(--yellow)">${_statStreak>0?'🔥'+_statStreak:'—'}</div></div>
+    <div class="ist"><div class="istl">Recuperate</div><div class="istv" style="color:var(--green)">${_debtRecovered}</div></div>
+    <div class="ist"><div class="istl">Perdonate</div><div class="istv" style="color:var(--text-faint)">${_debtForgivenCount}</div></div>
+  </div>`;
   const _statOpen=ld('statChartOpen_'+id,false);
   h+=`<div class="slbl" style="cursor:pointer" onclick="toggleStatChart('${id}')">
     Statistiche % nel tempo
@@ -3275,28 +3297,47 @@ function buildFitos(p){
 
   const allStreak=fitosCalcStreak('all','all_checksOggi');
   const strStreak=fitosCalcStreak('str','str_checksOggi');
-  const _30dAgo=new Date(today);_30dAgo.setDate(today.getDate()-30);
-  const pesoPre30=pesoStoria.filter(x=>new Date(x.dataKey)<=_30dAgo);
-  const pesoRif30=pesoPre30.length?pesoPre30[pesoPre30.length-1]:pesoStoria[0];
-  const pesoDelta30=lastPeso&&pesoRif30&&pesoRif30!==lastPeso?(lastPeso.peso-pesoRif30.peso):0;
+  // v1 SPEC: variazione peso vs la registrazione PRECEDENTE (non una finestra di 30 giorni)
+  const pesoPrec=pesoStoria.length>=2?pesoStoria[pesoStoria.length-2]:null;
+  const pesoDeltaPrec=lastPeso&&pesoPrec?(lastPeso.peso-pesoPrec.peso):0;
 
   h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
     <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">PESO ATTUALE</div>
     <div style="display:flex;align-items:baseline;gap:6px">
       <span style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--text)">${lastPeso?lastPeso.peso+' kg':'—'}</span>
-      ${pesoDelta30!==0?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${pesoDelta30<0?'var(--green)':'var(--red)'}">${pesoDelta30>0?'+':''}${pesoDelta30.toFixed(1)}kg</span>`:''}
+      ${pesoDeltaPrec!==0?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${pesoDeltaPrec<0?'var(--green)':'var(--red)'}">${pesoDeltaPrec>0?'+':''}${pesoDeltaPrec.toFixed(1)}kg</span>`:''}
     </div>
-    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${pesoDelta30!==0?'ultimi 30 giorni':(lastPeso?lastPeso.data:'nessuna registrazione')}</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${pesoPrec?'vs registrazione precedente':(lastPeso?lastPeso.data:'nessuna registrazione')}</div>
   </div>`;
 
   h+=`</div>`;
 
   h+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">`;
 
+  // v1 SPEC: ultimo allenamento completato + prossimo pianificato (non solo lo stato di oggi)
+  let ultimoAllenamento=null,prossimoAllenamento=null;
+  for(let i=0;i<14;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dIdx=allWeekdayIdx(d);
+    const dSch=schede[dIdx];
+    if(!dSch.esercizi.length)continue;
+    const dCh=ld('all_checksOggi',{})[d.toDateString()]||{};
+    const dDone=dSch.esercizi.every((_,j)=>dCh[dIdx+'_'+j]);
+    if(dDone){ultimoAllenamento={nome:dSch.nome,giorni:i};break;}
+  }
+  for(let i=allDone<allTot?0:1;i<8;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const dIdx=allWeekdayIdx(d);
+    const dSch=schede[dIdx];
+    if(!dSch.esercizi.length)continue;
+    const dCh=ld('all_checksOggi',{})[d.toDateString()]||{};
+    const dDone=dSch.esercizi.length&&dSch.esercizi.every((_,j)=>dCh[dIdx+'_'+j]);
+    if(!dDone){prossimoAllenamento={nome:dSch.nome,giorni:i};break;}
+  }
   h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer" onclick="openProj('allenamento')">
     <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">ALLENAMENTO</div>
-    <div style="font-size:14px;font-weight:700;color:${allTot>0&&allDone===allTot?'var(--green)':'var(--text)'}">${esc(schedaAll.nome)}</div>
-    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${allStatus}${allStreak>1?` · 🔥${allStreak}g`:''}</div>
+    <div style="font-size:13px;font-weight:700;color:var(--text)">${ultimoAllenamento?esc(ultimoAllenamento.nome)+' · '+(ultimoAllenamento.giorni===0?'oggi':ultimoAllenamento.giorni===1?'ieri':ultimoAllenamento.giorni+'gg fa'):'nessuno recente'}</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-top:2px">${prossimoAllenamento?'Prossimo: '+esc(prossimoAllenamento.nome)+' · '+(prossimoAllenamento.giorni===0?'oggi':prossimoAllenamento.giorni===1?'domani':'tra '+prossimoAllenamento.giorni+'gg'):'nessuno pianificato'}${allStreak>1?` · 🔥${allStreak}g`:''}</div>
   </div>`;
 
   const _todayKcal=schedaAlim.pasti.reduce((s,x)=>s+pastoMacro(x).kcal,0);
@@ -3411,13 +3452,22 @@ function strGetCatalogo(){
     id:e&&e.id?e.id:('str_'+Math.random().toString(36).slice(2,9)),
     nome:(e&&typeof e.nome==='string')?e.nome:'Routine',
     storia:(e&&Array.isArray(e.storia))?e.storia:[],
-    noteEsercizio:(e&&typeof e.noteEsercizio==='string')?e.noteEsercizio:''
+    noteEsercizio:(e&&typeof e.noteEsercizio==='string')?e.noteEsercizio:'',
+    descrizione:(e&&typeof e.descrizione==='string')?e.descrizione:'',
+    benefici:(e&&typeof e.benefici==='string')?e.benefici:'',
+    durata:(e&&typeof e.durata==='number')?e.durata:0
   }));
 }
 function strSetNoteEsercizio(id,val){
   const cat=strGetCatalogo();
   const ex=cat.find(e=>e.id===id);if(!ex)return;
   ex.noteEsercizio=val;
+  sv('str_catalogo',cat);toast();
+}
+function strSetCatField(id,field,val){
+  const cat=strGetCatalogo();
+  const ex=cat.find(e=>e.id===id);if(!ex)return;
+  ex[field]=val;
   sv('str_catalogo',cat);toast();
 }
 function strFindOrCreateCatEsercizio(nome){
@@ -3565,6 +3615,20 @@ function strBuildEsercizioDetail(p,exId){
   </div>`;
 
   h+=`<div class="isg" style="margin-bottom:1rem"><div class="ist"><div class="istl">Sessioni totali</div><div class="istv">${hist.length}</div></div></div>`;
+
+  h+=`<div style="margin-bottom:14px">
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">DESCRIZIONE</div>
+    <textarea onblur="strSetCatField('${ex.id}','descrizione',this.value)" placeholder="Cosa allena questa routine…" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--text);resize:vertical">${esc(ex.descrizione)}</textarea>
+  </div>
+  <div style="margin-bottom:14px">
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">BENEFICI</div>
+    <textarea onblur="strSetCatField('${ex.id}','benefici',this.value)" placeholder="es. migliora mobilità anca, riduce tensione lombare…" rows="2" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--text);resize:vertical">${esc(ex.benefici)}</textarea>
+  </div>
+  <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
+    <div style="font-size:9px;color:var(--text-faint)">DURATA CONSIGLIATA</div>
+    <input type="number" value="${ex.durata||0}" onchange="strSetCatField('${ex.id}','durata',parseInt(this.value)||0)" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;color:var(--text);text-align:center;font-family:var(--mono)">
+    <span style="font-size:11px;color:var(--text-ghost)">secondi</span>
+  </div>`;
 
   h+=`<div style="margin-bottom:14px">
     <div style="font-size:9px;color:var(--text-faint);margin-bottom:4px">CONSIGLI <span style="color:var(--text-ghost)">(opzionale)</span></div>
@@ -4704,6 +4768,7 @@ function ricGetAll(){
     prot:typeof r.prot==='number'?r.prot:0,
     carb:typeof r.carb==='number'?r.carb:0,
     grassi:typeof r.grassi==='number'?r.grassi:0,
+    descrizione:typeof r.descrizione==='string'?r.descrizione:'',
     ingredienti:Array.isArray(r.ingredienti)?r.ingredienti:[],
     preparazione:typeof r.preparazione==='string'?r.preparazione:'',
     sostituzioni:typeof r.sostituzioni==='string'?r.sostituzioni:'',
@@ -4916,6 +4981,7 @@ function buildRicettaDetail(p,id){
     <div class="ist"><div class="istl">Grassi</div><input type="number" value="${r.grassi||0}" onchange="ricUpdate('${r.id}','grassi',parseFloat(this.value)||0)" style="background:transparent;border:none;color:var(--text);width:100%;font-family:var(--mono);font-size:16px;font-weight:700;outline:none"></div>
   </div>
   <div style="font-size:10px;color:var(--text-ghost);margin-bottom:12px">valori per 1 porzione</div>`;
+  h+=`<div class="slbl">Descrizione</div><textarea rows="2" placeholder="Breve descrizione del piatto…" onblur="ricUpdate('${r.id}','descrizione',this.value)">${esc(r.descrizione||'')}</textarea>`;
   h+=`<div class="slbl">Ingredienti <span style="font-size:9px;color:var(--text-ghost)">1 porzione</span></div><div class="card">`;
   if(!r.ingredienti.length)h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessun ingrediente ancora.</div>`;
   r.ingredienti.forEach((ing,i)=>{
@@ -5450,18 +5516,43 @@ function ensureAssetIds(){
   if(changed)sv('assets',a);
 }
 // v1 SPEC FINANZE: variazione dinamica di un asset — oggi se c'è movimento oggi, altrimenti questa settimana
-function computeAssetVariation(label){
-  const log=ld('txLog',[]);
+function computeAssetVariation(asset){
+  const label=asset.l;
+  const events=ld('pat_events',[]).filter(e=>e.assets&&e.assets[label]!==undefined).sort((a,b)=>a.ts-b.ts);
+  if(!events.length)return null;
+  const currentVal=asset.v;
   const now=new Date();now.setHours(0,0,0,0);
-  const todayStr=new Date().toDateString();
-  const todayDelta=log.filter(t=>t.asset===label&&new Date(t.ts).toDateString()===todayStr)
-    .reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);
-  if(todayDelta!==0)return{delta:todayDelta,label:'oggi'};
+  const useAbs=!!asset.special; // liquidità/risparmio → €, asset di mercato (carte, crypto, vinted) → %
+  function deltaFor(cutoffTs){
+    const before=events.filter(e=>e.ts<cutoffTs);
+    const ref=before.length?before[before.length-1].assets[label]:events[0].assets[label];
+    if(ref===currentVal)return null;
+    const delta=currentVal-ref;
+    return useAbs?{delta,pct:null}:{delta:null,pct:ref!==0?(delta/Math.abs(ref)*100):0};
+  }
+  const todayRes=deltaFor(now.getTime());
+  if(todayRes)return{...todayRes,label:'oggi'};
   const weekAgo=new Date(now);weekAgo.setDate(now.getDate()-7);
-  const weekDelta=log.filter(t=>t.asset===label&&t.ts>=weekAgo.getTime())
-    .reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);
-  if(weekDelta!==0)return{delta:weekDelta,label:'questa settimana'};
+  const weekRes=deltaFor(weekAgo.getTime());
+  if(weekRes)return{...weekRes,label:'questa settimana'};
   return null;
+}
+function computePatrimonioDeltaOverDays(days){
+  const events=ld('pat_events',[]);
+  if(!events.length)return null;
+  const dayBuckets={};
+  events.forEach(e=>{
+    const dk=dayKey(new Date(e.ts));
+    if(!dayBuckets[dk]||dayBuckets[dk].ts<e.ts)dayBuckets[dk]={ts:e.ts,patrimonio:e.patrimonio};
+  });
+  const sortedDays=Object.keys(dayBuckets).sort();
+  if(!sortedDays.length)return null;
+  const currentVal=dayBuckets[sortedDays[sortedDays.length-1]].patrimonio;
+  const now=new Date();now.setHours(0,0,0,0);
+  const cutoff=new Date(now);cutoff.setDate(now.getDate()-days);
+  const cutoffKey=dayKey(cutoff);
+  const refDay=sortedDays.find(d=>d>=cutoffKey)||sortedDays[0];
+  return currentVal-dayBuckets[refDay].patrimonio;
 }
 function renderAssets(){
   syncAssets();
@@ -5469,7 +5560,14 @@ function renderAssets(){
   if(!el)return;
   el.innerHTML=a.map((x,i)=>{
     const isSpecial=!!x.special;
-    const variation=computeAssetVariation(x.l);
+    const variation=computeAssetVariation(x);
+    const variationHTML=variation?(()=>{
+      const positive=(variation.delta!==null?variation.delta:variation.pct)>=0;
+      const valStr=variation.delta!==null
+        ?(positive?'+':'')+'€'+variation.delta.toLocaleString('it-IT',{maximumFractionDigits:0})
+        :(positive?'+':'')+variation.pct.toFixed(1)+'%';
+      return `<div style="width:100%;padding-left:32px;font-family:var(--mono);font-size:10px;color:${positive?'var(--green)':'var(--red)'}">${valStr} ${variation.label}</div>`;
+    })():'';
     return `<div class="ar" draggable="false" ondragstart="assetDragStart(event,${i})" ondragover="assetDragOver(event)" ondragleave="assetDragLeave(event)" ondrop="assetDrop(event,${i})" ondragend="assetDragEnd(event)" style="${x.hidden?'opacity:.45':''};flex-wrap:wrap">
       <span class="drag-handle" title="Trascina per riordinare" onpointerdown="armAssetDrag(event,${i})">⠿</span>
       <div class="ad" style="background:${AC[i%AC.length]};color:${AC[i%AC.length]}"></div>
@@ -5478,7 +5576,7 @@ function renderAssets(){
       <input class="av" value="€${x.v.toFixed(0)}" onchange="edAsset(${i},'v',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
       <button class="xb" title="Apri dettaglio" onclick="openAssetDetail('${x.id||''}')" style="color:var(--text-faint)">→</button>
       ${isSpecial?'<span style="width:18px"></span>':`<button class="xb" style="color:var(--text-faint)" onclick="delAsset(${i})">×</button>`}
-      ${variation?`<div style="width:100%;padding-left:32px;font-family:var(--mono);font-size:10px;color:${variation.delta>=0?'var(--green)':'var(--red)'}">${variation.delta>=0?'+':''}€${variation.delta.toLocaleString('it-IT',{maximumFractionDigits:0})} ${variation.label}</div>`:''}
+      ${variationHTML}
     </div>`;
   }).join('');
   updateOv();
@@ -5559,22 +5657,21 @@ function renderFinanzeDashboard(){
   const el=document.getElementById('fin-dashboard');if(!el)return;
   syncAssets();
   const pat=visibleAssets().reduce((s,x)=>s+x.v,0);
-  const todayTx=txToday();
-  const entrate=todayTx.filter(t=>t.tipo==='entrata').reduce((s,t)=>s+t.importo,0);
-  const uscite=todayTx.filter(t=>t.tipo==='uscita').reduce((s,t)=>s+t.importo,0);
-  const saldo=entrate-uscite;
+  const dGiorno=computePatrimonioDeltaOverDays(1);
+  const dSettimana=computePatrimonioDeltaOverDays(7);
+  const d30=computePatrimonioDeltaOverDays(30);
+  const fmt=d=>d===null?'—':((d>=0?'+':'')+'€'+d.toLocaleString('it-IT',{maximumFractionDigits:0}));
+  const col=d=>d===null?'var(--text-ghost)':(d>=0?'var(--green)':'var(--red)');
   el.innerHTML=`
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
-      <div>
-        <div style="font-size:10px;color:var(--text-faint);font-weight:600;letter-spacing:.04em;margin-bottom:2px">PATRIMONIO</div>
-        <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--text)">€${pat.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">▲ +€${entrate.toLocaleString('it-IT',{maximumFractionDigits:0})} <span style="font-size:9px;color:var(--text-faint);font-weight:400">oggi</span></div>
-        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">▼ −€${uscite.toLocaleString('it-IT',{maximumFractionDigits:0})} <span style="font-size:9px;color:var(--text-faint);font-weight:400">uscite</span></div>
-      </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text-faint);font-weight:600;letter-spacing:.04em;margin-bottom:2px">PATRIMONIO</div>
+      <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--text)">€${pat.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
     </div>
-    <div style="font-family:var(--mono);font-size:11px;color:${saldo>=0?'var(--green)':'var(--red)'};font-weight:700">Saldo giornaliero ${saldo>=0?'+':''}€${saldo.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">OGGI</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dGiorno)}">${fmt(dGiorno)}</div></div>
+      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">SETTIMANA</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dSettimana)}">${fmt(dSettimana)}</div></div>
+      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">30 GIORNI</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(d30)}">${fmt(d30)}</div></div>
+    </div>
   `;
 }
 function nettoMese(){return txThisMonth().reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);}
@@ -6057,6 +6154,7 @@ function renderTodayFocus(){
       <button onclick="setOggiSort('progetto')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='progetto'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='progetto'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='progetto'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PROGETTO</button>
       <button onclick="setOggiSort('priorita')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='priorita'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='priorita'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='priorita'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PRIORITÀ</button>
       <button onclick="setOggiSort('orario')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='orario'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='orario'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='orario'?'var(--bg)':'var(--text-faint)'};cursor:pointer">ORARIO</button>
+      <button onclick="toggleAgendaSelectMode();renderTodayFocus()" style="flex-shrink:0;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;white-space:nowrap">${_agendaSelectMode?'✕':'☑'}</button>
     </div>`;
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px">';
   
@@ -6092,11 +6190,16 @@ function renderTodayFocus(){
       const fn=t._type==='recur'?`ckRecurFocus(${t._i},'${t.projId}')`:`ckAgendaFocus('${agendaKey_today}',${t._ai})`;
       const priFn=t._type==='recur'?`cycleRecurPri(${t._i},'${t.projId}')`:`cycleAgendaTaskPri('${agendaKey_today}',${t._ai})`;
       const priColor=t.pri==='high'?'var(--red)':t.pri==='medium'?'var(--yellow)':'transparent';
+      const _canSelect=t._type==='agenda'&&t._ai>=0;
+      const _selKeyId=agendaKey_today+'|'+t._ai;
+      const _isSelected=_canSelect&&_agendaSelection.has(_selKeyId);
+      const streak=t._type==='recur'?calcRecurTaskStreak(t.projId,t._i):0;
       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface);border-left:3px solid ${priColor}">
-        <div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
+        ${_agendaSelectMode&&_canSelect?`<input type="checkbox" ${_isSelected?'checked':''} onchange="toggleAgendaSelect('${agendaKey_today}',${t._ai});renderTodayFocus()" style="margin:0;flex-shrink:0;width:15px;height:15px;cursor:pointer">`:`<div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>`}
         ${_oggiSort!=='progetto'?`<span style="width:6px;height:6px;border-radius:50%;background:${t.projColor};flex-shrink:0;display:inline-block" title="${esc(t.projTag)}"></span>`:''}
         <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.text)}</span>
         ${t.time?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:''}
+        ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
         <span onclick="${priFn}" style="font-size:11px;color:${priColor==='transparent'?'var(--text-ghost)':priColor};cursor:pointer;flex-shrink:0;padding:2px 4px">${t.pri==='high'?'🔴':t.pri==='medium'?'🟡':'○'}</span>
         <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
       </div>`;
@@ -6293,6 +6396,18 @@ function renderTodayFocus(){
   
     h+='</div>';
     el.innerHTML=h; // v1 FIX: era duplicato (assegnato due volte)
+    if(_agendaSelectMode&&_agendaSelection.size>0){
+      const _tb=document.createElement('div');
+      _tb.style.cssText='position:fixed;left:0;right:0;bottom:0;background:var(--surface2);border-top:1px solid var(--border-hover);padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;z-index:500;box-shadow:0 -4px 16px rgba(0,0,0,.25)';
+      _tb.innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--text-faint);flex-shrink:0">${_agendaSelection.size} sel.</span>
+        <div style="display:flex;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap">
+          <button onclick="openAgendaBulkMove(false)" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Sposta</button>
+          <button onclick="openAgendaBulkMove(true)" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Duplica</button>
+          <button onclick="openAgendaBulkDatePicker()" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Riprogramma</button>
+          <button onclick="agendaBulkDelete()" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);cursor:pointer">Elimina</button>
+        </div>`;
+      el.appendChild(_tb);
+    }
     populateAssetSelects();
 }
 
