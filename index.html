@@ -473,7 +473,7 @@ textarea::placeholder{color:var(--text-ghost);}
 .pat-target-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
 .pat-target-title{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.02em;}
 .pat-target-vals{display:flex;align-items:baseline;gap:7px;margin-bottom:11px;}
-.pat-cur{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--purple);text-shadow:0 0 10px var(--purple-glow);}
+.pat-cur{font-family:var(--mono);font-size:30px;font-weight:800;color:var(--purple);text-shadow:0 0 10px var(--purple-glow);}
 .pat-sep{color:var(--text-ghost);font-size:14px;}
 .pat-tgt-lbl{font-size:11px;color:var(--text-faint);}
 .pat-tgt-inp{font-family:var(--mono);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--yellow);width:80px;text-align:right;outline:none;}
@@ -588,6 +588,9 @@ textarea::placeholder{color:var(--text-ghost);}
   <div id="home-extra">
   <div class="divider"></div>
   <div class="flbl" style="margin-top:0">Patrimonio & Finanze</div>
+  <div class="cc" id="fin-dashboard-wrap" style="margin-bottom:10px">
+    <div id="fin-dashboard"></div>
+  </div>
   <div class="cc asset-panel">
     <div class="asset-panel-head"><div class="cct">Asset totali</div><div class="asset-total" id="asset-total">€0</div></div>
     <div class="asset-panel-body">
@@ -621,12 +624,8 @@ textarea::placeholder{color:var(--text-ghost);}
   </div>
   <div class="fc" style="margin-bottom:1rem">
     <div class="fct">Spese pianificate</div>
-    <div class="expense-section-title">Progetti</div>
-    <div id="spg"></div>
-    <div class="expense-divider"></div>
-    <div class="expense-section-title">Generali</div>
     <div id="spese-gen-plans"></div>
-    <div id="spese-gen-list"></div>
+    <div id="spese-timeline"></div>
     <div class="arow" style="border-top:1px solid var(--border-soft)">
       <input class="ain" id="sg-nome" placeholder="+ spesa…">
       <input class="ain" id="sg-val" placeholder="€" style="width:55px">
@@ -640,7 +639,6 @@ textarea::placeholder{color:var(--text-ghost);}
   <div class="pat-target-wrap" id="pat-target-block">
     <div class="pat-target-hdr">
       <div class="pat-target-title">Obiettivo patrimonio</div>
-      <button class="snap-btn" onclick="savePatSnapshot(true)">● SALVA SNAPSHOT</button>
     </div>
     <div class="pat-target-vals">
       <span class="pat-cur" id="pat-cur">€0</span>
@@ -657,12 +655,10 @@ textarea::placeholder{color:var(--text-ghost);}
 
   <!-- GRAFICO TREND SETTIMANALE -->
   <div class="cc" style="margin-bottom:1rem" id="pat-chart-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="cct">Trend patrimonio — ultime 16 settimane</div>
-      <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)" id="pat-snap-lbl"></span>
-    </div>
+    <div class="cct" style="margin-bottom:4px">Trend patrimonio</div>
+    <div id="pat-trend-summary" style="margin-bottom:10px;display:flex;align-items:baseline;gap:6px"></div>
     <canvas id="pat-chart" width="600" height="150"></canvas>
-    <div id="pat-no-data" style="display:none;font-size:12px;color:var(--text-ghost);padding:20px 0;text-align:center;font-family:'Space Mono',monospace">DATI INSUFFICIENTI — TORNA TRA QUALCHE SETTIMANA</div>
+    <div id="pat-no-data" style="display:none;font-size:12px;color:var(--text-ghost);padding:20px 0;text-align:center;font-family:'Space Mono',monospace">DATI INSUFFICIENTI — TORNA TRA QUALCHE GIORNO</div>
   </div>
 
   <div class="foot-btns">
@@ -673,6 +669,7 @@ textarea::placeholder{color:var(--text-ghost);}
   <div class="foot" id="foot"></div>
 </div>
 <div id="det" style="display:none"></div>
+<div id="asset-detail" style="display:none"></div>
 
 <script>
 const sv=(k,v)=>{
@@ -973,6 +970,20 @@ const vinPot=()=>ld('vinInv',[]).filter(i=>i.stato!=='Venduto').reduce((a,i)=>a+
 const vinSoldTot=()=>ld('vinSold',[]).reduce((a,i)=>a+i.prezzo,0);
 const carteEbay=()=>ld('carteInv',[]).filter(c=>c.stato!=='Venduta').reduce((a,c)=>a+c.ebay,0);
 const carteSoldTot=()=>ld('carteInv',[]).filter(c=>c.stato==='Venduta').reduce((a,c)=>a+(c.vendita||0),0);
+// v1: streak per singola task ricorrente (non solo aggregato a livello progetto)
+function calcRecurTaskStreak(projId,recurIdx){
+  const today=new Date();today.setHours(0,0,0,0);
+  const recurCh=ld('recurChecks_'+projId,{});
+  let streak=0;
+  for(let i=0;i<60;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    if(!recurActiveOnDate(projId,recurIdx,d))continue; // giorno non previsto: non conta né a favore né contro
+    const done=!!recurCh[d.toDateString()+'_'+recurIdx];
+    if(done)streak++;
+    else if(i>0)break; // oggi non ancora fatto non rompe lo streak, un giorno passato saltato sì
+  }
+  return streak;
+}
 const calcProjStreak=id=>{
   const today=new Date();today.setHours(0,0,0,0);
   let streak=0;
@@ -1173,29 +1184,28 @@ function getPatHistoryValue(snapshot){
   const visibleLabels=new Set(visibleAssets().map(x=>x.l));
   return Object.keys(snapshot.assets).reduce((sum,label)=>sum+(visibleLabels.has(label)?snapshot.assets[label]:0),0);
 }
-function savePatSnapshot(manual=false){
+// v1 SPEC FINANZE: sostituisce il vecchio sistema di snapshot manuale/settimanale.
+// Ogni evento economico (entrata, uscita, modifica asset, spesa pagata, transazione annullata)
+// registra automaticamente un punto nel tempo — nessun pulsante "Salva Snapshot".
+function recordPatEvent(){
   syncAssets();
   const assets=visibleAssets();
-  const pat=assets.reduce((s,x)=>s+x.v,0);
-  const hist=ld('pat_hist',[]);
-  const key=getWeekKey();
-  const label=getWeekLabel();
-  const existing=hist.findIndex(h=>h.k===key);
+  const patrimonio=assets.reduce((s,x)=>s+x.v,0);
   const assetValues=assets.reduce((o,x)=>{o[x.l]=x.v;return o;},{});
-  if(existing>=0){hist[existing].v=pat;hist[existing].l=label;hist[existing].assets=assetValues;}
-  else{hist.push({k:key,l:label,v:pat,assets:assetValues});}
-  if(hist.length>16)hist.shift();
-  sv('pat_hist',hist);
-  sv('pat_last_snap',new Date().toDateString());
-  if(manual){toast('SNAPSHOT SALVATO');renderPatTarget();renderPatChart();}
+  const events=ld('pat_events',[]);
+  events.push({ts:Date.now(),patrimonio,assets:assetValues});
+  while(events.length>500)events.shift(); // limite di sicurezza sullo storage
+  sv('pat_events',events);
 }
 function autoSnapOnce(){
-  // Fix #15: non salvare snapshot se il patrimonio è ancora tutto a 0 (primo avvio)
+  // Garantisce almeno un punto al giorno anche senza movimenti (per non lasciare buchi nel trend)
   syncAssets();
   const pat=visibleAssets().reduce((s,x)=>s+x.v,0);
   if(pat===0)return;
-  const last=ld('pat_last_snap','');
-  if(last!==new Date().toDateString())savePatSnapshot(false);
+  const events=ld('pat_events',[]);
+  const todayStr=new Date().toDateString();
+  const hasToday=events.some(e=>new Date(e.ts).toDateString()===todayStr);
+  if(!hasToday)recordPatEvent();
 }
 
 function savePatTarget(val){
@@ -1209,7 +1219,7 @@ function renderPatTarget(){
   const pat=visibleAssets().reduce((s,x)=>s+x.v,0);
   const target=ld('pat_target',0);
   const pct=target>0?Math.min(100,Math.round(pat/target*100)):0;
-  const color=pct>=100?'#4ade80':pct>=60?'#e8b04a':'#a78bfa';
+  const color=pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--purple)';
 
   const curEl=document.getElementById('pat-cur');
   const barEl=document.getElementById('pat-bar-fill');
@@ -1223,60 +1233,91 @@ function renderPatTarget(){
   if(tgtEl)tgtEl.value='€'+(target||0).toFixed(0);
   if(pctEl)pctEl.textContent=pct+'% del target';
 
-  // ETA stima
+  // ETA stima — v1: calcolata dagli eventi reali (ultimi 30 giorni), non più da snapshot settimanali
   if(etaEl){
-    const hist=ld('pat_hist',[]);
-    if(hist.length>=2&&target>pat){
-      const recent=hist.slice(-4);
-      const diffs=[];
-      for(let i=1;i<recent.length;i++)diffs.push(getPatHistoryValue(recent[i])-getPatHistoryValue(recent[i-1]));
-      const avgWeekly=diffs.reduce((a,b)=>a+b,0)/diffs.length;
-      if(avgWeekly>0){
-        const weeksLeft=Math.ceil((target-pat)/avgWeekly);
-        etaEl.textContent='~'+weeksLeft+' settimane al target';
-      } else if(avgWeekly<=0){
+    etaEl.style.color='';
+    const events=ld('pat_events',[]);
+    const now=new Date();now.setHours(0,0,0,0);
+    const cutoff=new Date(now);cutoff.setDate(now.getDate()-30);
+    const recent=events.filter(e=>e.ts>=cutoff.getTime());
+    if(recent.length>=2&&target>pat){
+      const oldestVal=recent[0].patrimonio;
+      const newestVal=recent[recent.length-1].patrimonio;
+      const daysSpan=Math.max(1,(recent[recent.length-1].ts-recent[0].ts)/86400000);
+      const avgDaily=(newestVal-oldestVal)/daysSpan;
+      if(avgDaily>0){
+        const daysLeft=Math.ceil((target-pat)/avgDaily);
+        etaEl.textContent=daysLeft<=60?'~'+daysLeft+' giorni al target':'~'+Math.ceil(daysLeft/7)+' settimane al target';
+      } else if(avgDaily<=0){
         etaEl.textContent='patrimonio in calo';
       } else {
         etaEl.textContent='—';
       }
     } else if(pat>=target&&target>0){
       etaEl.textContent='🎯 TARGET RAGGIUNTO';
-      etaEl.style.color='#4ade80';
+      etaEl.style.color='var(--green)';
     } else {
       etaEl.textContent='dati insufficienti';
     }
   }
 }
 function renderPatChart(){
-  const hist=ld('pat_hist',[]);
-  const histValues=hist.map(getPatHistoryValue);
+  const events=ld('pat_events',[]);
   const el=document.getElementById('pat-chart');
   const noData=document.getElementById('pat-no-data');
-  const snapLbl=document.getElementById('pat-snap-lbl');
+  const summaryEl=document.getElementById('pat-trend-summary');
   if(!el)return;
-  if(snapLbl){
-    const last=ld('pat_last_snap','');
-    snapLbl.textContent=last?'ultimo: '+last:'—';
-  }
-  if(hist.length<2){
+
+  // v1: aggrega gli eventi in bucket giornalieri (ultimo valore registrato per ogni giorno)
+  const dayBuckets={}; // dayKey -> {ts,patrimonio}
+  events.forEach(e=>{
+    const dk=dayKey(new Date(e.ts));
+    if(!dayBuckets[dk]||dayBuckets[dk].ts<e.ts)dayBuckets[dk]={ts:e.ts,patrimonio:e.patrimonio};
+  });
+  const days=Object.keys(dayBuckets).sort();
+  const recentDays=days.slice(-60); // ultimi 60 giorni con dati, per un grafico leggibile
+
+  if(recentDays.length<2){
     el.style.display='none';
     if(noData)noData.style.display='block';
+    if(summaryEl)summaryEl.innerHTML='';
     return;
   }
   el.style.display='block';
   if(noData)noData.style.display='none';
+
+  // ── Indicatori sintetici: variazione € e % negli ultimi 30 giorni ──
+  if(summaryEl){
+    const now=new Date();now.setHours(0,0,0,0);
+    const cutoff30=new Date(now);cutoff30.setDate(now.getDate()-30);
+    const cutoffKey=dayKey(cutoff30);
+    const currentVal=dayBuckets[days[days.length-1]].patrimonio;
+    // valore più vicino (ma non successivo) a 30 giorni fa; se non disponibile usa il più vecchio che c'è
+    let refKey=days.find(d=>d>=cutoffKey)||days[0];
+    const refVal=dayBuckets[refKey].patrimonio;
+    const delta=currentVal-refVal;
+    const pctChange=refVal!==0?(delta/Math.abs(refVal)*100):0;
+    const deltaColor=delta>=0?'var(--green)':'var(--red)';
+    summaryEl.innerHTML=`
+      <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:${deltaColor}">${delta>=0?'+':''}€${delta.toLocaleString('it-IT',{maximumFractionDigits:0})}</span>
+      <span style="font-size:10px;color:var(--text-faint);margin-right:10px">ultimi 30 giorni</span>
+      <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${deltaColor}">${pctChange>=0?'▲':'▼'} ${Math.abs(pctChange).toFixed(1)}%</span>
+    `;
+  }
+
   if(_pc){_pc.destroy();_pc=null;}
+  fitCanvas(el);
   _pc=new Chart(el,{
     type:'line',
     data:{
-      labels:hist.map(h=>{const parts=h.l.split(' — ');return parts[0]||h.l;}),
+      labels:recentDays.map(d=>{const dt=parseDayKey(d);return dt.getDate()+'/'+(dt.getMonth()+1);}),
       datasets:[{
-        data:histValues,
+        data:recentDays.map(d=>dayBuckets[d].patrimonio),
         borderColor:'#a78bfa',
         backgroundColor:'#a78bfa18',
         fill:true,
         tension:.35,
-        pointRadius:4,
+        pointRadius:recentDays.length>30?0:3,
         pointBackgroundColor:'#a78bfa',
         pointBorderColor:cssVar('--chart-hole')||'#0f0f0f',
         pointHoverRadius:6
@@ -1289,7 +1330,7 @@ function renderPatChart(){
         tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString('it-IT',{maximumFractionDigits:0})}}
       },
       scales:{
-        x:{ticks:{color:chartTick(),font:{size:9},maxRotation:30},grid:{color:chartGrid()}},
+        x:{ticks:{color:chartTick(),font:{size:9},maxRotation:30,autoSkip:true,maxTicksLimit:8},grid:{color:chartGrid()}},
         y:{ticks:{color:chartTick(),font:{size:9},callback:v=>'€'+v.toLocaleString('it-IT',{maximumFractionDigits:0})},grid:{color:chartGrid()}}
       }
     }
@@ -1308,7 +1349,7 @@ function renderFinanze(){
   const fv=document.getElementById('finanze-view');
   if(fv)fv.innerHTML='';
   syncAssets();
-  setTimeout(()=>{renderAssets();renderTxMonth();renderSpese();renderSpeseGen();updateOv();renderCharts();renderPatTarget();renderPatChart();},50);
+  setTimeout(()=>{renderFinanzeDashboard();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();updateOv();renderCharts();renderPatTarget();renderPatChart();},50);
 }
 
 function renderHome(){
@@ -1621,10 +1662,8 @@ function agDayDragLeave(e){e.currentTarget.classList.remove('ag-day-drop-target'
 function agDayDrop(e,toKey){
   e.currentTarget.classList.remove('ag-day-drop-target');
   if(!_agDrag||_agDrag.key===toKey){_agDrag=null;return;}
-  const fromDateStr=_agDrag.key.replace('agenda_','');
-  const toDateStr=toKey.replace('agenda_','');
-  const fromDate=new Date(fromDateStr);
-  const toDate=new Date(toDateStr);
+  const fromDate=agendaDateFromKey(_agDrag.key); // v1 FIX timezone
+  const toDate=agendaDateFromKey(toKey);
   const fromTasks=getAgendaDay(fromDate);
   const task=fromTasks[_agDrag.idx];
   if(!task){_agDrag=null;return;}
@@ -1678,7 +1717,7 @@ function renderAgenda(){
   const dayNames=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
 
-  // ── Vista settimana compatta ──
+  // ── Vista settimana compatta (invariata) ──
   let h='<div style="margin-bottom:12px">';
   h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:10px">';
   for(let i=0;i<7;i++){
@@ -1706,17 +1745,18 @@ function renderAgenda(){
   }
   h+='</div>';
 
-  // ── Filtro progetto ──
+  // ── Filtro progetto + selezione multipla ──
   h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
     <span style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-faint);flex-shrink:0">FILTRA:</span>
     <select onchange="setAgendaFilter(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;padding:6px 9px;border-radius:8px;outline:none;flex:1">
       <option value="">Tutti i progetti</option>
       ${allProjs.map(p=>`<option value="${esc(p.id)}"${_agendaFilter===p.id?' selected':''}>${esc(p.tag)}</option>`).join('')}
     </select>
+    <button onclick="toggleAgendaSelectMode()" style="font-family:var(--sans);font-size:9px;font-weight:700;padding:6px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;flex-shrink:0;white-space:nowrap">${_agendaSelectMode?'✕ ANNULLA':'☑ SELEZIONA'}</button>
   </div>`;
   h+='</div>';
 
-  // ── Timeline verticale: 7 passati + oggi + 13 futuri ──
+  // ── Timeline verticale: 7 passati + oggi + 13 futuri (invariata) ──
   const days=[];
   for(let i=-7;i<=13;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);
@@ -1757,24 +1797,43 @@ function renderAgenda(){
 
     if(visTasks.length){
       h+='<div class="card" style="margin-bottom:6px">';
-      visTasks.forEach(t=>{
-        const idx=tasks.indexOf(t);
+      // v1: raggruppamento visivo — task consecutive dello stesso progetto condividono un header
+      let _prevProjId='__none__';
+      visTasks.forEach((t,vi)=>{
         const proj=allProjs.find(p=>p.id===t.projId);
         const isProjTask=t._src==='proj';
         const isRecur=t._type==='recur';
-        const ckFn=isRecur?`ckRecur(${t._projIdx},'${t.projId}')`:
-                   `ckAgendaTask('${key}',${idx})`;
-        const typeLabel=isRecur?'R':isProjTask?'G':'';
-        const typeColor=isRecur?'var(--green)':'var(--yellow)';
+        // v1 FIX BUG DATI: l'indice reale va cercato nell'array grezzo di storage (getAgendaDay),
+        // non calcolato sull'array filtrato/mischiato con le ricorrenti — altrimenti check/elimina/modifica
+        // potevano colpire la task sbagliata quando un filtro progetto era attivo o c'erano ricorrenti miste.
+        const realIdx=isRecur||isProjTask?-1:getAgendaDay(day).findIndex(x=>x.ts===t.ts&&x.text===t.text&&x.projId===t.projId);
+        const ckFn=isRecur?`ckRecur(${t._projIdx},'${t.projId}')`:`ckAgendaTask('${key}',${realIdx})`;
+        const isGroupStart=t.projId!==_prevProjId;
+        const nextT=visTasks[vi+1];
+        const isGroupOfMultiple=isGroupStart&&nextT&&nextT.projId===t.projId;
+        _prevProjId=t.projId;
+        if(isGroupStart&&proj&&isGroupOfMultiple){
+          h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--surface2);border-bottom:1px solid var(--border-soft)">
+            <span style="width:7px;height:7px;border-radius:50%;background:${proj.color};flex-shrink:0;box-shadow:0 0 6px ${proj.color}88"></span>
+            <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${proj.color}">${esc(proj.tag)}</span>
+          </div>`;
+        }
+        const showProjTagInline=!(proj&&isGroupOfMultiple)&&!(proj&&!isGroupStart); // niente tag se già mostrato nell'header di gruppo
+        const priColor=t.pri==='high'?'var(--red)':t.pri==='medium'?'var(--yellow)':'transparent';
+        // v1: streak — il progetto per le ricorrenti, altrimenti lo streak di progetto se la task appartiene a un progetto
+        const streak=isRecur?calcRecurTaskStreak(t.projId,t._projIdx):(proj?calcProjStreak(proj.id):0);
         const _canDrag=!isProjTask&&!isRecur;
-        h+=`<div class="row${t.done?' done':''}" ${_canDrag?`draggable="true" ondragstart="agDragStart(event,'${key}',${idx},'${esc(t.text)}','${t.projId||''}')" ondragend="agDragEnd(event)"`:''} style="cursor:${_canDrag?'grab':'default'}">
-          <div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>
-          ${!isProjTask&&!isRecur?`<select onchange="setAgendaTaskTime('${key}',${idx},this.value)" style="background:transparent;border:none;color:var(--text-dim);font-family:var(--mono);font-size:12px;font-weight:700;padding:0;width:58px;flex-shrink:0;cursor:pointer">${timeSelectOptions(t.time||'')}</select>`:(t.time?`<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:'')}
-          ${proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
-          <input class="rt" value="${esc(t.text)}" ${isProjTask?'readonly':''} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
-          ${typeLabel?`<span style="font-family:var(--mono);font-size:8px;color:${typeColor};padding:0 4px;flex-shrink:0">${typeLabel}</span>`:''}
-          <span style="font-family:var(--mono);font-size:9px;color:${proj?proj.color:'var(--text-faint)'};margin-right:4px;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${proj?esc(proj.tag):'ALTRO'}">${proj?proj.tag:'ALTRO'}</span>
-          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${idx})" style="flex-shrink:0">×</button>`:''}
+        const _selKeyId=key+'|'+realIdx;
+        const _isSelected=_agendaSelection.has(_selKeyId);
+        h+=`<div class="row${t.done?' done':''}" ${_canDrag?`draggable="true" ondragstart="agDragStart(event,'${key}',${realIdx})" ondragend="agDragEnd(event)"`:''} style="cursor:${_canDrag?'grab':'default'};border-left:3px solid ${priColor}">
+          ${_agendaSelectMode&&_canDrag?`<input type="checkbox" ${_isSelected?'checked':''} onchange="toggleAgendaSelect('${key}',${realIdx})" style="margin:0;flex-shrink:0;width:15px;height:15px;cursor:pointer">`:`<div class="hd${t.done?' on':''}" onclick="${ckFn}" style="margin:0;flex-shrink:0"></div>`}
+          ${!isProjTask&&!isRecur?`<select onchange="setAgendaTaskTime('${key}',${realIdx},this.value)" style="background:transparent;border:none;color:var(--text-dim);font-family:var(--mono);font-size:12px;font-weight:700;padding:0;width:58px;flex-shrink:0;cursor:pointer">${timeSelectOptions(t.time||'')}</select>`:(t.time?`<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:'')}
+          ${showProjTagInline&&proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
+          <input class="rt" value="${esc(t.text)}" ${isProjTask||realIdx<0?'readonly':`onchange="edAgendaTask('${key}',${realIdx},this.value)"`} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
+          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
+          ${showProjTagInline&&proj?`<span style="font-family:var(--mono);font-size:9px;color:${proj.color};margin-right:4px;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(proj.tag)}">${esc(proj.tag)}</span>`:''}
+          ${!proj?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-right:4px;flex-shrink:0">ALTRO</span>`:''}
+          ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${realIdx})" style="flex-shrink:0">×</button>`:''}
         </div>`;
       });
       h+='</div>';
@@ -1805,7 +1864,34 @@ function renderAgenda(){
   });
   h+='</div>';
 
+  // ── Toolbar selezione multipla ──
+  if(_agendaSelectMode&&_agendaSelection.size>0){
+    h+=`<div style="position:fixed;left:0;right:0;bottom:0;background:var(--surface2);border-top:1px solid var(--border-hover);padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;z-index:500;box-shadow:0 -4px 16px rgba(0,0,0,.25)">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint);flex-shrink:0">${_agendaSelection.size} sel.</span>
+      <div style="display:flex;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap">
+        <button onclick="openAgendaBulkMove(false)" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Sposta</button>
+        <button onclick="openAgendaBulkMove(true)" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Duplica</button>
+        <button onclick="openAgendaBulkDatePicker()" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--border-hover);background:var(--surface3);color:var(--text);cursor:pointer">Riprogramma</button>
+        <button onclick="agendaBulkDelete()" style="font-family:var(--sans);font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);cursor:pointer">Elimina</button>
+      </div>
+    </div>`;
+  }
+
   el.innerHTML=h;
+}
+
+let _agendaSelectMode=false;
+let _agendaSelection=new Set(); // "key|idx"
+function toggleAgendaSelectMode(){
+  _agendaSelectMode=!_agendaSelectMode;
+  if(!_agendaSelectMode)_agendaSelection.clear();
+  renderAgenda();
+}
+function toggleAgendaSelect(key,idx){
+  const k=key+'|'+idx;
+  if(_agendaSelection.has(k))_agendaSelection.delete(k);
+  else _agendaSelection.add(k);
+  renderAgenda();
 }
 
 function toggleAgAdd(key){
@@ -1827,8 +1913,7 @@ function addAgendaTask(key){
   const text=inp?.value.trim();if(!text)return;
   const projId=projSel?.value||'';
   const time=timeInp?.value||'';
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   tasks.push({text,projId,done:false,ts:Date.now(),type:'day',pri:'none',time});
   setAgendaDay(date,tasks);
@@ -1837,8 +1922,7 @@ function addAgendaTask(key){
   renderAgenda();toast();
 }
 function setAgendaTaskTime(key,i,time){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   if(!tasks[i])return;
   tasks[i].time=time;
@@ -1847,8 +1931,7 @@ function setAgendaTaskTime(key,i,time){
 }
 
 function ckAgendaTask(key,i){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   if(!tasks[i])return;
   tasks[i].done=!tasks[i].done;
@@ -1863,19 +1946,117 @@ function ckAgendaTask(key,i){
 }
 
 function edAgendaTask(key,i,v){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   if(tasks[i])tasks[i].text=v;
   setAgendaDay(date,tasks);toast();
 }
 
 function delAgendaTask(key,i){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   tasks.splice(i,1);setAgendaDay(date,tasks);
   renderAgenda();
+}
+
+// ── AZIONI BULK — selezione multipla Agenda ──
+function openAgendaBulkMove(isDuplicate){
+  if(!_agendaSelection.size)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const btnStyle='font-family:var(--sans);font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface3);color:var(--text);cursor:pointer;text-align:left';
+  ov.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:10px;padding:18px;max-width:280px;width:100%">
+    <div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--text-dim);margin-bottom:12px;letter-spacing:.04em">${isDuplicate?'DUPLICA A':'SPOSTA A'}</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button data-off="1" style="${btnStyle}">Domani</button>
+      <button data-off="2" style="${btnStyle}">Tra 2 giorni</button>
+      <button data-off="7" style="${btnStyle}">Tra 7 giorni</button>
+      <button data-nextmon style="${btnStyle}">Prossimo lunedì</button>
+    </div>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="margin-top:10px;width:100%;font-family:var(--sans);font-size:11px;font-weight:600;padding:8px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelectorAll('button[data-off]').forEach(btn=>{
+    btn.onclick=()=>{
+      const off=parseInt(btn.dataset.off);
+      const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+off);
+      ov.remove();agendaBulkApplyMove(d,isDuplicate);
+    };
+  });
+  const nextMonBtn=ov.querySelector('[data-nextmon]');
+  if(nextMonBtn)nextMonBtn.onclick=()=>{
+    const d=new Date();d.setHours(0,0,0,0);
+    let diff=(1-((d.getDay()+6)%7)+7)%7;if(diff===0)diff=7;
+    d.setDate(d.getDate()+diff);
+    ov.remove();agendaBulkApplyMove(d,isDuplicate);
+  };
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+function openAgendaBulkDatePicker(){
+  if(!_agendaSelection.size)return;
+  modal('prompt','Data (GG/MM o GG/MM/AAAA):',val=>{
+    const parts=val.split('/').map(x=>parseInt(x));
+    if(parts.length<2||isNaN(parts[0])||isNaN(parts[1])){toast('Data non valida');return;}
+    const yr=parts[2]?(parts[2]<100?2000+parts[2]:parts[2]):new Date().getFullYear();
+    const d=new Date(yr,parts[1]-1,parts[0]);
+    if(isNaN(d.getTime())){toast('Data non valida');return;}
+    agendaBulkApplyMove(d,false);
+  });
+}
+function agendaBulkApplyMove(targetDate,isDuplicate){
+  targetDate.setHours(0,0,0,0);
+  const targetKey=agendaKey(targetDate);
+  const byKey={};
+  _agendaSelection.forEach(sel=>{
+    const sep=sel.lastIndexOf('|');
+    const key=sel.slice(0,sep),idx=parseInt(sel.slice(sep+1));
+    if(!byKey[key])byKey[key]=[];
+    byKey[key].push(idx);
+  });
+  let moved=0;
+  Object.keys(byKey).forEach(key=>{
+    const idxs=byKey[key].slice().sort((a,b)=>b-a); // decrescente: le rimozioni non spostano gli indici successivi
+    const date=agendaDateFromKey(key);
+    const tasks=getAgendaDay(date);
+    const toMove=[];
+    idxs.forEach(idx=>{
+      const t=tasks[idx];
+      if(!t)return;
+      toMove.push({...t,ts:Date.now()+Math.random(),done:false});
+      if(!isDuplicate)tasks.splice(idx,1);
+    });
+    if(!isDuplicate)setAgendaDay(date,tasks);
+    moved+=toMove.length;
+    const targetTasks=getAgendaDay(targetDate);
+    targetTasks.push(...toMove);
+    setAgendaDay(targetDate,targetTasks);
+  });
+  _agendaSelection.clear();_agendaSelectMode=false;
+  renderAgenda();renderHome();
+  toast((isDuplicate?'DUPLICATE ':'SPOSTATE ')+moved+' task');
+}
+function agendaBulkDelete(){
+  if(!_agendaSelection.size)return;
+  const n=_agendaSelection.size;
+  modal('confirm','Eliminare '+n+' task selezionate?',()=>{
+    const byKey={};
+    _agendaSelection.forEach(sel=>{
+      const sep=sel.lastIndexOf('|');
+      const key=sel.slice(0,sep),idx=parseInt(sel.slice(sep+1));
+      if(!byKey[key])byKey[key]=[];
+      byKey[key].push(idx);
+    });
+    Object.keys(byKey).forEach(key=>{
+      const idxs=byKey[key].slice().sort((a,b)=>b-a);
+      const date=agendaDateFromKey(key);
+      const tasks=getAgendaDay(date);
+      idxs.forEach(idx=>{if(tasks[idx])tasks.splice(idx,1);});
+      setAgendaDay(date,tasks);
+    });
+    _agendaSelection.clear();_agendaSelectMode=false;
+    renderAgenda();renderHome();
+    toast('TASK ELIMINATE');
+  });
 }
 
 function doSearch(q){
@@ -2054,7 +2235,7 @@ function closeProj(){
   document.getElementById('det').style.display='none';
   document.getElementById('det').innerHTML='';
   const _pb=document.getElementById('tab-prog-btn');if(_pb)showTab('progetti',_pb);
-  syncAssets();renderHome();renderTopbar();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
+  syncAssets();renderHome();renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();updateOv();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();
   setTimeout(()=>window.scrollTo(0,_lastScrollY),0);
 }
 let _swipeStartX=0,_swipeStartY=0,_swipeTracking=false;
@@ -2238,11 +2419,18 @@ function buildStd(p){
     </div>`;
   }
   h+=`</div>`;
-  const selKey=ld('miniCalSel_'+id,'');
-  const _selDateCheck=selKey?new Date(selKey.replace('agenda_','')):null;
+  let selKey=ld('miniCalSel_'+id,'');
+  // v1 FIX: se la selezione salvata non è più nella finestra visibile dei 14 giorni
+  // (es. da una sessione precedente), è "fantasma" — la ignoriamo e la puliamo
+  if(selKey){
+    const _visibleKeys=[];
+    for(let vi=0;vi<14;vi++){const vd=new Date(today);vd.setDate(today.getDate()+vi);_visibleKeys.push(agendaKey(vd));}
+    if(!_visibleKeys.includes(selKey)){sv('miniCalSel_'+id,'');selKey='';}
+  }
+  const _selDateCheck=selKey?agendaDateFromKey(selKey):null; // v1 FIX: usa il parsing locale corretto invece di new Date() diretto
   const _selIsTodayCheck=_selDateCheck&&_selDateCheck.getTime()===today.getTime();
   if(selKey&&!_selIsTodayCheck){
-    const selDate=new Date(selKey.replace('agenda_',''));
+    const selDate=agendaDateFromKey(selKey);
     const selTasks=getAgendaDay(selDate).filter(t=>t.projId===id);
     const allSelTasks=getAgendaDay(selDate);
     const selDay=selDate.getDate()+' '+monthNames[selDate.getMonth()];
@@ -2302,7 +2490,7 @@ function buildStd(p){
   const projDebtInfo=calcProjDebt(id);
   // ── 2 COLONNE: Ricorrenti | Task giornaliere ──
   // Usa il giorno selezionato nel mini-cal se presente
-  const _selDate=selKey?new Date(selKey.replace('agenda_','')):today;
+  const _selDate=selKey?agendaDateFromKey(selKey):today;
   _selDate.setHours(0,0,0,0);
   const _agTodayProj=getAgendaDay(_selDate).filter(t=>t.projId===id);
   const _agDateLabel=selKey&&selKey!==agendaKey(today) // v1 FIX timezone
@@ -2321,9 +2509,11 @@ function buildStd(p){
     const _rpBorder=_rp==='high'?'2px solid var(--red)':_rp==='medium'?'2px solid var(--yellow)':'2px solid transparent';
     const _fl=(ld('recurFreq_'+id,[])[i])||'daily';
     const _flLabel=_fl==='daily'?'R':_fl==='weekdays'?'R L-V':_fl==='weekend'?'R W-E':'R '+_fl.slice(0,3).toUpperCase();
+    const _rStreak=calcRecurTaskStreak(id,i);
     h+=`<div class="row${done?' done':''}" style="flex-wrap:wrap;border-left:${_rpBorder};${activeToday?'':'opacity:.45'}">
       ${activeToday?`<div class="hd${done?' on':''}" onclick="ckRecur(${i},'${id}')" style="margin:0;flex-shrink:0"></div>`:`<span style="width:21px;flex-shrink:0;text-align:center;font-size:10px;color:var(--text-ghost)" title="Non prevista oggi">—</span>`}
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'${id}',this.value)">
+      ${_rStreak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${_rStreak} giorni di fila">🔥${_rStreak}</span>`:''}
       <span onclick="cycleRecurPri(${i},'${id}')" title="Priorità" style="font-size:11px;color:${_rp==='high'?'var(--red)':_rp==='medium'?'var(--yellow)':'var(--text-ghost)'};cursor:pointer;flex-shrink:0;padding:2px 2px">${_rp==='high'?'🔴':_rp==='medium'?'🟡':'○'}</span>
       <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);padding:0 5px;flex-shrink:0;cursor:pointer" onclick="chooseRecurFreq(${i},'${id}')" title="Cambia frequenza">${_flLabel}</span>
       <button class="xb" onclick="delRecur(${i},'${id}')">×</button>
@@ -2397,7 +2587,11 @@ function cycleRecurPri(i,id){
   const tp=ld('recurpri_'+id,[]);
   const cur=tp[i]||'none';
   tp[i]=cur==='none'?'medium':cur==='medium'?'high':'none';
-  sv('recurpri_'+id,tp);openProj(id);
+  sv('recurpri_'+id,tp);
+  // v1 FIX: prima chiamava SEMPRE openProj(id), aprendo la scheda progetto
+  // anche quando si cliccava la priorità dal tab Oggi
+  if(isTodayTabActive())renderTodayFocus();
+  else if(document.getElementById('det')?.style.display==='block')openProj(id);
 }
 function cycleTaskPri(i,id){
   const tp=ld('taskpri_'+id,[]);
@@ -2427,8 +2621,7 @@ function addAgTaskCol2(projId,key){
   const timeSel=document.getElementById('agtask-time-'+projId);
   const text=inp?.value.trim();if(!text)return;
   const time=timeSel?.value||'';
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   tasks.push({text,projId,done:false,ts:Date.now(),type:'day',pri:'none',time});
   setAgendaDay(date,tasks);
@@ -2438,8 +2631,7 @@ function addAgTaskCol2(projId,key){
 function addMiniCalTask(projId,key){
   const inp=document.getElementById('mcal-inp-'+projId);
   const text=inp?.value.trim();if(!text)return;
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   tasks.push({text,projId,done:false,ts:Date.now(),type:'day'});
   setAgendaDay(date,tasks);
@@ -2447,8 +2639,7 @@ function addMiniCalTask(projId,key){
   openProj(projId);toast();
 }
 function delAgendaTaskAndRefresh(key,i,projId){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   tasks.splice(i,1);setAgendaDay(date,tasks);
   openProj(projId);
@@ -2678,25 +2869,29 @@ function ckSpesa(i,id){
       s[i].paid=true;sv('spese_'+id,s);
       moveAsset(asset,-s[i].v);
       logTx('uscita',s[i].nome,s[i].v,asset);
+      recordPatEvent();
       ov.remove();
-      renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();
+      renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();renderSpese();
       openProj(id);toast('PAGATA — −€'+s[i].v+' da '+asset);
     };
   } else {
     s[i].paid=!s[i].paid;sv('spese_'+id,s);
-    updateOv();renderTopbar();openProj(id);toast();
+    updateOv();renderTopbar();renderSpese();openProj(id);toast();
   }
 }
 function edSpesa(i,id,k,v){const s=ld('spese_'+id,[]);s[i][k]=v;sv('spese_'+id,s);renderTopbar();toast();}
 function delSpesa(i,id){const s=ld('spese_'+id,[]);s.splice(i,1);sv('spese_'+id,s);renderTopbar();openProj(id);}
 function addSpesa(id){const n=document.getElementById('si-'+id).value.trim();const v=parseFloat(document.getElementById('sv-'+id).value)||0;const d=document.getElementById('sd-'+id).value||'—';if(!n)return;const s=ld('spese_'+id,[]);s.push({nome:n,v,data:d,paid:false});sv('spese_'+id,s);renderTopbar();openProj(id);toast();}
-function isScaduta(data){
-  if(!data||data==='—')return false;
-  let d=null;
+function parseSpesaData(data){
+  if(!data||data==='—')return null;
   const p=String(data).split('/');
-  if(p.length===3)d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]));
-  else if(/^\d{4}-\d{2}-\d{2}$/.test(data)){const q=data.split('-');d=new Date(Number(q[0]),Number(q[1])-1,Number(q[2]));}
-  if(!d||isNaN(d.getTime()))return false;
+  if(p.length===3){const d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]));if(!isNaN(d.getTime()))return d;}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(data)){const q=data.split('-');const d=new Date(Number(q[0]),Number(q[1])-1,Number(q[2]));if(!isNaN(d.getTime()))return d;}
+  return null;
+}
+function isScaduta(data){
+  const d=parseSpesaData(data);
+  if(!d)return false;
   const today=new Date();today.setHours(0,0,0,0);
   return d<today;
 }
@@ -2742,9 +2937,11 @@ function buildVinted(p){
   _vinted_recur.forEach((t,i)=>{
     const done=!!_vinted_recurCh[_vinted_tk+'_'+i];
     const activeToday=recurActiveToday('vinted',i);
+    const _vStreak=calcRecurTaskStreak('vinted',i);
     h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent;${activeToday?'':'opacity:.45'}">
       ${activeToday?`<div class="hd${done?' on':''}" onclick="ckRecur(${i},'vinted')" style="margin:0;flex-shrink:0"></div>`:`<span style="width:21px;flex-shrink:0;text-align:center;font-size:10px;color:var(--text-ghost)" title="Non prevista oggi">—</span>`}
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'vinted',this.value)">
+      ${_vStreak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${_vStreak} giorni di fila">🔥${_vStreak}</span>`:''}
       <button class="xb" onclick="delRecur(${i},'vinted')">×</button></div>`;
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-vinted" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('vinted')"><button class="abtn" onclick="addRecur('vinted')">+ ADD</button></div></div></div>`;
@@ -2833,9 +3030,11 @@ function buildCarte(p){
   _carte_recur.forEach((t,i)=>{
     const done=!!_carte_recurCh[_carte_tk+'_'+i];
     const activeToday=recurActiveToday('carte',i);
+    const _cStreak=calcRecurTaskStreak('carte',i);
     h+=`<div class="row${done?' done':''}" style="border-left:2px solid transparent;${activeToday?'':'opacity:.45'}">
       ${activeToday?`<div class="hd${done?' on':''}" onclick="ckRecur(${i},'carte')" style="margin:0;flex-shrink:0"></div>`:`<span style="width:21px;flex-shrink:0;text-align:center;font-size:10px;color:var(--text-ghost)" title="Non prevista oggi">—</span>`}
       <input class="rt" value="${esc(t)}" onchange="edRecur(${i},'carte',this.value)">
+      ${_cStreak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${_cStreak} giorni di fila">🔥${_cStreak}</span>`:''}
       <button class="xb" onclick="delRecur(${i},'carte')">×</button></div>`;
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-carte" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('carte')"><button class="abtn" onclick="addRecur('carte')">+ ADD</button></div></div></div>`;
@@ -5163,19 +5362,123 @@ function resetHabits(){modal('confirm','Azzerare i dot di questa settimana? Verr
 function toggleHabHist(){habHistVisible=!habHistVisible;document.getElementById('histbtn').style.color=habHistVisible?'var(--text)':'var(--blue)';const el=document.getElementById('habHist');if(!habHistVisible){el.style.display='none';return;}const hist=ld('habHist',[]);if(!hist.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuno storico ancora.</div>';el.style.display='block';return;}let h='';hist.forEach(w=>{h+=`<div style="margin-bottom:12px"><div style="font-family:Space Mono,monospace;font-size:10px;color:var(--text-faint);margin-bottom:6px">${w.week}</div><div style="display:grid;grid-template-columns:1fr repeat(7,20px);gap:3px;align-items:center">`;w.habits.forEach((hb,hi)=>{const d=w.data[hi]||[];h+=`<span style="font-size:12px;color:var(--text-faint)">${esc(hb)}</span>`;d.forEach(on=>h+=`<div style="width:16px;height:16px;border-radius:50%;background:${on?'var(--green)':'var(--border-soft)'};border:1px solid var(--border);margin:0 auto"></div>`);});h+=`</div></div>`;});el.innerHTML=`<div class="card" style="padding:14px">${h}</div>`;el.style.display='block';}
 
 // ── ASSETS ───────────────────────────────────────────────
+function openAssetDetail(assetId){
+  if(!assetId)return;
+  const assets=ld('assets',[]);
+  const asset=assets.find(a=>a.id===assetId);
+  if(!asset)return;
+  document.getElementById('home').style.display='none';
+  const dv=document.getElementById('asset-detail');
+  dv.style.display='block';
+  dv.innerHTML=buildAssetDetail(asset);
+  setTimeout(()=>renderAssetDetailChart(asset),50);
+}
+function closeAssetDetail(){
+  document.getElementById('asset-detail').style.display='none';
+  document.getElementById('asset-detail').innerHTML='';
+  document.getElementById('home').style.display='block';
+  renderFinanzeDashboard();renderAssets();
+}
+function buildAssetDetail(asset){
+  const allAssets=ld('assets',[]);
+  const colorIdx=allAssets.findIndex(a=>a.id===asset.id);
+  const color=AC[Math.max(0,colorIdx)%AC.length];
+  const log=ld('txLog',[]).filter(t=>t.asset===asset.l).sort((a,b)=>b.ts-a.ts);
+  const note=ld('asset_note_'+asset.id,'');
+  let h=`<button class="back" onclick="closeAssetDetail()">← FINANZE</button>
+  <div class="dh"><div class="dn" style="color:${color}">${esc(asset.l)}</div></div>
+  <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:${color};margin-bottom:16px">€${asset.v.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+  <div class="slbl">Storico</div>
+  <div class="cc" style="padding:14px;margin-bottom:1rem">
+    <canvas id="asset-detail-chart" width="500" height="150"></canvas>
+    <div id="asset-detail-nodata" style="display:none;font-size:12px;color:var(--text-ghost);padding:20px 0;text-align:center;font-family:'Space Mono',monospace">DATI INSUFFICIENTI — TORNA TRA QUALCHE GIORNO</div>
+  </div>
+  <div class="slbl">Movimenti collegati <span style="font-size:9px;color:var(--text-faint)">${log.length}</span></div>
+  <div class="card">`;
+  if(!log.length)h+=`<div style="padding:14px;font-size:12px;color:var(--text-ghost)">Nessun movimento collegato a questo asset.</div>`;
+  log.slice(0,50).forEach(t=>{
+    const col=t.tipo==='entrata'?'var(--green)':'var(--red)';
+    h+=`<div class="row"><span style="font-family:var(--mono);font-size:10px;color:var(--text-faint);width:70px;flex-shrink:0">${esc(t.data)}</span><span style="flex:1;font-size:12px">${esc(t.desc)}</span><span style="font-family:var(--mono);font-size:12px;color:${col}">${t.tipo==='entrata'?'+':'−'}€${t.importo}</span></div>`;
+  });
+  h+=`</div>
+  <div class="slbl">Note</div>
+  <textarea rows="3" placeholder="Note su questo asset…" onblur="sv('asset_note_${asset.id}',this.value);toast()">${esc(note)}</textarea>`;
+  return h;
+}
+function renderAssetDetailChart(asset){
+  const canvas=document.getElementById('asset-detail-chart');
+  const noData=document.getElementById('asset-detail-nodata');
+  if(!canvas)return;
+  const events=ld('pat_events',[]);
+  const dayBuckets={};
+  events.forEach(e=>{
+    const val=e.assets&&e.assets[asset.l];
+    if(val===undefined)return;
+    const dk=dayKey(new Date(e.ts));
+    if(!dayBuckets[dk]||dayBuckets[dk].ts<e.ts)dayBuckets[dk]={ts:e.ts,val};
+  });
+  const days=Object.keys(dayBuckets).sort();
+  const recentDays=days.slice(-60);
+  if(recentDays.length<2){
+    canvas.style.display='none';if(noData)noData.style.display='block';return;
+  }
+  canvas.style.display='block';if(noData)noData.style.display='none';
+  fitCanvas(canvas);
+  const allAssets=ld('assets',[]);
+  const colorIdx=allAssets.findIndex(a=>a.id===asset.id);
+  const color=AC[Math.max(0,colorIdx)%AC.length];
+  new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:recentDays.map(d=>{const dt=parseDayKey(d);return dt.getDate()+'/'+(dt.getMonth()+1);}),
+      datasets:[{data:recentDays.map(d=>dayBuckets[d].val),borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,pointRadius:recentDays.length>30?0:3,pointBackgroundColor:color,pointBorderColor:cssVar('--chart-hole')||'#0f0f0f'}]
+    },
+    options:{
+      responsive:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString('it-IT',{maximumFractionDigits:0})}}},
+      scales:{
+        x:{ticks:{color:chartTick(),font:{size:9},maxTicksLimit:8},grid:{color:chartGrid()}},
+        y:{ticks:{color:chartTick(),font:{size:9},callback:v=>'€'+v.toLocaleString('it-IT',{maximumFractionDigits:0})},grid:{color:chartGrid()}}
+      }
+    }
+  });
+}
+function ensureAssetIds(){
+  const a=ld('assets',[]);
+  let changed=false;
+  a.forEach(x=>{if(!x.id){x.id='asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);changed=true;}});
+  if(changed)sv('assets',a);
+}
+// v1 SPEC FINANZE: variazione dinamica di un asset — oggi se c'è movimento oggi, altrimenti questa settimana
+function computeAssetVariation(label){
+  const log=ld('txLog',[]);
+  const now=new Date();now.setHours(0,0,0,0);
+  const todayStr=new Date().toDateString();
+  const todayDelta=log.filter(t=>t.asset===label&&new Date(t.ts).toDateString()===todayStr)
+    .reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);
+  if(todayDelta!==0)return{delta:todayDelta,label:'oggi'};
+  const weekAgo=new Date(now);weekAgo.setDate(now.getDate()-7);
+  const weekDelta=log.filter(t=>t.asset===label&&t.ts>=weekAgo.getTime())
+    .reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);
+  if(weekDelta!==0)return{delta:weekDelta,label:'questa settimana'};
+  return null;
+}
 function renderAssets(){
   syncAssets();
   const a=ld('assets',[]),el=document.getElementById('arows');
   if(!el)return;
   el.innerHTML=a.map((x,i)=>{
     const isSpecial=!!x.special;
-    return `<div class="ar" draggable="false" ondragstart="assetDragStart(event,${i})" ondragover="assetDragOver(event)" ondragleave="assetDragLeave(event)" ondrop="assetDrop(event,${i})" ondragend="assetDragEnd(event)" style="${x.hidden?'opacity:.45':''}">
+    const variation=computeAssetVariation(x.l);
+    return `<div class="ar" draggable="false" ondragstart="assetDragStart(event,${i})" ondragover="assetDragOver(event)" ondragleave="assetDragLeave(event)" ondrop="assetDrop(event,${i})" ondragend="assetDragEnd(event)" style="${x.hidden?'opacity:.45':''};flex-wrap:wrap">
       <span class="drag-handle" title="Trascina per riordinare" onpointerdown="armAssetDrag(event,${i})">⠿</span>
       <div class="ad" style="background:${AC[i%AC.length]};color:${AC[i%AC.length]}"></div>
       <button class="xb" title="Mostra/Nascondi" onclick="toggleAssetHidden(${i})" style="color:${x.hidden?'var(--text-ghost)':'var(--text-faint)'}">${x.hidden?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.58 10.58a2 2 0 002.83 2.83M9.88 4.24A9.12 9.12 0 0112 4c5 0 9 4 10 8a13.16 13.16 0 01-1.67 3.19M6.61 6.61C4.7 8.06 3.18 10.06 2 12c1 4 5 8 10 8a9.74 9.74 0 005.39-1.61"/></svg>':'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>'}</button>
       <input class="al" value="${esc(x.l)}" ${isSpecial?'readonly style="color:var(--text-faint)"':''} onchange="edAsset(${i},'l',this.value)">
       <input class="av" value="€${x.v.toFixed(0)}" onchange="edAsset(${i},'v',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
+      <button class="xb" title="Apri dettaglio" onclick="openAssetDetail('${x.id||''}')" style="color:var(--text-faint)">→</button>
       ${isSpecial?'<span style="width:18px"></span>':`<button class="xb" style="color:var(--text-faint)" onclick="delAsset(${i})">×</button>`}
+      ${variation?`<div style="width:100%;padding-left:32px;font-family:var(--mono);font-size:10px;color:${variation.delta>=0?'var(--green)':'var(--red)'}">${variation.delta>=0?'+':''}€${variation.delta.toLocaleString('it-IT',{maximumFractionDigits:0})} ${variation.label}</div>`:''}
     </div>`;
   }).join('');
   updateOv();
@@ -5210,7 +5513,7 @@ document.addEventListener('pointerup',()=>{if(assetDragArmed&&!document.querySel
 function populateAssetSelects(){
   const a=ld('assets',[]).filter(x=>!x.hidden&&(x.special==='liquidity'||x.special==='savings'));
   const opts=a.map(x=>`<option value="${esc(x.l)}">${esc(x.l)} (€${x.v.toFixed(0)})</option>`).join('');
-  ['reg-asset'].forEach(id=>{
+  ['reg-asset','reg-asset-oggi'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     const cur=el.value;
@@ -5219,9 +5522,9 @@ function populateAssetSelects(){
     else if(a.length)el.value=a[0].l;
   });
 }
-function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();if(k==='v')savePatSnapshot(false);renderAssets();renderCharts();updateOv();renderPatTarget();renderPatChart();toast();}
+function edAsset(i,k,v){const a=ld('assets',[]);a[i][k]=v;sv('assets',a);syncAssets();if(k==='v')recordPatEvent();renderAssets();renderCharts();updateOv();renderPatTarget();renderPatChart();toast();}
 function delAsset(i){const a=ld('assets',[]);if(a[i]&&a[i].special)return toast('Asset speciale non eliminabile');a.splice(i,1);sv('assets',a);renderAssets();renderCharts();renderPatTarget();}
-function addAsset(){const a=ld('assets',[]);a.push({l:'Nuovo asset',v:0});sv('assets',a);savePatSnapshot(false);renderAssets();renderCharts();renderPatChart();}
+function addAsset(){const a=ld('assets',[]);a.push({l:'Nuovo asset',v:0});sv('assets',a);recordPatEvent();renderAssets();renderCharts();renderPatChart();}
 
 // ── FINANCE ──────────────────────────────────────────────
 // ── SISTEMA FINANZIARIO ──────────────────────────────────
@@ -5246,6 +5549,33 @@ function currentMonthKey(){const d=new Date();return d.getFullYear()+'-'+(d.getM
 function txThisMonth(){
   const key=currentMonthKey();
   return ld('txLog',[]).filter(t=>{const d=new Date(t.ts);return d.getFullYear()+'-'+(d.getMonth()+1)===key;});
+}
+function txToday(){
+  const todayStr=new Date().toDateString();
+  return ld('txLog',[]).filter(t=>new Date(t.ts).toDateString()===todayStr);
+}
+// v1 SPEC FINANZE: dashboard giornaliera — patrimonio + andamento della giornata economica
+function renderFinanzeDashboard(){
+  const el=document.getElementById('fin-dashboard');if(!el)return;
+  syncAssets();
+  const pat=visibleAssets().reduce((s,x)=>s+x.v,0);
+  const todayTx=txToday();
+  const entrate=todayTx.filter(t=>t.tipo==='entrata').reduce((s,t)=>s+t.importo,0);
+  const uscite=todayTx.filter(t=>t.tipo==='uscita').reduce((s,t)=>s+t.importo,0);
+  const saldo=entrate-uscite;
+  el.innerHTML=`
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+      <div>
+        <div style="font-size:10px;color:var(--text-faint);font-weight:600;letter-spacing:.04em;margin-bottom:2px">PATRIMONIO</div>
+        <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--text)">€${pat.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">▲ +€${entrate.toLocaleString('it-IT',{maximumFractionDigits:0})} <span style="font-size:9px;color:var(--text-faint);font-weight:400">oggi</span></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">▼ −€${uscite.toLocaleString('it-IT',{maximumFractionDigits:0})} <span style="font-size:9px;color:var(--text-faint);font-weight:400">uscite</span></div>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:${saldo>=0?'var(--green)':'var(--red)'};font-weight:700">Saldo giornaliero ${saldo>=0?'+':''}€${saldo.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+  `;
 }
 function nettoMese(){return txThisMonth().reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);}
 function speseNonPagate(){
@@ -5272,6 +5602,27 @@ function updateOv(){
 }
 
 // ── MODELLI ENTRATA ───────────────────────────────────────
+function updateMovementFormOggi(){
+  const isIn=document.getElementById('reg-tipo-oggi')?.value!=='uscita';
+  const btn=document.getElementById('reg-submit-oggi');
+  if(!btn)return;
+  btn.style.color=isIn?'var(--green)':'var(--red)';
+  btn.style.borderColor=isIn?'var(--green)':'var(--red)';
+}
+function registraMovimentoOggi(){
+  const tipo=document.getElementById('reg-tipo-oggi')?.value==='uscita'?'uscita':'entrata';
+  const desc=document.getElementById('reg-desc-oggi')?.value.trim();
+  const imp=parseFloat(document.getElementById('reg-imp-oggi')?.value)||0;
+  const asset=document.getElementById('reg-asset-oggi')?.value;
+  if(!desc||!imp||!asset)return toast('Compila tutti i campi');
+  const wentNegative=moveAsset(asset,tipo==='entrata'?imp:-imp);
+  logTx(tipo,desc,imp,asset);
+  document.getElementById('reg-desc-oggi').value='';
+  document.getElementById('reg-imp-oggi').value='';
+  recordPatEvent();
+  renderTopbar();renderFinanzeDashboard();
+  toast(wentNegative?'⚠ '+asset+' in negativo':(tipo==='entrata'?'+€'+imp+' → '+asset:'-€'+imp+' da '+asset));
+}
 function updateMovementForm(){
   const isIn=document.getElementById('reg-tipo')?.value!=='uscita';
   const btn=document.getElementById('reg-submit');
@@ -5290,7 +5641,7 @@ function registraMovimento(){
   logTx(tipo,desc,imp,asset);
   document.getElementById('reg-desc').value='';
   document.getElementById('reg-imp').value='';
-  savePatSnapshot(false);
+  recordPatEvent();
   renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
   toast(wentNegative?'⚠ '+asset+' in negativo':(tipo==='entrata'?'+€'+imp+' → '+asset:'-€'+imp+' da '+asset));
 }
@@ -5306,7 +5657,7 @@ function deleteTx(ts){
     moveAsset(tx.asset, tx.tipo==='entrata'?-tx.importo:tx.importo);
     log.splice(idx,1);
     sv('txLog',log);
-    savePatSnapshot(false);
+    recordPatEvent();
     renderAssets();renderTxMonth();
     if(txLogVisible){txLogVisible=false;toggleTxLog();}
     updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
@@ -5318,14 +5669,39 @@ function renderTxMonth(){
   const el=document.getElementById('tx-month');if(!el)return;
   const txs=txThisMonth();
   if(!txs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-ghost);padding:4px 0">Nessuna transazione questo mese.</div>';return;}
-  el.innerHTML=txs.slice(0,10).map(t=>`<div class="fr2">
-    <span style="font-size:10px;font-family:'Space Mono',monospace;color:${t.tipo==='entrata'?'var(--green)':'var(--red)'}">${t.tipo==='entrata'?'↑':'↓'}</span>
-    <span style="flex:1;font-size:13px;color:var(--text)">${esc(t.desc)}</span>
-    <span style="font-size:9px;color:var(--text-faint);font-family:'Space Mono',monospace;margin-right:8px">${esc(t.asset)}</span>
-    <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${t.tipo==='entrata'?'var(--green)':'var(--red)'}">${t.tipo==='entrata'?'+':'−'}€${t.importo.toFixed(0)}</span>
-    <span style="font-size:9px;color:var(--text-ghost);font-family:'Space Mono',monospace;margin-left:8px">${t.data}</span>
-    <button class="xb" onclick="deleteTx(${t.ts})" style="color:var(--text-ghost);margin-left:6px" title="Annulla">×</button>
-  </div>`).join('');
+  // v1 SPEC: raggruppa per giorno (Oggi/Ieri/data) invece di lista piatta
+  const today=new Date();today.setHours(0,0,0,0);
+  const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
+  const groups={}; // dayKeyLocal -> {label, items:[]}
+  txs.slice(0,60).forEach(t=>{
+    const d=new Date(t.ts);d.setHours(0,0,0,0);
+    const dk=dayKey(d);
+    if(!groups[dk]){
+      let label;
+      if(d.getTime()===today.getTime())label='Oggi';
+      else if(d.getTime()===yesterday.getTime())label='Ieri';
+      else label=d.getDate()+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][d.getMonth()];
+      groups[dk]={label,items:[]};
+    }
+    groups[dk].items.push(t);
+  });
+  const orderedKeys=Object.keys(groups).sort().reverse();
+  el.innerHTML=orderedKeys.map(dk=>{
+    const g=groups[dk];
+    const dayTot=g.items.reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);
+    let gh=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px;border-top:1px solid var(--border-soft)">
+      <span style="font-family:var(--sans);font-weight:700;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em">${g.label}</span>
+      <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${dayTot>=0?'var(--green)':'var(--red)'}">${dayTot>=0?'+':''}€${dayTot.toFixed(0)}</span>
+    </div>`;
+    gh+=g.items.map(t=>`<div class="fr2" style="border-top:none">
+      <span style="font-size:10px;font-family:'Space Mono',monospace;color:${t.tipo==='entrata'?'var(--green)':'var(--red)'}">${t.tipo==='entrata'?'↑':'↓'}</span>
+      <span style="flex:1;font-size:13px;color:var(--text)">${esc(t.desc)}</span>
+      <span style="font-size:9px;color:var(--text-faint);font-family:'Space Mono',monospace;margin-right:8px">${esc(t.asset)}</span>
+      <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${t.tipo==='entrata'?'var(--green)':'var(--red)'}">${t.tipo==='entrata'?'+':'−'}€${t.importo.toFixed(0)}</span>
+      <button class="xb" onclick="deleteTx(${t.ts})" style="color:var(--text-ghost);margin-left:6px" title="Annulla">×</button>
+    </div>`).join('');
+    return gh;
+  }).join('');
 }
 
 let txLogVisible=false;
@@ -5373,13 +5749,47 @@ function toggleTxLog(){
 
 
 
-function renderSpese(){const el=document.getElementById('spg');if(!el)return;const allProjs=[...PD,...ld('customProjs',[])];const all=[];allProjs.forEach(p=>{ld('spese_'+p.id,[]).forEach(s=>all.push({...s,proj:p.tag,color:p.color}));});el.innerHTML=all.length?all.map(s=>`<div class="fr2" style="${isScaduta(s.data)?'border-left:2px solid var(--red);padding-left:8px':''}"><div class="ad" style="background:${s.color};color:${s.color}"></div><span style="font-size:9px;color:var(--text-faint);font-family:'Space Mono',monospace;margin-right:6px">${esc(s.proj)}</span><span style="flex:1;font-size:13px;color:${s.paid?'var(--text-ghost)':'var(--text-dim)'};${s.paid?'text-decoration:line-through':''}">${esc(s.nome)}</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:${s.paid?'var(--text-ghost)':'var(--red)'}">€${s.v}</span><span style="font-family:'Space Mono',monospace;font-size:9px;color:${s.paid?'var(--green)':isScaduta(s.data)?'var(--red)':'var(--text-ghost)'};margin-left:8px">${s.paid?'✓':isScaduta(s.data)?'⚠ SCADUTA':'○'}</span></div>`).join(''):'<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuna spesa pianificata.</div>';}
+function renderSpese(){
+  const el=document.getElementById('spese-timeline');if(!el)return;
+  const allProjs=[...PD,...ld('customProjs',[])];
+  const all=[];
+  allProjs.forEach(p=>{ld('spese_'+p.id,[]).forEach((s,i)=>all.push({...s,proj:p.tag,color:p.color,_projId:p.id,_idx:i}));});
+  ld('speseGen',[]).forEach((s,i)=>all.push({...s,proj:null,color:'var(--text-ghost)',_idx:i}));
+  const unpaid=all.filter(s=>!s.paid);
+  if(!unpaid.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuna spesa pianificata.</div>';return;}
+  // v1 SPEC: ordina per data (le date non parsabili restano in coda, in ordine originale)
+  unpaid.sort((a,b)=>{
+    const da=parseSpesaData(a.data),db=parseSpesaData(b.data);
+    if(da&&db)return da-db;
+    if(da&&!db)return -1;
+    if(!da&&db)return 1;
+    return 0;
+  });
+  // raggruppa per data (stessa data = stesso gruppo con header unico)
+  let h='',_prevDateLabel=null;
+  unpaid.forEach(s=>{
+    const d=parseSpesaData(s.data);
+    const dateLabel=d?d.getDate()+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][d.getMonth()]:(s.data||'senza data');
+    if(dateLabel!==_prevDateLabel){
+      h+=`<div style="padding:8px 0 4px;border-top:1px solid var(--border-soft);font-family:var(--sans);font-weight:700;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em">${esc(dateLabel)}</div>`;
+      _prevDateLabel=dateLabel;
+    }
+    const ckFn=s.proj?`ckSpesa(${s._idx},'${s._projId}')`:`ckSpeseGen(${s._idx})`;
+    h+=`<div class="fr2" style="${isScaduta(s.data)?'border-left:2px solid var(--red);padding-left:8px':''}">
+      <div class="chk" onclick="${ckFn}"></div>
+      <div class="ad" style="background:${s.color};color:${s.color}"></div>
+      ${s.proj?`<span style="font-size:9px;color:var(--text-faint);font-family:'Space Mono',monospace;margin-right:6px">${esc(s.proj)}</span>`:''}
+      <span style="flex:1;font-size:13px;color:var(--text-dim)">${esc(s.nome)}</span>
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--red)">−€${s.v}</span>
+      ${isScaduta(s.data)?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--red);margin-left:8px">⚠ SCADUTA</span>`:''}
+    </div>`;
+  });
+  el.innerHTML=h;
+}
 
 // ── SPESE GENERALI ────────────────────────────────────────
 function renderSpeseGen(){
-  const el=document.getElementById('spese-gen-list');if(!el)return;
   const list=ld('speseGen',[]);
-
   // ── Widget countdown piani rate attivi ──
   const planEl=document.getElementById('spese-gen-plans');
   if(planEl){
@@ -5408,17 +5818,7 @@ function renderSpeseGen(){
       }).join('');
     }
   }
-
-  if(!list.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuna spesa generale.</div>';return;}
-  el.innerHTML=list.map((s,i)=>`
-    <div class="fr2" style="${isScaduta(s.data)?'border-left:2px solid var(--red);padding-left:8px':''}">
-      <div class="chk${s.paid?' on':''}" onclick="ckSpeseGen(${i})"></div>
-      <input class="fl" value="${esc(s.nome)}" style="color:${s.paid?'var(--text-ghost)':'var(--text-dim)'};${s.paid?'text-decoration:line-through':''}" onchange="edSpeseGen(${i},'nome',this.value)">
-      <input class="fv neg" value="€${s.v}" style="width:65px;${s.paid?'color:var(--text-faint)':''}" onchange="edSpeseGen(${i},'v',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
-      <input style="font-family:'Space Mono',monospace;font-size:11px;background:transparent;border:none;color:var(--text-faint);width:70px;text-align:right;outline:none" value="${esc(s.data||'—')}" onchange="edSpeseGen(${i},'data',this.value)">
-      <span style="font-family:'Space Mono',monospace;font-size:9px;color:${s.paid?'var(--green)':isScaduta(s.data)?'var(--red)':'var(--text-ghost)'};margin-left:6px">${s.paid?'✓':isScaduta(s.data)?'⚠':'○'}</span>
-      <button class="xb" style="color:var(--text-faint)" onclick="delSpeseGen(${i})">×</button>
-    </div>`).join('');
+  renderSpese(); // v1: la timeline unificata va ri-renderizzata insieme (usa anche i dati di speseGen)
 }
 function addSpeseGen(){
   const n=document.getElementById('sg-nome').value.trim();
@@ -5509,8 +5909,9 @@ function ckSpeseGen(i){
       s[i].paid=true;sv('speseGen',s);
       moveAsset(asset,-s[i].v);
       logTx('uscita',s[i].nome,s[i].v,asset);
+      recordPatEvent();
       ov.remove();
-      renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();
+      renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
       renderSpeseGen();toast('PAGATA — −€'+s[i].v+' da '+asset);
     };
   } else {
@@ -5538,7 +5939,7 @@ function renderCharts(){
     _ac.update('none');
     return;
   }
-  _ac=new Chart(ac,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:cssVar('--chart-hole')||'#0f0f0f',borderWidth:3}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString()}}},cutout:'65%'}});
+  _ac=new Chart(ac,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:'#0a0a0a',borderWidth:3}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' €'+c.raw.toLocaleString()}}},cutout:'65%'}});
 }
 
 // ── EXPORT / IMPORT ──────────────────────────────────────
@@ -5771,7 +6172,21 @@ function renderTodayFocus(){
   
     // ── COLONNA DX: alimentazione + allenamento ──
     h+='<div style="display:flex;flex-direction:column;gap:10px">';
-  
+
+    // v1 SPEC FINANZE: Registra Movimento compatto
+    h+=`<div style="background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--sh-card);padding:10px 12px">
+      <div style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.06em;margin-bottom:8px">REGISTRA MOVIMENTO</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <select id="reg-tipo-oggi" onchange="updateMovementFormOggi()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;color:var(--text);outline:none;flex-shrink:0"><option value="entrata">ENTRATA</option><option value="uscita">USCITA</option></select>
+        <input id="reg-desc-oggi" placeholder="Descrizione…" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;flex:1;min-width:0">
+      </div>
+      <div style="display:flex;gap:6px">
+        <input id="reg-imp-oggi" placeholder="€" inputmode="decimal" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;width:70px">
+        <select id="reg-asset-oggi" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;color:var(--text);outline:none;flex:1;min-width:0"></select>
+        <button id="reg-submit-oggi" onclick="registraMovimentoOggi()" style="font-family:var(--sans);font-weight:700;font-size:10px;padding:6px 10px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;flex-shrink:0">+ ADD</button>
+      </div>
+    </div>`;
+
     // Alimentazione
     if(!ld('archived',[]).includes('alimentazione')){
       const schedeA=alimGetSchede();
@@ -5878,6 +6293,7 @@ function renderTodayFocus(){
   
     h+='</div>';
     el.innerHTML=h; // v1 FIX: era duplicato (assegnato due volte)
+    populateAssetSelects();
 }
 
 function setOggiSort(mode){sv('oggi_sort',mode);renderTodayFocus();}
@@ -5896,8 +6312,7 @@ function ckRecurFocus(i,id){
   renderTodayFocus();renderHome();toast();
 }
 function moveTaskToToday(key,i){
-  const dateStr=key.replace('agenda_','');
-  const fromDate=new Date(dateStr);
+  const fromDate=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(fromDate);
   const task=tasks[i];
   if(!task)return;
@@ -5911,8 +6326,7 @@ function moveTaskToToday(key,i){
   toast('SPOSTATA A OGGI');
 }
 function cycleAgendaTaskPri(key,i){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   if(!tasks[i])return;
   const cur=tasks[i].pri||'none';
@@ -5921,8 +6335,7 @@ function cycleAgendaTaskPri(key,i){
   if(isTodayTabActive())renderTodayFocus();else renderAgenda();
 }
 function ckAgendaFocus(key,i){
-  const dateStr=key.replace('agenda_','');
-  const date=new Date(dateStr);
+  const date=agendaDateFromKey(key); // v1 FIX timezone
   const tasks=getAgendaDay(date);
   if(!tasks[i])return;
   tasks[i].done=!tasks[i].done;
@@ -6012,7 +6425,7 @@ function migrateData(){
   }
 }
 function bootApp(){
-  initData();migrateData();autoSnapOnce();
+  initData();migrateData();ensureAssetIds();autoSnapOnce();
   const _he=document.getElementById('home-extra');if(_he)_he.style.display='none';
   renderHome();renderTopbar();renderHab();renderAssets();
   // Attiva tab OGGI come default
@@ -6240,7 +6653,7 @@ function updateQCPreview(){
   _rawQC=_rawQC.replace(/([^\n])(obiettivo:)/gi,'$1\n$2');
   const lines=_rawQC.split('\n').filter(l=>l.trim());
   const fallbackKey=document.getElementById('qc-date').value;
-  const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
+  const fallbackDate=agendaDateFromKey(fallbackKey); // v1 FIX timezone
   if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
   const DAY_NAMES_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
   const rows=lines.map(l=>{
@@ -6884,7 +7297,7 @@ function submitQC(){
   const lines=_rawQC.split('\n').filter(l=>l.trim());
   if(!lines.length)return;
   const fallbackKey=document.getElementById('qc-date').value;
-  const fallbackDate=new Date(fallbackKey.replace('agenda_',''));
+  const fallbackDate=agendaDateFromKey(fallbackKey); // v1 FIX timezone
   let added=0,recurs=0;
   const byDate={};
   let allenamento_added=0,alimentazione_added=0,spese_added=0;
