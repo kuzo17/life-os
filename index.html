@@ -87,74 +87,73 @@ console.log('Firebase connesso');
 
 <style>
 :root{
-  --bg:#0d0e12;--bg-grad:radial-gradient(ellipse 70% 45% at 50% -10%,rgba(255,255,255,.04),transparent),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(74,222,128,.025),transparent);
-  --surface:#16171d;--surface2:#1c1e26;--surface3:#22242e;
-  --glass:rgba(28,30,38,.65);
-  --border:rgba(255,255,255,.08);--border-soft:rgba(255,255,255,.05);--border-hover:rgba(255,255,255,.16);
-  --text:#eef0f5;--text-dim:#a3a6b3;--text-faint:#717484;--text-ghost:#4a4d5a;
+  --bg:#0F1115;--bg-grad:none;
+  --surface:#16181D;--surface2:#1B1F26;--surface3:#232833;
+  --glass:rgba(22,24,29,.75);
+  --border:#2A2F38;--border-soft:rgba(255,255,255,.05);--border-hover:#3a4150;
+  --text:#F2F4F7;--text-dim:#c3c8d1;--text-faint:#A8B0BF;--text-ghost:#6F7685;
   --mono:'Space Mono',monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
-  --green:#4ade80;--green-glow:rgba(74,222,128,.35);
-  --red:#fb7185;--red-glow:rgba(251,113,133,.3);
-  --blue:#60a5fa;--blue-glow:rgba(96,165,250,.3);
-  --purple:#a78bfa;--purple-glow:rgba(167,139,250,.35);
-  --orange:#fb923c;--orange-glow:rgba(251,146,60,.3);
-  --yellow:#fbbf24;--yellow-glow:rgba(251,191,36,.3);
+  --green:#22c55e;--green-glow:rgba(34,197,94,.3);
+  --red:#ef4444;--red-glow:rgba(239,68,68,.3);
+  --blue:#3b82f6;--blue-glow:rgba(59,130,246,.3);
+  --purple:#8b5cf6;--purple-glow:rgba(139,92,246,.3);
+  --orange:#f97316;--orange-glow:rgba(249,115,22,.3);
+  --yellow:#eab308;--yellow-glow:rgba(234,179,8,.3);
   --r-sm:8px;--r-md:12px;--r-lg:16px;
-  --sh-1:0 1px 2px rgba(0,0,0,.4);
-  --sh-2:0 4px 16px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3);
-  --sh-3:0 8px 32px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3);
-  --sh-card:0 2px 8px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04) inset;
-  --row-hover:rgba(255,255,255,.025);
-  --ring-track:rgba(255,255,255,.12);
+  --sh-1:0 1px 2px rgba(0,0,0,.3);
+  --sh-2:0 4px 12px rgba(0,0,0,.25);
+  --sh-3:0 8px 24px rgba(0,0,0,.3);
+  --sh-card:0 1px 3px rgba(0,0,0,.25);
+  --row-hover:rgba(255,255,255,.03);
+  --ring-track:rgba(255,255,255,.1);
   --modal-overlay:rgba(0,0,0,.65);
   --on-accent:#0a0a0a;
-  --input-bg:rgba(0,0,0,.25);
-  --chart-tick:#777;
+  --input-bg:rgba(255,255,255,.04);
+  --chart-tick:#6F7685;
   --chart-grid:rgba(255,255,255,.08);
-  --chart-hole:#0f0f0f;
-  --sel-bg:rgba(74,222,128,.12);
+  --chart-hole:#16181D;
+  --sel-bg:rgba(34,197,94,.12);
 }
 :root[data-theme="light"]{
-  --bg:#e8e8e4;
+  --bg:#F5F7FA;
   --bg-grad:none;
-  --surface:#ffffff;
-  --surface2:#f0f0ec;
-  --surface3:#e4e4e0;
-  --glass:rgba(255,255,255,.9);
-  --border:rgba(0,0,0,.08);
-  --border-soft:rgba(0,0,0,.05);
-  --border-hover:rgba(0,0,0,.14);
-  --text:#0a0a0a;
-  --text-dim:#374151;
-  --text-faint:#6b7280;
-  --text-ghost:#9ca3af;
-  --green:#16a34a;--green-glow:rgba(22,163,74,.15);
-  --red:#ef4444;--red-glow:rgba(239,68,68,.15);
-  --blue:#2563eb;--blue-glow:rgba(37,99,235,.15);
-  --purple:#7c3aed;--purple-glow:rgba(124,58,237,.15);
-  --orange:#ff6b35;--orange-glow:rgba(255,107,53,.15);
-  --yellow:#ca8a04;--yellow-glow:rgba(202,138,4,.15);
-  --sh-1:0 1px 3px rgba(0,0,0,.08);
-  --sh-2:0 4px 12px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);
-  --sh-3:0 8px 24px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.07);
-  --sh-card:0 2px 8px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.03) inset;
-  --row-hover:rgba(0,0,0,.02);
-  --ring-track:rgba(0,0,0,.08);
-  --modal-overlay:rgba(0,0,0,.4);
+  --surface:#FFFFFF;
+  --surface2:#FFFFFF;
+  --surface3:#EEF1F5;
+  --glass:rgba(255,255,255,.85);
+  --border:#E5E8EF;
+  --border-soft:rgba(21,26,34,.05);
+  --border-hover:#d2d7e0;
+  --text:#151A22;
+  --text-dim:#3d4552;
+  --text-faint:#667085;
+  --text-ghost:#98A2B3;
+  --green:#22c55e;--green-glow:rgba(34,197,94,.18);
+  --red:#ef4444;--red-glow:rgba(239,68,68,.18);
+  --blue:#3b82f6;--blue-glow:rgba(59,130,246,.18);
+  --purple:#8b5cf6;--purple-glow:rgba(139,92,246,.18);
+  --orange:#f97316;--orange-glow:rgba(249,115,22,.18);
+  --yellow:#eab308;--yellow-glow:rgba(234,179,8,.18);
+  --sh-1:0 1px 2px rgba(21,26,34,.06);
+  --sh-2:0 2px 8px rgba(21,26,34,.07);
+  --sh-3:0 6px 16px rgba(21,26,34,.08);
+  --sh-card:0 1px 3px rgba(21,26,34,.06);
+  --row-hover:rgba(21,26,34,.02);
+  --ring-track:rgba(21,26,34,.08);
+  --modal-overlay:rgba(21,26,34,.4);
   --on-accent:#fff;
-  --input-bg:rgba(0,0,0,.04);
-  --chart-tick:#6b7280;
-  --chart-grid:rgba(0,0,0,.08);
+  --input-bg:rgba(21,26,34,.03);
+  --chart-tick:#667085;
+  --chart-grid:rgba(21,26,34,.08);
   --chart-hole:#ffffff;
-  --sel-bg:rgba(22,163,74,.1);
+  --sel-bg:rgba(34,197,94,.1);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{overscroll-behavior:none;height:100%;}
+html{overscroll-behavior:none;height:100%;background:var(--bg);}
 body{
   background-color:var(--bg);
   background-image:var(--bg-grad);
-  background-attachment:fixed;
   color:var(--text);font-family:var(--sans);
   padding:1.25rem;
   padding-top:calc(1.25rem + env(safe-area-inset-top, 0px));
@@ -170,9 +169,7 @@ body{
 input,textarea,.rt,.al,.fl,.ain,.hn{-webkit-user-select:text;user-select:text;}
 button{font-family:var(--sans);touch-action:manipulation;}
 input,select,textarea,button{max-width:100%;font-family:var(--sans);}
-h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
-  background:linear-gradient(135deg,var(--text),var(--text-dim));
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--text);}
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;}
 .motto{font-size:11px;color:var(--text-ghost);font-style:italic;}
 .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:1.2rem 0;}
@@ -374,6 +371,7 @@ textarea::placeholder{color:var(--text-ghost);}
 .sr-item:hover{background:var(--row-hover);}
 .sr-tag{font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-right:8px;}
 .sr-match{color:var(--green);text-shadow:0 0 5px var(--green-glow);}
+.qa-meta{font-size:11px;color:var(--text-faint);margin-top:4px;font-weight:400;}
 
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}
 #tab-settimana{overflow-x:auto;}
@@ -393,9 +391,19 @@ textarea::placeholder{color:var(--text-ghost);}
   transform:translateY(8px);
 }
 #toast.show{opacity:1;transform:translateY(0);}
+#toast.neutral{background:linear-gradient(135deg,var(--surface3),var(--surface2));border-color:var(--border-hover);color:var(--text-dim);box-shadow:var(--sh-3);}
 @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes checkPop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
 .celebrate{animation:pop .4s ease;}
+@keyframes qaFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes qaSpin{to{transform:rotate(360deg)}}
+@keyframes qaSlideUp{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes qaBadgeIn{0%{opacity:0;transform:translateY(-4px)}15%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
+.qa-overlay-anim{animation:qaFadeIn .18s ease;}
+.qa-panel-anim{animation:qaSlideUp .22s cubic-bezier(.2,.8,.2,1);}
+.qa-recover-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--green);background:var(--green-glow);padding:2px 8px;border-radius:8px;animation:qaBadgeIn 1.8s ease forwards;}
+.qa-forgive-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text-faint);background:var(--surface3);padding:2px 8px;border-radius:8px;animation:qaBadgeIn 1.8s ease forwards;}
+.qa-pulse{animation:pop .5s ease;}
 .foot-btns{display:flex;gap:9px;justify-content:center;margin-top:1.1rem;}
 .foot-btn{font-family:var(--sans);font-size:11px;font-weight:600;padding:9px 18px;border-radius:var(--r-md);cursor:pointer;border:1px solid var(--border);background:var(--surface2);transition:all .15s;}
 .foot-btn:hover{border-color:var(--border-hover);transform:translateY(-1px);}
@@ -469,18 +477,18 @@ textarea::placeholder{color:var(--text-ghost);}
   .movement-fields{grid-template-columns:1fr;}
 }
 /* PATRIMONIO TARGET */
-.pat-target-wrap{background:linear-gradient(150deg,rgba(167,139,250,.08),var(--surface));border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:11px;box-shadow:var(--sh-card);}
+.pat-target-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:11px;box-shadow:var(--sh-card);}
 .pat-target-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
 .pat-target-title{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.02em;}
 .pat-target-vals{display:flex;align-items:baseline;gap:7px;margin-bottom:11px;}
-.pat-cur{font-family:var(--mono);font-size:30px;font-weight:800;color:var(--purple);text-shadow:0 0 10px var(--purple-glow);}
+.pat-cur{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);}
 .pat-sep{color:var(--text-ghost);font-size:14px;}
 .pat-tgt-lbl{font-size:11px;color:var(--text-faint);}
 .pat-tgt-inp{font-family:var(--mono);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--yellow);width:80px;text-align:right;outline:none;}
 .pat-bar-wrap{height:5px;background:var(--border-soft);border-radius:99px;margin-bottom:9px;}
 .pat-bar-fill{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--purple),#c4b5fd);transition:width .4s;box-shadow:0 0 6px var(--purple-glow);}
 .pat-meta{display:flex;justify-content:space-between;align-items:center;}
-.pat-pct{font-family:var(--mono);font-size:10px;color:var(--text-faint);}
+.pat-pct{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);}
 .pat-eta{font-family:var(--mono);font-size:10px;color:var(--text-faint);}
 .snap-btn{font-family:var(--sans);font-size:11px;font-weight:600;padding:5px 11px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--purple);transition:all .15s;}
 .snap-btn:hover{border-color:var(--purple);box-shadow:0 0 7px var(--purple-glow);}
@@ -534,22 +542,42 @@ textarea::placeholder{color:var(--text-ghost);}
 <div id="toast"></div>
 
 <!-- FITOS CONTEXTUAL FAB -->
-<button id="fitos-fab" onclick="fitosFabAction()" style="display:none;position:fixed;bottom:78px;bottom:calc(78px + env(safe-area-inset-bottom));right:24px;padding:0 18px;height:44px;border-radius:22px;background:var(--green);border:none;color:#0a0a0a;font-weight:800;font-size:12px;cursor:pointer;z-index:8000;box-shadow:0 4px 20px #0008;white-space:nowrap"></button>
+<button id="fitos-fab" onclick="fitosFabAction()" style="display:none;position:fixed;bottom:132px;bottom:calc(132px + env(safe-area-inset-bottom));right:24px;padding:0 18px;height:44px;border-radius:22px;background:var(--green);border:none;color:#0a0a0a;font-weight:800;font-size:12px;cursor:pointer;z-index:8000;box-shadow:0 4px 20px #0008;white-space:nowrap"></button>
 
 <!-- QUICK CAPTURE -->
-<button id="qc-fab" onclick="openQC()" title="Quick Capture (Ctrl+Space)" style="position:fixed;bottom:24px;bottom:calc(24px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--green);color:var(--green);font-size:20px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">⚡</button>
+<button id="qc-fab" onclick="openQC()" title="Quick Capture (Ctrl+Space)" style="position:fixed;bottom:78px;bottom:calc(78px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--green);color:var(--green);font-size:20px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">⚡</button>
+<button id="qa-fab" onclick="openQuickAdd()" title="Quick Add" style="position:fixed;bottom:24px;bottom:calc(24px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--blue);color:var(--blue);font-size:22px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">＋</button>
+<div id="qa-overlay" style="display:none;position:fixed;inset:0;background:var(--modal-overlay);z-index:9100;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:20px;width:min(420px,92vw);max-height:80vh;display:flex;flex-direction:column;gap:12px" id="qa-panel"></div>
+</div>
 
 <div id="qc-overlay" style="display:none;position:fixed;inset:0;background:var(--modal-overlay);z-index:9000;align-items:center;justify-content:center">
-  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:20px;width:min(560px,95vw);max-height:80vh;display:flex;flex-direction:column;gap:12px">
+  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:20px;width:min(560px,95vw);max-height:80vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--green);letter-spacing:.1em">⚡ QUICK CAPTURE</div>
       <button onclick="closeQC()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
     </div>
-    <div style="font-size:11px;color:var(--text-ghost);font-family:var(--sans);line-height:1.6">Una task per riga · <span style="color:var(--yellow)">#PROGETTO</span> · data: "7 luglio" o #lunedì · <span style="color:var(--text-faint)">!alta</span> priorità<br>Comandi: <span style="color:var(--text-faint)">ricetta lunedì: pranzo = Pasta al Pomodoro x1.5</span> · <span style="color:var(--text-faint)">pasti lunedì: pranzo=riso e pollo, cena=salmone</span> · <span style="color:var(--text-faint)">stretch lunedì: collo, schiena</span> · <span style="color:var(--text-faint)">spesa 40 abbonamento #KDP 15 luglio</span> · <span style="color:var(--text-faint)">#QUARTZICA: task1; task2</span></div>
-    <textarea id="qc-input" rows="8" placeholder="fare post TikTok #QUARTZICA&#10;call con cliente&#10;studiare copywriting #KDP" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:var(--sans);resize:vertical;line-height:1.7" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();submitQC()}"></textarea>
-    <select id="qc-date" style="display:none"></select>
-    <button onclick="submitQC()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:8px 20px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;align-self:flex-end">+ AGGIUNGI</button>
-    <div id="qc-preview" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-faint)"></div>
+    <div id="qc-step-input">
+      <div style="font-size:11px;color:var(--text-ghost);font-family:var(--sans);line-height:1.6;margin-bottom:10px">
+        Formato ufficiale — un blocco per entità:<br>
+        <span style="font-family:var(--mono);color:var(--text-faint);white-space:pre">Task
+titolo: Pubblicare video
+progetto: Quartzica
+priorità: alta</span><br>
+        Entità: Task · Obiettivo · Obiettivo Settimanale · Esercizio · Scheda Allenamento · Catalogo Esercizi · Pasto · Ricetta · Stretching · Peso · Entrata · Uscita · Spesa Pianificata · Asset · Carta · Habit · Nota · Idea · Link.<br>
+        Supportata anche la vecchia sintassi a riga singola (es. <span style="color:var(--text-faint)">peso 78.4</span>, <span style="color:var(--text-faint)">entrata: 200 stosa</span>, <span style="color:var(--yellow)">#PROGETTO</span>).
+      </div>
+      <textarea id="qc-input" rows="8" placeholder="fare post TikTok #QUARTZICA&#10;call con cliente&#10;studiare copywriting #KDP" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:var(--sans);resize:vertical;line-height:1.7" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();qcAnalyze()}"></textarea>
+      <select id="qc-date" style="display:none"></select>
+      <button onclick="qcAnalyze()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:8px 20px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;margin-top:10px">ANALIZZA →</button>
+    </div>
+    <div id="qc-step-result" style="display:none"></div>
+  </div>
+</div>
+<div id="boot-loading" style="position:fixed;inset:0;background:var(--bg);z-index:20000;display:flex;align-items:center;justify-content:center">
+  <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-ghost);letter-spacing:.1em;display:flex;align-items:center;gap:10px">
+    <span style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--green);animation:qaSpin .7s linear infinite;display:inline-block"></span>
+    CARICAMENTO…
   </div>
 </div>
 <div id="home">
@@ -711,6 +739,11 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g
 const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const chartTick=()=>cssVar('--chart-tick')||'#777';
 const chartGrid=()=>cssVar('--chart-grid')||'rgba(255,255,255,.08)';
+// v1 FIX: era chiamata in renderPatChart/renderAssetDetailChart ma non era mai stata definita — ReferenceError
+function fitCanvas(el,pad=28,minW=280){
+  const w=el.parentElement?el.parentElement.clientWidth:0;
+  if(w>0)el.width=Math.max(minW,w-pad);
+}
 // v1: escape per stringhe dentro handler JS inline (uso: esc(jstr(x)))
 const jstr=s=>String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
@@ -756,22 +789,28 @@ function syncAssets(){
 // Modal nativa (sostituisce prompt/confirm bloccanti su iOS)
 function modal(type,msg,cb){
   const ov=document.createElement('div');
+  ov.className='qa-overlay-anim';
   ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
   const box=document.createElement('div');
+  box.className='qa-panel-anim';
   box.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:320px;width:100%;font-family:var(--sans)';
+  const closeModalAnim=()=>{
+    ov.style.transition='opacity .15s ease';ov.style.opacity='0';
+    setTimeout(()=>ov.remove(),150);
+  };
   if(type==='prompt'){
     box.innerHTML=`<div style="font-size:13px;color:var(--text);margin-bottom:12px">${msg}</div><input id="_mi" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans)" autofocus><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button id="_mc" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button><button id="_mok" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">OK</button></div>`;
     document.body.appendChild(ov);ov.appendChild(box);
     const inp=box.querySelector('#_mi');
-    box.querySelector('#_mok').onclick=()=>{const v=inp.value.trim();document.body.removeChild(ov);if(v)cb(v);};
-    box.querySelector('#_mc').onclick=()=>document.body.removeChild(ov);
-    inp.onkeydown=e=>{if(e.key==='Enter'){const v=inp.value.trim();document.body.removeChild(ov);if(v)cb(v);}if(e.key==='Escape')document.body.removeChild(ov);};
+    box.querySelector('#_mok').onclick=()=>{const v=inp.value.trim();closeModalAnim();if(v)cb(v);};
+    box.querySelector('#_mc').onclick=closeModalAnim;
+    inp.onkeydown=e=>{if(e.key==='Enter'){const v=inp.value.trim();closeModalAnim();if(v)cb(v);}if(e.key==='Escape')closeModalAnim();};
     setTimeout(()=>inp.focus(),50);
   } else {
     box.innerHTML=`<div style="font-size:13px;color:var(--text);margin-bottom:16px">${msg}</div><div style="display:flex;gap:8px;justify-content:flex-end"><button id="_mc" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button><button id="_mok" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--red);color:var(--on-accent);cursor:pointer">CONFERMA</button></div>`;
     document.body.appendChild(ov);ov.appendChild(box);
-    box.querySelector('#_mok').onclick=()=>{document.body.removeChild(ov);cb(true);};
-    box.querySelector('#_mc').onclick=()=>document.body.removeChild(ov);
+    box.querySelector('#_mok').onclick=()=>{closeModalAnim();cb(true);};
+    box.querySelector('#_mc').onclick=closeModalAnim;
   }
 }
 
@@ -784,6 +823,7 @@ function toggleTheme(){
   const next=isLight?'dark':'light';
   if(next==='light')document.documentElement.setAttribute('data-theme','light');
   else document.documentElement.removeAttribute('data-theme');
+  applyBgDirect(next);
   const btn=document.getElementById('theme-btn');
   if(btn)btn.textContent=next==='light'?'☀':'🌙';
   sv('theme',next);
@@ -799,6 +839,13 @@ function toggleTheme(){
     if(_openStatColor)renderStatChart(_openStatId,_openStatColor);
   }
 }
+// v1 SPEC 09: forza lo sfondo di <html> e <body> via stile inline — la massima specificità
+// CSS possibile, vince su qualunque regola del foglio di stile indipendentemente dalla causa
+function applyBgDirect(theme){
+  const bg=theme==='light'?'#F5F7FA':'#0F1115';
+  document.documentElement.style.backgroundColor=bg;
+  document.body.style.backgroundColor=bg;
+}
 function applyTheme(){
   const theme=ld('theme','dark');
   if(theme==='light'){
@@ -806,11 +853,12 @@ function applyTheme(){
     const btn=document.getElementById('theme-btn');
     if(btn)btn.textContent='☀';
   }
+  applyBgDirect(theme);
   updateThemeColorMeta(theme);
 }
 applyTheme();
 
-function toast(msg='SALVATO'){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1300);}
+function toast(msg='SALVATO',variant='success'){const t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('neutral',variant==='neutral');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1300);}
 
 // ── INIT DATA ─────────────────────────────────────────────
 function initData(){
@@ -952,9 +1000,9 @@ const PD=[
   {id:'risparmio',tag:'CONTO RISPARMIO',color:'#34d399',sub:'7% compound · versamento mensile',folder:'FINANZA & TRADING',hasInv:'risparmio'},
   {id:'crypto',tag:'CRYPTO',color:'#f59e0b',sub:'Portfolio crypto',folder:'FINANZA & TRADING',hasInv:'crypto'},
   {id:'trading',tag:'TRADING',color:'#818cf8',sub:'Studio · Demo · Strategia',folder:'FINANZA & TRADING',tasks0:['Studiare analisi tecnica','Aprire conto demo','Testare prima strategia','Leggere 1 libro al mese'],goals0:['Primo mese demo completato','Strategia definita e testata','Aprire conto reale','Prima settimana in profitto'],note0:'Obiettivo a lungo termine: trading come fonte di reddito principale.'},
-  {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'allenamento'},
-  {id:'alimentazione',tag:'ALIMENTAZIONE',color:'#fb923c',sub:'Piano settimanale · peso corporeo',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'alimentazione'},
-  {id:'stretching',tag:'STRETCHING',color:'#a855f7',sub:'Routine settimanali · mobilità',folder:'ALIMENTAZIONE & ALLENAMENTO',hasInv:'stretching'}
+  {id:'allenamento',tag:'ALLENAMENTO',color:'#ef4444',sub:'Schede settimanali · progressione pesi',hasInv:'allenamento'},
+  {id:'alimentazione',tag:'ALIMENTAZIONE',color:'#fb923c',sub:'Piano settimanale · peso corporeo',hasInv:'alimentazione'},
+  {id:'stretching',tag:'STRETCHING',color:'#a855f7',sub:'Routine settimanali · mobilità',hasInv:'stretching'}
 ];
 // Fix #2: applica folder override salvati da drag&drop al boot
 PD.forEach(p=>{
@@ -1089,7 +1137,7 @@ function recoverRecurDebt(projId,recurIdx){
   sv('debt_recovered_'+projId,recovered);
   renderHome();
   if(document.getElementById('det')?.style.display!=='none')openProj(projId);
-  toast('DEBITO RECUPERATO');
+  toast('✓ Task recuperata');
 }
 function forgiveRecurDebt(projId,recurIdx){
   modal('confirm','Perdonare questo debito? Si azzera senza recuperarlo.',()=>{
@@ -1101,7 +1149,7 @@ function forgiveRecurDebt(projId,recurIdx){
     sv('debt_recovered_'+projId,recovered);
     renderHome();
     if(document.getElementById('det')?.style.display!=='none')openProj(projId);
-    toast('DEBITO PERDONATO');
+    toast('✓ Task perdonata','neutral');
   });
 }
 function forgiveWeekDebt(projId){
@@ -1110,7 +1158,7 @@ function forgiveWeekDebt(projId){
     sv('debt_week_forgiven_'+projId,false);
     renderHome();
     if(document.getElementById('det')?.style.display!=='none')openProj(projId);
-    toast('DEBITO PERDONATO');
+    toast('✓ Task perdonata','neutral');
   });
 }
 
@@ -1129,7 +1177,14 @@ function renderTopbar(){
   const patEl=document.getElementById('tb-pat');
   const taskEl=document.getElementById('tb-tasks');
   const overdueEl=document.getElementById('tb-overdue');
-  if(patEl)patEl.textContent='€'+pat.toLocaleString('it-IT',{maximumFractionDigits:0});
+  if(patEl){
+    const newTxt='€'+pat.toLocaleString('it-IT',{maximumFractionDigits:0});
+    if(patEl.textContent!==newTxt&&patEl.textContent!==''){ // v1: pulse solo se il valore è davvero cambiato
+      patEl.classList.add('qa-pulse');
+      setTimeout(()=>patEl.classList.remove('qa-pulse'),500);
+    }
+    patEl.textContent=newTxt;
+  }
   if(taskEl)taskEl.textContent=openTasks+' task aperti · '+doneTasks+' fatti';
   if(overdueEl){
     const overdue=countOverdueExpenses();
@@ -1308,14 +1363,23 @@ function renderPatChart(){
     `;
   }
 
-  if(_pc){_pc.destroy();_pc=null;}
-  fitCanvas(el);
-  _pc=new Chart(el,{
+  const _labels=recentDays.map(d=>{const dt=parseDayKey(d);return dt.getDate()+'/'+(dt.getMonth()+1);});
+  const _data=recentDays.map(d=>dayBuckets[d].patrimonio);
+  if(_pc&&_pc.data.labels.length===_labels.length){
+    // v1: aggiornamento in-place, senza flicker — stesso numero di punti, aggiorniamo solo i valori
+    _pc.data.labels=_labels;
+    _pc.data.datasets[0].data=_data;
+    _pc.data.datasets[0].pointRadius=recentDays.length>30?0:3;
+    _pc.update('none');
+  } else {
+    if(_pc){_pc.destroy();_pc=null;}
+    fitCanvas(el);
+    _pc=new Chart(el,{
     type:'line',
     data:{
-      labels:recentDays.map(d=>{const dt=parseDayKey(d);return dt.getDate()+'/'+(dt.getMonth()+1);}),
+      labels:_labels,
       datasets:[{
-        data:recentDays.map(d=>dayBuckets[d].patrimonio),
+        data:_data,
         borderColor:'#a78bfa',
         backgroundColor:'#a78bfa18',
         fill:true,
@@ -1338,6 +1402,7 @@ function renderPatChart(){
       }
     }
   });
+  }
 }
 
 // ── HOME ─────────────────────────────────────────────────
@@ -1752,12 +1817,11 @@ function renderAgenda(){
 
   // ── Filtro progetto + selezione multipla ──
   h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <span style="font-family:var(--sans);font-weight:600;font-size:9px;color:var(--text-faint);flex-shrink:0">FILTRA:</span>
-    <select onchange="setAgendaFilter(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;padding:6px 9px;border-radius:8px;outline:none;flex:1">
+    <select onchange="setAgendaFilter(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;padding:2px 9px;border-radius:8px;outline:none;flex:1;height:30px">
       <option value="">Tutti i progetti</option>
       ${allProjs.map(p=>`<option value="${esc(p.id)}"${_agendaFilter===p.id?' selected':''}>${esc(p.tag)}</option>`).join('')}
     </select>
-    <button onclick="toggleAgendaSelectMode()" style="font-family:var(--sans);font-size:9px;font-weight:700;padding:6px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;flex-shrink:0;white-space:nowrap">${_agendaSelectMode?'✕ ANNULLA':'☑ SELEZIONA'}</button>
+    <button onclick="toggleAgendaSelectMode()" style="font-family:var(--sans);font-size:9px;font-weight:700;padding:0 10px;height:30px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;flex-shrink:0;white-space:nowrap">${_agendaSelectMode?'✕ ANNULLA':'☑ SELEZIONA'}</button>
   </div>`;
   h+='</div>';
 
@@ -1843,7 +1907,7 @@ function renderAgenda(){
       });
       h+='</div>';
     } else if(!isPast){
-      h+=`<div style="font-size:12px;color:var(--text-ghost);padding:4px 0;font-family:var(--sans)">niente pianificato</div>`;
+      h+=`<div style="font-size:12px;color:var(--text-ghost);padding:4px 0;font-family:var(--sans)">✓ niente in programma</div>`;
     }
 
     if(!isPast){
@@ -2119,6 +2183,13 @@ function doSearch(q){
       }
     });
   }
+  // Note/Idee/Link/Prompt create da Quick Add
+  ld('quickNotes',[]).forEach(n=>{
+    if(n.testo&&n.testo.toLowerCase().includes(ql)){
+      const typeLabel={nota:'NOTA',idea:'IDEA',link:'LINK',prompt:'PROMPT'}[n.tipo]||'NOTA';
+      results.push({type:typeLabel,proj:'',color:'var(--blue)',text:n.testo,id:null});
+    }
+  });
   if(!results.length){res.innerHTML='<div class="sr-item" style="color:var(--text-ghost)">Nessun risultato.</div>';res.style.display='block';return;}
   res.innerHTML='<div class="search-results">'+results.slice(0,10).map(r=>`<div class="sr-item" onclick="${r._ricettaId?`sv('alim_view',{mode:'ricetta',ricettaId:'${r._ricettaId}'});openProj('alimentazione')`:(r.id?`openProj('${r.id}')`:'')};document.getElementById('srch').value='';document.getElementById('srch-res').style.display='none'"><span class="sr-tag" style="color:${r.color}">${esc(r.type)}</span><span class="sr-tag">${esc(r.proj)}</span><span>${highlight(r.text,q)}</span></div>`).join('')+'</div>';
   res.style.display='block';
@@ -2544,7 +2615,7 @@ function buildStd(p){
   </div>
   <div class="card" id="agtask-${id}">`;
   if(!_agTodayProj.length){
-    h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+    h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">✓ Nessuna task per oggi</div>`;
   }
   _agTodayProj.forEach((t,i)=>{
     const _agKey=agendaKey(_selDate); // v1 FIX timezone
@@ -2968,7 +3039,7 @@ function buildVinted(p){
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-vinted" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('vinted')"><button class="abtn" onclick="addRecur('vinted')">+ ADD</button></div></div></div>`;
   h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">${_vinted_agToday.filter(t=>t.done).length}/${_vinted_agToday.length} oggi</span></div><div class="card" id="agtask-vinted">`;
-  if(!_vinted_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+  if(!_vinted_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">✓ Nessuna task per oggi</div>`;
   _vinted_agToday.forEach((t,i)=>{
     const _agK=agendaKey(_vinted_today2);
     const _allT=getAgendaDay(_vinted_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
@@ -2996,13 +3067,27 @@ justify-content:space-between;align-items:center;margin:1rem 0 6px">
     <button class="ib" onclick="fV('Donna',this)">DONNA</button>
     <button class="ib" onclick="fV('Accessori',this)">ACCESSORI</button>
     <button class="ib" onclick="fV('Altro',this)">ALTRO</button></div>
-  <table><thead><tr><th>Nome</th><th>Cat.</th><th>Stato</th><th>Qty</th><th>Prezzo</th><th></th></tr></thead><tbody id="vtb">`;
-  inv.forEach((it,i)=>h+=`<tr data-cat="${esc(it.cat)}"><td><input value="${esc(it.nome)}" onchange="vEd(${i},'nome',this.value)"></td><td><input value="${esc(it.cat)}" style="width:65px" onchange="vEd(${i},'cat',this.value)"></td><td><select onchange="vEd(${i},'stato',this.value)"><option${it.stato==='In Stock'?' selected':''}>In Stock</option><option${it.stato==='In Vendita'?' selected':''}>In Vendita</option><option${it.stato==='Venduto'?' selected':''}>Venduto</option><option${it.stato==='Da listare'?' selected':''}>Da listare</option></select></td><td><input type="number" min="0" value="${it.qty}" style="width:34px;font-family:Space Mono,monospace" onchange="vEd(${i},'qty',+this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:55px;font-family:Space Mono,monospace;color:var(--green)" onchange="vEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vDel(${i})">×</button></td></tr>`);
-  h+=`</tbody></table></div>
+  <div id="vtb">${inv.map((it,i)=>`
+    <div class="vinted-row" data-cat="${esc(it.cat)}" style="padding:10px 4px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input value="${esc(it.nome)}" onchange="vEd(${i},'nome',this.value)" style="flex:1;min-width:0;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:600;outline:none">
+        <button class="xb" style="color:var(--text-faint);flex-shrink:0" onclick="vDel(${i})">×</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input value="${esc(it.cat)}" onchange="vEd(${i},'cat',this.value)" style="width:76px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text-faint)">
+        <select onchange="vEd(${i},'stato',this.value)" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text-faint);flex:1;min-width:90px"><option${it.stato==='In Stock'?' selected':''}>In Stock</option><option${it.stato==='In Vendita'?' selected':''}>In Vendita</option><option${it.stato==='Venduto'?' selected':''}>Venduto</option><option${it.stato==='Da listare'?' selected':''}>Da listare</option></select>
+        <input type="number" min="0" value="${it.qty}" onchange="vEd(${i},'qty',+this.value)" style="width:44px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text);text-align:center;font-family:var(--mono)" title="Quantità">
+        <input value="€${it.prezzo.toFixed(2)}" onchange="vEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)" style="width:66px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--green);text-align:right;font-family:var(--mono)">
+      </div>
+    </div>`).join('')}</div></div>
   <div class="slbl">Registro vendite <span style="color:${p.color};cursor:pointer" onclick="addVSold()">+ ADD</span></div>
-  <div class="card"><table><thead><tr><th>Nome</th><th>Prezzo</th><th>Data</th><th></th></tr></thead><tbody>`;
-  sold.forEach((it,i)=>h+=`<tr><td><input value="${esc(it.nome)}" onchange="vsEd(${i},'nome',this.value)"></td><td><input value="€${it.prezzo.toFixed(2)}" style="width:65px;font-family:Space Mono,monospace;color:var(--green)" onchange="vsEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><input value="${esc(it.data)}" style="width:85px" onchange="vsEd(${i},'data',this.value)"></td><td><button class="xb" style="color:var(--text-faint)" onclick="vsDel(${i})">×</button></td></tr>`);
-  h+=`</tbody></table></div>`;
+  <div class="card">${sold.map((it,i)=>`
+    <div style="padding:9px 4px;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <input value="${esc(it.nome)}" onchange="vsEd(${i},'nome',this.value)" style="flex:1;min-width:90px;background:transparent;border:none;color:var(--text);font-size:13px;outline:none">
+      <input value="€${it.prezzo.toFixed(2)}" onchange="vsEd(${i},'prezzo',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)" style="width:66px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--green);text-align:right;font-family:var(--mono)">
+      <input value="${esc(it.data)}" onchange="vsEd(${i},'data',this.value)" style="width:76px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text-faint);font-family:var(--mono)">
+      <button class="xb" style="color:var(--text-faint)" onclick="vsDel(${i})">×</button>
+    </div>`).join('')}</div>`;
   h+=goalsH('vinted',_vinted_goals,_vinted_gc,_vinted_color)+speseH('vinted',ld('spese_vinted',[]));
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_vinted',this.value);toast()">${esc(ld('note_vinted',''))}</textarea>`;
   return h;
@@ -3014,7 +3099,7 @@ function addVItem(){const inv=ld('vinInv',[]);inv.push({nome:'Nuovo articolo',ca
 function vsEd(i,k,v){const s=ld('vinSold',[]);s[i][k]=v;sv('vinSold',s);toast();}
 function vsDel(i){const s=ld('vinSold',[]);s.splice(i,1);sv('vinSold',s);openProj('vinted');}
 function addVSold(){const s=ld('vinSold',[]);s.push({nome:'Nuova vendita',prezzo:0,data:new Date().toLocaleDateString('it-IT')});sv('vinSold',s);openProj('vinted');}
-function fV(c,b){document.querySelectorAll('.ifil .ib').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('#vtb tr[data-cat]').forEach(r=>r.style.display=(c==='tutti'||r.dataset.cat===c)?'':'none');}
+function fV(c,b){document.querySelectorAll('.ifil .ib').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('#vtb .vinted-row[data-cat]').forEach(r=>r.style.display=(c==='tutti'||r.dataset.cat===c)?'':'none');}
 
 // ── CARTE ────────────────────────────────────────────────
 function buildCarte(p){
@@ -3061,7 +3146,7 @@ function buildCarte(p){
   });
   h+=`<div class="arow"><input class="ain" id="recur-inp-carte" placeholder="+ task ricorrente…" onkeydown="if(event.key==='Enter')addRecur('carte')"><button class="abtn" onclick="addRecur('carte')">+ ADD</button></div></div></div>`;
   h+=`<div><div class="slbl">Task giornaliere <span style="font-size:9px;color:var(--text-faint)">${_carte_agToday.filter(t=>t.done).length}/${_carte_agToday.length} oggi</span></div><div class="card" id="agtask-carte">`;
-  if(!_carte_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">Nessuna task per oggi.</div>`;
+  if(!_carte_agToday.length)h+=`<div style="padding:10px 14px;font-size:12px;color:var(--text-ghost)">✓ Nessuna task per oggi</div>`;
   _carte_agToday.forEach((t,i)=>{
     const _agK=agendaKey(_carte_today2);
     const _allT=getAgendaDay(_carte_today2);const _ri=_allT.findIndex(x=>x.ts===t.ts&&x.text===t.text);
@@ -3096,7 +3181,7 @@ justify-content:space-between;align-items:center;margin:1rem 0 6px">
     <button class="ib" onclick="fC('Dragon Ball',this)">DBZ</button>
     <button class="ib" style="color:var(--green);border-color:var(--green-glow)" onclick="sortCarte('ebay')">↓ VALORE</button>
     <button class="ib" style="color:var(--red);border-color:var(--red-glow)" onclick="sortCarte('acquisto')">↓ COSTO</button></div>
-  <table><thead><tr><th>Nome</th><th>Serie</th><th>Acq.</th><th>eBay</th><th>Stato</th><th></th></tr></thead><tbody id="ctb"></tbody></table>
+  <div id="ctb"></div>
   <div class="loadmore" id="lm" onclick="cPage+=20;renderCarteRows()">↓ MOSTRA ALTRE</div></div>`;
   h+=goalsH('carte',_carte_goals,_carte_gc,_carte_color)+speseH('carte',ld('spese_carte',[]));
   h+=`<div class="slbl">Note</div><textarea rows="3" onblur="sv('note_carte',this.value);toast()">${esc(ld('note_carte',''))}</textarea>`;
@@ -3108,7 +3193,21 @@ function renderCarteRows(){
   const inv=ld('carteInv',[]);
   let list=inv.map((c,i)=>({...c,_i:i}));
   if(cFilter!=='tutti')list=list.filter(c=>c.stato===cFilter||c.serie===cFilter);
-  tb.innerHTML=list.slice(0,cPage).map(c=>`<tr><td><input value="${esc(c.nome)}" style="min-width:100px" onchange="cEd(${c._i},'nome',this.value)"></td><td><input value="${esc(c.serie)}" style="width:70px" onchange="cEd(${c._i},'serie',this.value)"></td><td><input value="${c.acquisto>0?'€'+c.acquisto.toFixed(2):'—'}" style="width:50px;font-family:'Space Mono',monospace;color:var(--red)" onchange="cEd(${c._i},'acquisto',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><input value="${c.ebay>0?'€'+c.ebay.toFixed(2):'—'}" style="width:50px;font-family:'Space Mono',monospace;color:var(--green)" onchange="cEd(${c._i},'ebay',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)"></td><td><select onchange="cEd(${c._i},'stato',this.value)"><option${c.stato==='In Stock'?' selected':''}>In Stock</option><option${c.stato==='In Vendita'?' selected':''}>In Vendita</option><option${c.stato==='Venduta'?' selected':''}>Venduta</option></select></td><td><button class="xb" style="color:var(--text-faint)" onclick="cDel(${c._i})">×</button></td></tr>`).join('');
+  tb.innerHTML=list.slice(0,cPage).map(c=>`
+    <div style="padding:10px 4px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input value="${esc(c.nome)}" onchange="cEd(${c._i},'nome',this.value)" style="flex:1;min-width:0;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:600;outline:none">
+        <button class="xb" style="color:var(--text-faint);flex-shrink:0" onclick="cDel(${c._i})">×</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input value="${esc(c.serie)}" onchange="cEd(${c._i},'serie',this.value)" style="width:80px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text-faint)">
+        <select onchange="cEd(${c._i},'stato',this.value)" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:11px;color:var(--text-faint);flex:1;min-width:90px"><option${c.stato==='In Stock'?' selected':''}>In Stock</option><option${c.stato==='In Vendita'?' selected':''}>In Vendita</option><option${c.stato==='Venduta'?' selected':''}>Venduta</option></select>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:9px;color:var(--text-ghost)">Acq. <input value="${c.acquisto>0?'€'+c.acquisto.toFixed(2):'—'}" onchange="cEd(${c._i},'acquisto',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)" style="width:56px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:11px;color:var(--red);font-family:var(--mono)"></span>
+        <span style="font-size:9px;color:var(--text-ghost)">eBay <input value="${c.ebay>0?'€'+c.ebay.toFixed(2):'—'}" onchange="cEd(${c._i},'ebay',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)" style="width:56px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:11px;color:var(--green);font-family:var(--mono)"></span>
+      </div>
+    </div>`).join('');
   const lm=document.getElementById('lm');if(lm)lm.style.display=list.length>cPage?'block':'none';
 }
 function cEd(i,k,v){
@@ -3301,7 +3400,7 @@ function buildFitos(p){
   const pesoPrec=pesoStoria.length>=2?pesoStoria[pesoStoria.length-2]:null;
   const pesoDeltaPrec=lastPeso&&pesoPrec?(lastPeso.peso-pesoPrec.peso):0;
 
-  h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+  h+=`<div id="fitos-peso-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
     <div style="font-size:10px;color:var(--text-faint);font-weight:700;letter-spacing:.06em;margin-bottom:6px">PESO ATTUALE</div>
     <div style="display:flex;align-items:baseline;gap:6px">
       <span style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--text)">${lastPeso?lastPeso.peso+' kg':'—'}</span>
@@ -3837,6 +3936,9 @@ function allCloseFocusMode(){
   if(ov)ov.remove();
   renderHome();
   if(document.getElementById('det')?.style.display!=='none')openProj('allenamento');
+  const fitosView=document.getElementById('fitos-view');
+  if(fitosView&&fitosView.offsetParent!==null)renderFitosTab();
+  if(isTodayTabActive())renderTodayFocus();
 }
 
 function focusCurrentExercise(){
@@ -4145,6 +4247,9 @@ function strCloseFocusMode(){
   if(ov)ov.remove();
   renderHome();
   if(document.getElementById('det')?.style.display!=='none')openProj('stretching');
+  const fitosView=document.getElementById('fitos-view');
+  if(fitosView&&fitosView.offsetParent!==null)renderFitosTab();
+  if(isTodayTabActive())renderTodayFocus();
 }
 
 let _strFocusActionLock=false;
@@ -5200,10 +5305,20 @@ function alimAddPeso(){
   const val=parseFloat(inp?.value);
   if(!val||val<=0)return toast('Inserisci un peso valido');
   const storia=ld('alim_pesoStoria',[]);
-  storia.push({dataKey:new Date().toDateString(),data:new Date().toLocaleDateString('it-IT'),peso:val});
+  const dataKey=new Date().toDateString();
+  const existing=storia.findIndex(x=>x.dataKey===dataKey);
+  const entry={dataKey,data:new Date().toLocaleDateString('it-IT'),peso:val};
+  if(existing>=0)storia[existing]=entry;else storia.push(entry);
   sv('alim_pesoStoria',storia);
   if(inp)inp.value='';
-  openProj('alimentazione');toast('PESO REGISTRATO');
+  openProj('alimentazione');toast('✓ Peso registrato');
+  // v1 SPEC 03: pulse sulla card Peso di FitOS, se visibile
+  const fitosView=document.getElementById('fitos-view');
+  if(fitosView&&fitosView.offsetParent!==null){
+    renderFitosTab();
+    const card=document.getElementById('fitos-peso-card');
+    if(card){card.classList.add('qa-pulse');setTimeout(()=>card.classList.remove('qa-pulse'),500);}
+  }
 }
 
 // ── CONTO RISPARMIO ──────────────────────────────────────
@@ -5334,19 +5449,25 @@ function buildCrypto(p){
   </div>
   <div class="slbl">COIN <span style="color:${p.color};cursor:pointer;font-size:10px" onclick="addCoin()">+ ADD</span></div>`;
   if(inv.length){
-    h+=`<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--text-faint);font-family:'Space Mono',monospace;font-size:10px"><th style="text-align:left;padding:4px 0">COIN</th><th style="text-align:right;padding:4px">QTÀ</th><th style="text-align:right;padding:4px">CARICO</th><th style="text-align:right;padding:4px">ATTUALE</th><th style="text-align:right;padding:4px">P&L</th><th></th></tr></thead><tbody>`;
+    h+=`<div class="card">`;
     inv.forEach((c,i)=>{
       const pl=(c.valAttuale||0)*c.qty - c.carico*c.qty;
-      h+=`<tr style="border-top:1px solid var(--border-soft)">
-        <td style="padding:6px 0;font-weight:600;color:var(--text)">${esc(c.nome)}</td>
-        <td style="text-align:right;padding:4px;color:var(--text-dim)">${c.qty}</td>
-        <td style="text-align:right;padding:4px;color:var(--text-dim)">€${(c.carico*c.qty).toFixed(0)}</td>
-        <td style="text-align:right;padding:4px"><input type="number" value="${(c.valAttuale||0)}" style="width:64px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:11px;color:var(--text);text-align:right" onchange="cryptoUpd(${i},this.value)" placeholder="0"></td>
-        <td style="text-align:right;padding:4px;color:${pl>=0?'var(--green)':'var(--red)'}">${pl>=0?'+':''}€${pl.toFixed(0)}</td>
-        <td style="text-align:right;padding:4px"><button class="xb" style="color:var(--text-faint)" onclick="cryptoDel(${i})">×</button></td>
-      </tr>`;
+      h+=`<div style="padding:10px 4px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-weight:600;color:var(--text);font-size:13px">${esc(c.nome)}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${pl>=0?'var(--green)':'var(--red)'}">${pl>=0?'+':''}€${pl.toFixed(0)}</span>
+            <button class="xb" style="color:var(--text-faint)" onclick="cryptoDel(${i})">×</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--text-ghost)">
+          <span>Qtà ${c.qty}</span>
+          <span>Carico €${(c.carico*c.qty).toFixed(0)}</span>
+          <span style="display:flex;align-items:center;gap:4px">Attuale <input type="number" value="${(c.valAttuale||0)}" style="width:60px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:11px;color:var(--text);text-align:right" onchange="cryptoUpd(${i},this.value)" placeholder="0"></span>
+        </div>
+      </div>`;
     });
-    h+=`</tbody></table>`;
+    h+=`</div>`;
   } else {
     h+=`<div style="color:var(--text-ghost);font-size:12px;padding:12px 0">Nessuna coin. Premi + ADD per aggiungere.</div>`;
   }
@@ -5663,14 +5784,14 @@ function renderFinanzeDashboard(){
   const fmt=d=>d===null?'—':((d>=0?'+':'')+'€'+d.toLocaleString('it-IT',{maximumFractionDigits:0}));
   const col=d=>d===null?'var(--text-ghost)':(d>=0?'var(--green)':'var(--red)');
   el.innerHTML=`
-    <div style="margin-bottom:10px">
+    <div style="margin-bottom:12px">
       <div style="font-size:10px;color:var(--text-faint);font-weight:600;letter-spacing:.04em;margin-bottom:2px">PATRIMONIO</div>
-      <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--text)">€${pat.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+      <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--text)">€${pat.toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">OGGI</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dGiorno)}">${fmt(dGiorno)}</div></div>
-      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">SETTIMANA</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dSettimana)}">${fmt(dSettimana)}</div></div>
-      <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px">30 GIORNI</div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(d30)}">${fmt(d30)}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0"><span style="font-size:11px;color:var(--text-faint)">Oggi</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dGiorno)}">${fmt(dGiorno)}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0"><span style="font-size:11px;color:var(--text-faint)">Settimana</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(dSettimana)}">${fmt(dSettimana)}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0"><span style="font-size:11px;color:var(--text-faint)">30 giorni</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col(d30)}">${fmt(d30)}</span></div>
     </div>
   `;
 }
@@ -5765,7 +5886,7 @@ function deleteTx(ts){
 function renderTxMonth(){
   const el=document.getElementById('tx-month');if(!el)return;
   const txs=txThisMonth();
-  if(!txs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-ghost);padding:4px 0">Nessuna transazione questo mese.</div>';return;}
+  if(!txs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-ghost);padding:4px 0">Ancora nessun movimento questo mese — registra la prima entrata o uscita qui sopra.</div>';return;}
   // v1 SPEC: raggruppa per giorno (Oggi/Ieri/data) invece di lista piatta
   const today=new Date();today.setHours(0,0,0,0);
   const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
@@ -5853,7 +5974,7 @@ function renderSpese(){
   allProjs.forEach(p=>{ld('spese_'+p.id,[]).forEach((s,i)=>all.push({...s,proj:p.tag,color:p.color,_projId:p.id,_idx:i}));});
   ld('speseGen',[]).forEach((s,i)=>all.push({...s,proj:null,color:'var(--text-ghost)',_idx:i}));
   const unpaid=all.filter(s=>!s.paid);
-  if(!unpaid.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuna spesa pianificata.</div>';return;}
+  if(!unpaid.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">✓ Nessuna spesa in arrivo</div>';return;}
   // v1 SPEC: ordina per data (le date non parsabili restano in coda, in ordine originale)
   unpaid.sort((a,b)=>{
     const da=parseSpesaData(a.data),db=parseSpesaData(b.data);
@@ -6156,7 +6277,7 @@ function renderTodayFocus(){
       <button onclick="setOggiSort('orario')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='orario'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='orario'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='orario'?'var(--bg)':'var(--text-faint)'};cursor:pointer">ORARIO</button>
       <button onclick="toggleAgendaSelectMode();renderTodayFocus()" style="flex-shrink:0;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;white-space:nowrap">${_agendaSelectMode?'✕':'☑'}</button>
     </div>`;
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;margin-bottom:12px">';
+    h+='<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px">';
   
     // ── COLONNA SX: task ──
     h+='<div style="background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">';
@@ -6269,7 +6390,7 @@ function renderTodayFocus(){
     }
   
     if(!hasAnyTask){
-      h+='<div style="padding:20px;font-size:12px;color:var(--text-ghost);text-align:center">Nessuna task per oggi</div>';
+      h+='<div style="padding:20px;font-size:12px;color:var(--text-ghost);text-align:center">✓ Nessuna attività pianificata per oggi</div>';
     }
     h+='</div>'; // fine col sx
   
@@ -6305,7 +6426,7 @@ function renderTodayFocus(){
         <span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600">${alimDone}/${pastiConTesto.length}</span>
       </div>`;
       if(!pastiConTesto.length){
-        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.5)">Nessun pasto pianificato</div>';
+        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.5)">✓ Nessun pasto da completare</div>';
       } else {
         pastiConTesto.forEach(pasto=>{
           const realIdx=schedaA.pasti.indexOf(pasto);
@@ -6334,7 +6455,7 @@ function renderTodayFocus(){
         <span style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600">${allDone}/${scheda.esercizi.length}</span>
       </div>`;
       if(!scheda.esercizi.length){
-        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.3)">Nessun esercizio</div>';
+        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.3)">✓ Giornata di riposo</div>';
       } else {
         scheda.esercizi.forEach((es,i)=>{
           const isChecked=!!chAll[dIdx+'_'+i];
@@ -6527,7 +6648,12 @@ function quickAddToCard(id){
 function migrateData(){
   const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   if(!folders.includes('FINANZA & TRADING')){folders.push('FINANZA & TRADING');sv('folders',folders);}
-  if(!folders.includes('ALIMENTAZIONE & ALLENAMENTO')){folders.push('ALIMENTAZIONE & ALLENAMENTO');sv('folders',folders);}
+  // v1 FIX: 'ALIMENTAZIONE & ALLENAMENTO' non è più un folder valido — FitOS è il punto d'accesso definitivo.
+  // Pulizia una tantum per chi lo aveva già salvato da una versione precedente (prima veniva ri-aggiunto ad ogni avvio).
+  if(folders.includes('ALIMENTAZIONE & ALLENAMENTO')){
+    sv('folders',folders.filter(f=>f!=='ALIMENTAZIONE & ALLENAMENTO'));
+    if(_homeFolder==='ALIMENTAZIONE & ALLENAMENTO')_homeFolder=null;
+  }
   // Rimuove "Allenamento" dalle abitudini se presente (ora è un progetto a parte)
   if(!ld('all_habitMigrated',false)){
     const habits=ld('habits',[]);
@@ -6563,7 +6689,11 @@ function bootApp(){
   },1500);
 }
 let _booted=false;
-function safeBoot(){if(_booted)return;_booted=true;bootApp();}
+function safeBoot(){
+  if(_booted)return;_booted=true;bootApp();
+  const bl=document.getElementById('boot-loading');
+  if(bl){bl.style.transition='opacity .25s ease';bl.style.opacity='0';setTimeout(()=>bl.remove(),250);}
+}
 setInterval(()=>{if(document.visibilityState==='visible')renderTopbar();},60000);
 function tryFirebaseBoot(){
   if(window._fbReady&&window._fbLoadAll){syncFromFirebase(safeBoot);}
@@ -6738,9 +6868,443 @@ function _qcDateLabel(d){
   return QC_DAY_NAMES[d.getDay()]+' '+d.getDate()+' '+QC_MONTH_NAMES[d.getMonth()];
 }
 
+// ══════════════════════════════════════════════════════════
+// QUICK ADD — aggiunta rapidissima di una singola informazione
+// Riusa lo stesso parser e lo stesso database della Quick Capture.
+// ══════════════════════════════════════════════════════════
+const QA_CATS=[
+  ['organizza','📋','Organizza'],
+  ['salute','💪','Salute'],
+  ['denaro','💰','Denaro'],
+  ['note','📝','Note'],
+  ['collezione','📦','Collezione']
+];
+const QA_ACTIONS={
+  organizza:[['task','Task'],['obiettivo','Obiettivo'],['evento','Evento'],['progetto','Progetto']],
+  salute:[['allenamento','Allenamento'],['pasto','Pasto'],['peso','Peso'],['stretching','Stretching'],['acqua','Acqua']],
+  denaro:[['entrata','Entrata'],['uscita','Uscita'],['spesa','Spesa pianificata'],['asset','Asset']],
+  note:[['nota','Nota'],['idea','Idea'],['link','Link'],['prompt','Prompt']],
+  collezione:[['carta_acq','Carta acquistata'],['carta_vend','Carta venduta'],['carta_add','Carta aggiunta']]
+};
+const QA_LABELS={task:'Task',obiettivo:'Obiettivo',evento:'Evento',progetto:'Progetto',allenamento:'Allenamento',pasto:'Pasto',peso:'Peso',stretching:'Stretching',acqua:'Acqua',entrata:'Entrata',uscita:'Uscita',spesa:'Spesa pianificata',asset:'Asset',nota:'Nota',idea:'Idea',link:'Link',prompt:'Prompt',carta_acq:'Carta acquistata',carta_vend:'Carta venduta',carta_add:'Carta aggiunta'};
+const QA_PLACEHOLDERS={
+  task:'Comprare pollo domani',obiettivo:'Pubblicare 10 video #progetto',evento:'Riunione con cliente alle 15',progetto:'Nome del progetto',
+  pasto:'Yogurt greco e granola',peso:'61.4',acqua:'250 (ml — vuoto = un bicchiere)',
+  entrata:'250 Stosa',uscita:'18 benzina',spesa:'40 abbonamento #progetto 15 luglio',asset:'Liquidità 500',
+  nota:'Scrivi qui…',idea:'Scrivi qui…',link:'Incolla il link…',prompt:'Scrivi il prompt…',
+  carta_acq:'Charizard 50',carta_vend:'Charizard 80',carta_add:'Charizard'
+};
+const QA_NO_INPUT=['allenamento','stretching']; // azioni "un tap e via", senza campo di testo
+
+let _qaState={step:'cat',category:null,action:null,text:''};
+function openQuickAdd(){
+  _qaState={step:'cat',category:null,action:null,text:''};
+  const overlay=document.getElementById('qa-overlay');
+  overlay.style.display='flex';overlay.style.opacity='';
+  overlay.classList.add('qa-overlay-anim');
+  document.getElementById('qa-panel').classList.add('qa-panel-anim');
+  renderQuickAdd();
+}
+function closeQuickAdd(){
+  const overlay=document.getElementById('qa-overlay');
+  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';},150);
+}
+function qaSelectCategory(key){_qaState.category=key;_qaState.step='action';renderQuickAdd();}
+function qaSelectAction(key){
+  _qaState.action=key;
+  _qaState.step=QA_NO_INPUT.includes(key)?'preview':'input';
+  renderQuickAdd();
+  if(_qaState.step==='input')setTimeout(()=>document.getElementById('qa-input')?.focus(),50);
+}
+function qaBack(){
+  if(_qaState.step==='action'){_qaState.step='cat';_qaState.category=null;}
+  else if(_qaState.step==='input'){_qaState.step='action';_qaState.action=null;}
+  else if(_qaState.step==='preview'){_qaState.step=QA_NO_INPUT.includes(_qaState.action)?'action':'input';}
+  renderQuickAdd();
+}
+function qaGoPreview(){
+  const inp=document.getElementById('qa-input');
+  _qaState.text=inp?inp.value.trim():'';
+  if(!_qaState.text){toast('Scrivi qualcosa');return;}
+  _qaState.step='preview';
+  renderQuickAdd();
+}
+function qaGuessSlot(){
+  const h=new Date().getHours();
+  if(h<11)return 0; if(h<15)return 2; if(h<19)return 1; return 4;
+}
+function _qcDateLabelSafe(d){
+  const days=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  const months=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  return days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()];
+}
+
+// ── ogni azione: preview(text)→{ok,html,error} e commit(text)→bool ──
+const QA_HANDLERS={
+  task:{
+    preview:(t)=>{
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const p=parseQCLine(t,allProjs);
+      if(!p.text)return{ok:false,error:'Non ho capito cosa aggiungere'};
+      const dateLabel=p.isRecur?'ricorrente':_qcDateLabelSafe(p.targetDate||new Date());
+      return{ok:true,html:`<b>${esc(p.text)}</b><div class="qa-meta">${p.proj?esc(p.proj.tag):'nessun progetto'} · ${dateLabel}</div>`};
+    },
+    commit:(t)=>{
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const p=parseQCLine(t,allProjs);
+      if(!p.text)return false;
+      if(p.isRecur&&p.projId){
+        const arr=ld('recur_'+p.projId,[]);
+        if(!arr.includes(p.text)){arr.push(p.text);sv('recur_'+p.projId,arr);}
+      } else {
+        const d=p.targetDate||new Date();
+        const tasks=getAgendaDay(d);
+        tasks.push({text:p.text,projId:p.projId||'',done:false,ts:Date.now()+Math.random(),type:'day',pri:'none'});
+        setAgendaDay(d,tasks);
+      }
+      renderHome();renderTopbar();if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  evento:{ // stesso modello del Task — LifeOS non ha un'entità Evento separata
+    preview:(t)=>QA_HANDLERS.task.preview(t),
+    commit:(t)=>QA_HANDLERS.task.commit(t)
+  },
+  obiettivo:{
+    preview:(t)=>{
+      const m=t.match(/#([\wàèéìòù]+)/i);
+      if(!m)return{ok:false,error:'Aggiungi #progetto al testo per associarlo'};
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const tagRaw=m[1].toLowerCase();
+      const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
+      if(!proj)return{ok:false,error:'Progetto non trovato'};
+      const text=t.replace(m[0],'').trim();
+      if(!text)return{ok:false,error:'Manca il testo dell\'obiettivo'};
+      return{ok:true,html:`<b>${esc(text)}</b><div class="qa-meta">${esc(proj.tag)}</div>`};
+    },
+    commit:(t)=>{
+      const m=t.match(/#([\wàèéìòù]+)/i);
+      if(!m)return false;
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const tagRaw=m[1].toLowerCase();
+      const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
+      if(!proj)return false;
+      const text=t.replace(m[0],'').trim();
+      if(!text)return false;
+      const wg=ld('weekGoals_'+proj.id,[]);
+      if(!wg.includes(text)){wg.push(text);sv('weekGoals_'+proj.id,wg);}
+      if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  progetto:{
+    preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">nuovo progetto</div>`}:{ok:false,error:'Scrivi un nome'},
+    commit:(t)=>{
+      const nome=t.trim();if(!nome)return false;
+      const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+      const folder=folders[0]||'BRAND DIGITALE';
+      const id='cp_'+Date.now();
+      const color=PROJ_COLORS[Math.floor(Math.random()*PROJ_COLORS.length)];
+      const custom=ld('customProjs',[]);
+      custom.push({id,tag:nome.toUpperCase(),color,sub:'nuovo progetto',folder,tasks0:[],goals0:[],note0:''});
+      sv('customProjs',custom);
+      renderHome();
+      return true;
+    }
+  },
+  allenamento:{
+    preview:()=>{
+      const today=new Date();today.setHours(0,0,0,0);
+      const scheda=allGetSchede()[allWeekdayIdx(today)];
+      if(!scheda.esercizi.length)return{ok:false,error:'Nessun esercizio pianificato oggi'};
+      return{ok:true,html:`<b>${esc(scheda.nome)}</b><div class="qa-meta">${scheda.esercizi.length} esercizi verranno segnati come completati</div>`};
+    },
+    commit:()=>{
+      const today=new Date();today.setHours(0,0,0,0);
+      const todayIdx=allWeekdayIdx(today);
+      const scheda=allGetSchede()[todayIdx];
+      if(!scheda.esercizi.length)return false;
+      const todayKey=today.toDateString();
+      const all=ld('all_checksOggi',{});
+      if(!all[todayKey])all[todayKey]={};
+      scheda.esercizi.forEach((_,j)=>{all[todayKey][todayIdx+'_'+j]=true;});
+      sv('all_checksOggi',all);
+      renderHome();updateTodayBadge();if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  stretching:{
+    preview:()=>{
+      const today=new Date();today.setHours(0,0,0,0);
+      const scheda=strGetSchede()[allWeekdayIdx(today)];
+      if(!scheda.esercizi.length)return{ok:false,error:'Nessuna routine pianificata oggi'};
+      return{ok:true,html:`<b>${esc(scheda.nome)}</b><div class="qa-meta">${scheda.esercizi.length} routine verranno segnate come completate</div>`};
+    },
+    commit:()=>{
+      const today=new Date();today.setHours(0,0,0,0);
+      const todayIdx=allWeekdayIdx(today);
+      const scheda=strGetSchede()[todayIdx];
+      if(!scheda.esercizi.length)return false;
+      const todayKey=today.toDateString();
+      const all=ld('str_checksOggi',{});
+      if(!all[todayKey])all[todayKey]={};
+      scheda.esercizi.forEach((_,j)=>{all[todayKey][todayIdx+'_'+j]=true;});
+      sv('str_checksOggi',all);
+      renderHome();updateTodayBadge();if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  pasto:{
+    preview:(t)=>{
+      if(!t.trim())return{ok:false,error:'Scrivi cosa mangi'};
+      const slotNames=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
+      return{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">${slotNames[qaGuessSlot()]} · oggi</div>`};
+    },
+    commit:(t)=>{
+      if(!t.trim())return false;
+      const today=new Date();
+      const todayIdx=allWeekdayIdx(today);
+      const slotIdx=qaGuessSlot();
+      const schede=alimGetSchede();
+      schede[todayIdx].pasti[slotIdx].testo=t.trim();
+      sv('alim_schede',schede);
+      renderHome();if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  peso:{
+    preview:(t)=>{
+      const v=parseFloat(t.replace(',','.'));
+      if(!v)return{ok:false,error:'Scrivi un peso valido, es. 61.4'};
+      return{ok:true,html:`<b>${v} kg</b><div class="qa-meta">oggi</div>`};
+    },
+    commit:(t)=>{
+      const v=parseFloat(t.replace(',','.'));if(!v)return false;
+      const storia=ld('alim_pesoStoria',[]);
+      const dataKey=new Date().toDateString();
+      const entry={dataKey,peso:v,data:new Date().toLocaleDateString('it-IT')};
+      const existing=storia.findIndex(x=>x.dataKey===dataKey);
+      if(existing>=0)storia[existing]=entry;else storia.push(entry);
+      sv('alim_pesoStoria',storia);
+      if(isTodayTabActive())renderTodayFocus();
+      return true;
+    }
+  },
+  acqua:{
+    preview:(t)=>{
+      const v=t.trim()?parseInt(t):250;
+      if(!v||v<=0)return{ok:false,error:'Quantità non valida'};
+      return{ok:true,html:`<b>+${v} ml</b><div class="qa-meta">oggi</div>`};
+    },
+    commit:(t)=>{
+      const v=t.trim()?parseInt(t):250;if(!v||v<=0)return false;
+      const dk=dayKey(new Date());
+      const acqua=ld('acqua_log',{});
+      acqua[dk]=(acqua[dk]||0)+v;
+      sv('acqua_log',acqua);
+      return true;
+    }
+  },
+  entrata:{
+    preview:(t)=>{
+      const p=qcParseFinanza('entrata: '+t);
+      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 250 Stosa'};
+      return{ok:true,html:`<b>+€${p.importo}</b><div class="qa-meta">${esc(p.desc)} · ${esc(p.asset)}</div>`};
+    },
+    commit:(t)=>{
+      const p=qcParseFinanza('entrata: '+t);if(!p)return false;
+      moveAsset(p.asset,p.importo);logTx('entrata',p.desc,p.importo,p.asset);recordPatEvent();
+      renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();renderCharts();renderPatChart();
+      return true;
+    }
+  },
+  uscita:{
+    preview:(t)=>{
+      const p=qcParseFinanza('uscita: '+t);
+      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 18 benzina'};
+      return{ok:true,html:`<b>−€${p.importo}</b><div class="qa-meta">${esc(p.desc)} · ${esc(p.asset)}</div>`};
+    },
+    commit:(t)=>{
+      const p=qcParseFinanza('uscita: '+t);if(!p)return false;
+      moveAsset(p.asset,-p.importo);logTx('uscita',p.desc,p.importo,p.asset);recordPatEvent();
+      renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();renderCharts();renderPatChart();
+      return true;
+    }
+  },
+  spesa:{
+    preview:(t)=>{
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const p=qcParseSpesa('spesa '+t,allProjs);
+      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 40 abbonamento'};
+      const proj=allProjs.find(x=>x.id===p.projId);
+      return{ok:true,html:`<b>−€${p.importo}</b><div class="qa-meta">${esc(p.desc)}${proj?' · '+esc(proj.tag):''}${p.dataStr!=='—'?' · '+p.dataStr:''}</div>`};
+    },
+    commit:(t)=>{
+      const allProjs=[...PD,...ld('customProjs',[])];
+      const p=qcParseSpesa('spesa '+t,allProjs);if(!p)return false;
+      const key=p.projId?'spese_'+p.projId:'speseGen';
+      const list=ld(key,[]);
+      list.push({nome:p.desc,v:p.importo,data:p.dataStr,paid:false});
+      sv(key,list);
+      renderSpese();
+      return true;
+    }
+  },
+  asset:{
+    preview:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
+      if(!m)return{ok:false,error:'Scrivi nome e valore, es. Liquidità 500'};
+      return{ok:true,html:`<b>${esc(m[1].trim())}</b><div class="qa-meta">€${m[2]}</div>`};
+    },
+    commit:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);if(!m)return false;
+      const nome=m[1].trim(),valore=parseFloat(m[2].replace(',','.'));
+      const assets=ld('assets',[]);
+      const existing=assets.find(a=>a.l.toLowerCase()===nome.toLowerCase());
+      if(existing)existing.v=valore;
+      else assets.push({l:nome,v:valore,id:'asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});
+      sv('assets',assets);recordPatEvent();
+      renderAssets();renderCharts();renderPatTarget();renderPatChart();renderFinanzeDashboard();
+      return true;
+    }
+  },
+  nota:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">nota</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('nota',t)},
+  idea:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">idea</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('idea',t)},
+  link:{preview:(t)=>t.trim()?{ok:true,html:`<b style="word-break:break-all">${esc(t.trim())}</b><div class="qa-meta">link</div>`}:{ok:false,error:'Incolla un link'},commit:(t)=>qaSaveNote('link',t)},
+  prompt:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">prompt</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('prompt',t)},
+  carta_acq:{
+    preview:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
+      const nome=m?m[1].trim():t.trim();
+      if(!nome)return{ok:false,error:'Scrivi il nome della carta'};
+      return{ok:true,html:`<b>${esc(nome)}</b><div class="qa-meta">${m?'€'+m[2]+' · ':''}aggiunta allo stock</div>`};
+    },
+    commit:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
+      const nome=m?m[1].trim():t.trim();if(!nome)return false;
+      const prezzo=m?parseFloat(m[2].replace(',','.')):0;
+      const inv=ld('carteInv',[]);
+      inv.unshift({nome,serie:'Pokémon',lingua:'ITA',acquisto:prezzo,ebay:0,vendita:0,stato:'In Stock'});
+      sv('carteInv',inv);syncAssets();
+      return true;
+    }
+  },
+  carta_vend:{
+    preview:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
+      if(!m)return{ok:false,error:'Scrivi nome e prezzo, es. Charizard 80'};
+      const inv=ld('carteInv',[]);
+      const found=inv.find(c=>c.nome.toLowerCase().includes(m[1].trim().toLowerCase())&&c.stato!=='Venduta');
+      if(!found)return{ok:false,error:'Carta non trovata nello stock'};
+      return{ok:true,html:`<b>${esc(found.nome)}</b><div class="qa-meta">venduta a €${m[2]}</div>`};
+    },
+    commit:(t)=>{
+      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);if(!m)return false;
+      const prezzo=parseFloat(m[2].replace(',','.'));
+      const inv=ld('carteInv',[]);
+      const idx=inv.findIndex(c=>c.nome.toLowerCase().includes(m[1].trim().toLowerCase())&&c.stato!=='Venduta');
+      if(idx<0)return false;
+      inv[idx].stato='Venduta';inv[idx].vendita=prezzo;
+      sv('carteInv',inv);syncAssets();
+      return true;
+    }
+  },
+  carta_add:{
+    preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">aggiunta alla collezione</div>`}:{ok:false,error:'Scrivi il nome della carta'},
+    commit:(t)=>{
+      const nome=t.trim();if(!nome)return false;
+      const inv=ld('carteInv',[]);
+      inv.unshift({nome,serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:0,stato:'In Stock'});
+      sv('carteInv',inv);
+      return true;
+    }
+  }
+};
+function qaSaveNote(tipo,text){
+  if(!text.trim())return false;
+  const notes=ld('quickNotes',[]);
+  notes.unshift({id:'qn_'+Date.now(),tipo,testo:text.trim(),ts:Date.now()});
+  sv('quickNotes',notes);
+  return true;
+}
+
+function qaConfirm(){
+  const h=QA_HANDLERS[_qaState.action];
+  if(!h)return;
+  const ok=h.commit(_qaState.text);
+  if(ok){
+    closeQuickAdd();
+    toast('✓ '+QA_LABELS[_qaState.action]+' salvat'+(QA_LABELS[_qaState.action].match(/a$/)?'a':'o'));
+  } else {
+    toast('Qualcosa non ha funzionato, riprova');
+  }
+}
+
+function renderQuickAdd(){
+  const el=document.getElementById('qa-panel');if(!el)return;
+  let h='';
+  if(_qaState.step==='cat'){
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text)">Cosa vuoi aggiungere?</div>
+      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+    QA_CATS.forEach(([key,emoji,label])=>{
+      h+=`<button onclick="qaSelectCategory('${key}')" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);cursor:pointer">
+        <span style="font-size:26px">${emoji}</span>
+        <span style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--text)">${label}</span>
+      </button>`;
+    });
+    h+=`</div>`;
+  } else if(_qaState.step==='action'){
+    h+=`<div style="display:flex;align-items:center;gap:8px">
+      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
+      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">${QA_CATS.find(c=>c[0]===_qaState.category)[1]} ${QA_CATS.find(c=>c[0]===_qaState.category)[2]}</div>
+      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">`;
+    QA_ACTIONS[_qaState.category].forEach(([key,label])=>{
+      h+=`<button onclick="qaSelectAction('${key}')" style="text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer">${label}</button>`;
+    });
+    h+=`</div>`;
+  } else if(_qaState.step==='input'){
+    h+=`<div style="display:flex;align-items:center;gap:8px">
+      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
+      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">${QA_LABELS[_qaState.action]}</div>
+      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
+    </div>
+    <input id="qa-input" value="${esc(_qaState.text)}" placeholder="${esc(QA_PLACEHOLDERS[_qaState.action]||'')}" style="background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')qaGoPreview()">
+    <button onclick="qaGoPreview()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer">CONTINUA</button>`;
+  } else if(_qaState.step==='preview'){
+    const h2=QA_HANDLERS[_qaState.action];
+    const prev=h2?h2.preview(_qaState.text):{ok:false,error:'Azione non disponibile'};
+    h+=`<div style="display:flex;align-items:center;gap:8px">
+      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
+      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">Verrà creato</div>
+      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
+    </div>`;
+    if(prev.ok){
+      h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-family:var(--sans);font-size:11px;color:var(--green);font-weight:700;margin-bottom:8px">✓ ${QA_LABELS[_qaState.action]}</div>
+        <div style="font-family:var(--sans);font-size:16px;color:var(--text);line-height:1.5">${prev.html}</div>
+      </div>
+      <button onclick="qaConfirm()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">CONFERMA</button>`;
+    } else {
+      h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:12px;padding:16px;font-size:13px;color:var(--red)">${esc(prev.error||'Errore')}</div>
+      <button onclick="qaBack()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:1px solid var(--border-hover);background:transparent;color:var(--text);cursor:pointer">MODIFICA</button>`;
+    }
+  }
+  el.innerHTML=h;
+}
+document.getElementById('qa-overlay').addEventListener('click',e=>{if(e.target.id==='qa-overlay')closeQuickAdd();});
+
 function openQC(){
   const overlay=document.getElementById('qc-overlay');
   overlay.style.display='flex';
+  overlay.classList.add('qa-overlay-anim');
+  const panel=overlay.querySelector(':scope > div');
+  if(panel)panel.classList.add('qa-panel-anim');
   const sel=document.getElementById('qc-date');
   sel.innerHTML='';
   const today=new Date();today.setHours(0,0,0,0);
@@ -6753,204 +7317,18 @@ function openQC(){
   }
   const inp=document.getElementById('qc-input');
   inp.value='';
-  document.getElementById('qc-preview').innerHTML='';
+  document.getElementById('qc-step-input').style.display='block';
+  document.getElementById('qc-step-result').style.display='none';
+  document.getElementById('qc-step-result').innerHTML='';
   setTimeout(()=>inp.focus(),50);
-  inp.oninput=updateQCPreview;
 }
 
-function closeQC(){document.getElementById('qc-overlay').style.display='none';}
-
-function updateQCPreview(){
-  const allProjs=[...PD,...ld('customProjs',[])];
-  let _rawQC=document.getElementById('qc-input').value;
-  // Normalizza: forza newline prima di 'obiettivo' se non c'è già
-  _rawQC=_rawQC.replace(/([^\n])(obiettivo\s+sett)/gi,'$1\n$2');
-  _rawQC=_rawQC.replace(/([^\n])(obiettivo:)/gi,'$1\n$2');
-  const lines=_rawQC.split('\n').filter(l=>l.trim());
-  const fallbackKey=document.getElementById('qc-date').value;
-  const fallbackDate=agendaDateFromKey(fallbackKey); // v1 FIX timezone
-  if(!lines.length){document.getElementById('qc-preview').innerHTML='';return;}
-  const DAY_NAMES_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-  const rows=lines.map(l=>{
-    const _priPrev=qcStripPriorita(l); // v1 FIX: la preview non spogliava la priorità, mostrando un'anteprima diversa da ciò che sarebbe salvato
-    const _priBadge=_priPrev.pri?`<span style="font-size:9px;margin-right:4px">${_priPrev.pri==='high'?'🔴':'🟡'}</span>`:'';
-    l=_priPrev.clean;
-    if(isQCObiettivoSett(l)){
-      const p2=qcParseObiettivo(l);
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--blue);min-width:80px;flex-shrink:0">🎯 OB.SETT.</span>
-        <span style="color:var(--text-faint)">${p2.projId||'?'}</span>
-        <span style="color:var(--text);flex:1">${esc(p2.text)}</span>
-      </div>`;
-    }
-    if(isQCObiettivo(l)&&!isQCObiettivoSett(l)){
-      const p2=qcParseObiettivo(l);
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--purple);min-width:80px;flex-shrink:0">🏆 OBIET.</span>
-        <span style="color:var(--text-faint)">${p2.projId||'?'}</span>
-        <span style="color:var(--text);flex:1">${esc(p2.text)}</span>
-      </div>`;
-    }
-    if(isQCPeso(l)){
-      const p3=qcParsePeso(l);
-      if(p3)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--yellow);min-width:80px;flex-shrink:0">⚖️ PESO</span>
-        <span style="color:var(--text);flex:1">${p3.peso} kg</span>
-      </div>`;
-    }
-    if(isQCStretching(l)){
-      const p4=qcParseStretching(l);
-      if(p4)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--purple);min-width:80px;flex-shrink:0">🧘 ${DAY_NAMES_IT[p4.dayIdx]}</span>
-        <span style="color:var(--text-faint)">STRETCHING</span>
-        <span style="color:var(--text);flex:1">${p4.fattoOnly?'segna tutto fatto':esc(p4.nome)+' '+(p4.durata?p4.durata+'min':'')}</span>
-      </div>`;
-    }
-    if(isQCCarta(l)){
-      const p5=qcParseCarta(l);
-      if(p5)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--orange);min-width:80px;flex-shrink:0">🃏 CARTA</span>
-        <span style="color:var(--text);flex:1">${p5.azione==='vendi'?'Vendi':'Acquista'} ${esc(p5.nome)} ${p5.prezzo?'€'+p5.prezzo:''}</span>
-      </div>`;
-    }
-    if(isQCFinanza(l)){
-      const p6=qcParseFinanza(l);
-      if(p6)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:${p6.tipo==='entrata'?'var(--green)':'var(--red)'};min-width:80px;flex-shrink:0">${p6.tipo==='entrata'?'↑':'↓'} ${p6.tipo.toUpperCase()}</span>
-        <span style="color:var(--text);flex:1">${esc(p6.desc)} — €${p6.importo} (${esc(p6.asset)})</span>
-      </div>`;
-    }
-    if(isQCAbitudine(l)){
-      const p7=qcParseAbitudine(l);
-      if(p7)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--yellow);min-width:80px;flex-shrink:0">✓ ${DAY_NAMES_IT[p7.dayIdx]}</span>
-        <span style="color:var(--text-faint)">ABITUDINE</span>
-        <span style="color:var(--text);flex:1">${esc(p7.nome)}</span>
-      </div>`;
-    }
-    if(isQCSchedaGiorno(l)){
-      const p9=qcParseSchedaGiorno(l);
-      if(p9)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--green);min-width:80px;flex-shrink:0">📅 ${DAY_NAMES_IT[p9.dayIdx]}</span>
-        <span style="color:var(--text-faint)">SCHEDA</span>
-        <span style="color:var(--text);flex:1">${esc(p9.esercizi.join(', '))}</span>
-      </div>`;
-    }
-    if(isQCCopiaGiorno(l)){
-      const p10=qcParseCopiaGiorno(l);
-      if(p10)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--blue);min-width:80px;flex-shrink:0">📋 COPIA</span>
-        <span style="color:var(--text);flex:1">${DAY_NAMES_IT[p10.fromDayIdx]} → ${DAY_NAMES_IT[p10.toDayIdx]}</span>
-      </div>`;
-    }
-    if(isQCCatalogoEsercizio(l)){
-      const p8=qcParseCatalogoEsercizio(l);
-      if(p8)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">📋 CATALOGO</span>
-        <span style="color:var(--text);flex:1">${esc(p8.nome)} — ${esc(p8.gruppi.join(', ')||'nessun gruppo')} ${p8.recupero?'· '+esc(p8.recupero):''}</span>
-      </div>`;
-    }
-    if(isQCAllenamento(l)){
-      const p=qcParseAllenamento(l);
-      if(p)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">💪 ${DAY_NAMES_IT[p.dayIdx]}</span>
-        <span style="color:var(--text-faint)">ALLENAMENTO</span>
-        <span style="color:var(--text);flex:1">${esc(p.nome)} ${p.serie?p.serie+'×'+p.reps:''} ${p.peso?p.peso+'kg':''}</span>
-      </div>`;
-    }
-    if(isQCAlimentazione(l)){
-      const p=qcParseAlimentazione(l);
-      if(p){
-        const SLOT_NAMES=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
-        return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-          <span style="color:var(--orange);min-width:80px;flex-shrink:0">🥗 ${DAY_NAMES_IT[p.dayIdx]}</span>
-          <span style="color:var(--text-faint)">ALIMENTAZIONE</span>
-          <span style="color:var(--text);flex:1">${SLOT_NAMES[p.slotIdx]}: ${esc(p.cibo)}</span>
-        </div>`;
-      }
-    }
-    // ── Validazione: intent riconosciuto ma parsing fallito → segnala errore chiaro ──
-    const trimmed=l.trim();
-    if(/^peso\s*:?\s*/i.test(trimmed)&&!isQCPeso(trimmed)){
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border-soft);background:rgba(239,68,68,.08)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
-        <span style="color:var(--text-faint);flex:1">Peso non valido — usa "peso 78.4"</span>
-      </div>`;
-    }
-    if(/^scheda\s+/i.test(trimmed)&&!isQCSchedaGiorno(trimmed)){
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border-soft);background:rgba(239,68,68,.08)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
-        <span style="color:var(--text-faint);flex:1">Giorno non riconosciuto — usa "scheda lunedì: esercizio1, esercizio2"</span>
-      </div>`;
-    }
-    if(/^copia\s+/i.test(trimmed)&&!isQCCopiaGiorno(trimmed)){
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border-soft);background:rgba(239,68,68,.08)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
-        <span style="color:var(--text-faint);flex:1">Formato non valido — usa "copia lunedì su giovedì"</span>
-      </div>`;
-    }
-    if(/^(entrata|uscita)\s*:/i.test(trimmed)&&!isQCFinanza(trimmed)){
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border-soft);background:rgba(239,68,68,.08)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
-        <span style="color:var(--text-faint);flex:1">Movimento non valido</span>
-      </div>`;
-    }
-    if(trimmed.includes('|')&&!qcParseCatalogoEsercizio(trimmed)){
-      return `<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border-soft);background:rgba(239,68,68,.08)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">⚠ ERRORE</span>
-        <span style="color:var(--text-faint);flex:1">Formato catalogo non valido — usa "Nome | Gruppi | Recupero"</span>
-      </div>`;
-    }
-    if(isQCRicetta(l)){
-      const pR=qcParseRicetta(l);
-      if(pR)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--orange);min-width:80px;flex-shrink:0">📖 ${DAY_NAMES_IT[pR.dayIdx]}</span>
-        <span style="color:var(--text-faint)">RICETTA</span>
-        <span style="color:var(--text);flex:1">${_priBadge}${esc(pR.ricettaNome)}${pR.porzioni!==1?' ×'+pR.porzioni:''}</span>
-      </div>`;
-    }
-    if(isQCPastiGiorno(l)){
-      const pPG=qcParsePastiGiorno(l);
-      if(pPG)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--orange);min-width:80px;flex-shrink:0">🥗 ${DAY_NAMES_IT[pPG.dayIdx]}</span>
-        <span style="color:var(--text-faint)">PASTI (${pPG.pasti.length})</span>
-        <span style="color:var(--text);flex:1">${esc(pPG.pasti.map(x=>x.cibo).join(', '))}</span>
-      </div>`;
-    }
-    if(isQCSchedaStretch(l)){
-      const pSS=qcParseSchedaStretch(l);
-      if(pSS)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--purple);min-width:80px;flex-shrink:0">🧘 ${DAY_NAMES_IT[pSS.dayIdx]}</span>
-        <span style="color:var(--text-faint)">SCHEDA STRETCH</span>
-        <span style="color:var(--text);flex:1">${esc(pSS.esercizi.join(', '))}</span>
-      </div>`;
-    }
-    if(isQCMultiTask(l)){
-      const pMT=qcParseMultiTask(l,allProjs);
-      if(pMT)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--yellow);min-width:80px;flex-shrink:0">🔀 ${pMT.tasks.length} TASK</span>
-        <span style="color:var(--text);flex:1">${_priBadge}${esc(pMT.tasks.join(' · '))}</span>
-      </div>`;
-    }
-    if(isQCSpesa(l)){
-      const pSP=qcParseSpesa(l,allProjs);
-      if(pSP)return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-        <span style="color:var(--red);min-width:80px;flex-shrink:0">💶 SPESA</span>
-        <span style="color:var(--text);flex:1">${esc(pSP.desc)} — €${pSP.importo}${pSP.dataStr!=='—'?' · '+pSP.dataStr:''}</span>
-      </div>`;
-    }
-    const p=parseQCLine(l,allProjs);
-    const dateLabel=p.isRecur?'ricorrente':_qcDateLabel(p.targetDate||fallbackDate);
-    const projLabel=p.proj?`<span style="color:${p.proj.color};font-weight:700">${esc(p.proj.tag)}</span>`:`<span style="color:var(--text-ghost)">nessun progetto</span>`;
-    const typeIcon=p.isRecur?'↺':'📅';
-    return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--border-soft)">
-      <span style="color:var(--text-faint);min-width:80px;flex-shrink:0">${typeIcon} ${dateLabel}</span>
-      ${projLabel}
-      <span style="color:var(--text);flex:1">${_priBadge}${esc(p.text)}</span>
-    </div>`;
-  });
-  document.getElementById('qc-preview').innerHTML=rows.join('');
+function closeQC(){
+  const overlay=document.getElementById('qc-overlay');
+  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';},150);
 }
+
 
 // ── QC: parser allenamento ──
 // Sintassi: "squat 4x10 80kg #lunedì" o "squat 4x10 80kg" (oggi)
@@ -7404,19 +7782,610 @@ function qcParseRicetta(line){
   return{dayIdx,slotIdx,ricettaId:ric.id,ricettaNome:ric.nome,porzioni};
 }
 
-function submitQC(){
+// ══════════════════════════════════════════════════════════
+// SPEC 07: Linguaggio Ufficiale Quick Capture — formato a blocchi
+// Entità\ncampo: valore\ncampo: valore\n\nEntità\n...
+// ══════════════════════════════════════════════════════════
+const QC_ENTITY_NAMES={
+  'task':'task','obiettivo':'obiettivo','obiettivo settimanale':'obiettivo_sett',
+  'esercizio':'esercizio','scheda allenamento':'scheda_allenamento','catalogo esercizi':'catalogo_esercizi',
+  'pasto':'pasto','ricetta':'ricetta','stretching':'stretching','peso':'peso',
+  'entrata':'entrata','uscita':'uscita','spesa pianificata':'spesa_pianificata',
+  'asset':'asset','carta':'carta','habit':'habit','nota':'nota','idea':'idea','link':'link'
+};
+// v1: divide il testo incollato in blocchi {entity,fields,lineNo,badLines}. Le righe fuori
+// da qualunque blocco (o non nel formato "campo: valore") finiscono negli orphanLines/badLines
+// e vengono gestite dal parser a riga singola (retrocompatibilità con la vecchia sintassi).
+function qcSplitBlocks(rawText){
+  const rawLines=rawText.split('\n');
+  const blocks=[];
+  const orphanLines=[];
+  let current=null;
+  let lastField=null;
+  rawLines.forEach((rawLine,i)=>{
+    const trimmed=rawLine.trim();
+    if(!trimmed)return;
+    const lower=trimmed.toLowerCase();
+    const entityKey=QC_ENTITY_NAMES[lower];
+    if(entityKey&&!trimmed.includes(':')){
+      current={entity:entityKey,fields:{},lineNo:i+1,rawName:trimmed,badLines:[]};
+      blocks.push(current);
+      lastField=null;
+    } else if(current){
+      const colonIdx=trimmed.indexOf(':');
+      const def=QC_ENTITIES[current.entity];
+      const knownFields=def?[...def.required,...(def.optional||[])]:[];
+      const fieldNameCandidate=colonIdx>0?trimmed.slice(0,colonIdx).trim().toLowerCase():null;
+      if(fieldNameCandidate&&knownFields.includes(fieldNameCandidate)){
+        current.fields[fieldNameCandidate]=trimmed.slice(colonIdx+1).trim();
+        lastField=fieldNameCandidate;
+      } else if(lastField){
+        // v1: continuazione multi-riga del campo precedente (es. preparazione su più righe)
+        current.fields[lastField]+=' '+trimmed;
+      } else {
+        current.badLines.push({n:i+1,text:trimmed});
+      }
+    } else {
+      orphanLines.push({n:i+1,text:trimmed});
+    }
+  });
+  return{blocks,orphanLines};
+}
+
+// ── helper di parsing campo condivisi tra tutte le entità ──
+function qcParseDateField(text){
+  if(!text)return null;
+  const t=text.trim().toLowerCase();
+  const today=new Date();today.setHours(0,0,0,0);
+  if(t==='oggi')return new Date(today);
+  if(t==='domani'){const d=new Date(today);d.setDate(d.getDate()+1);return d;}
+  if(t==='dopodomani'){const d=new Date(today);d.setDate(d.getDate()+2);return d;}
+  const traN=t.match(/^tra\s+(\d+)\s+giorni?$/);
+  if(traN){const d=new Date(today);d.setDate(d.getDate()+parseInt(traN[1]));return d;}
+  const ddmm=t.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if(ddmm){let yr=ddmm[3]?parseInt(ddmm[3]):today.getFullYear();if(yr<100)yr+=2000;return new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));}
+  const MLONG={gennaio:0,febbraio:1,marzo:2,aprile:3,maggio:4,giugno:5,luglio:6,agosto:7,settembre:8,ottobre:9,novembre:10,dicembre:11};
+  const ddmon=t.match(/^(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)$/);
+  if(ddmon){const mr=ddmon[2];const mi=QC_MONTHS[mr]!==undefined?QC_MONTHS[mr]:(MLONG[mr]!==undefined?MLONG[mr]:QC_MONTHS[mr.slice(0,3)]);const d=new Date(today.getFullYear(),mi,parseInt(ddmon[1]));if(d<today)d.setFullYear(today.getFullYear()+1);return d;}
+  for(const[name,num]of Object.entries(QC_DAYS)){
+    if(t===name){const d=new Date(today);const diff=(num-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));return d;}
+  }
+  return null;
+}
+function qcParseGiornoIdx(text){
+  if(!text)return null;
+  const t=text.trim().toLowerCase();
+  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
+  if(DAY_MAP[t]!==undefined)return DAY_MAP[t];
+  if(t==='oggi')return allWeekdayIdx(new Date());
+  return null;
+}
+function qcParseSlotIdx(text){
+  if(!text)return null;
+  const t=text.trim().toLowerCase();
+  const SLOT_MAP={colazione:0,'spuntino 1':1,spuntino1:1,pranzo:2,'spuntino 2':3,spuntino2:3,cena:4};
+  return SLOT_MAP[t]!==undefined?SLOT_MAP[t]:null;
+}
+function qcMapPriorita(text){
+  if(!text)return'none';
+  const t=text.trim().toLowerCase();
+  if(t.startsWith('alt'))return'high';
+  if(t.startsWith('med'))return'medium';
+  return'none';
+}
+function qcMatchProject(text,allProjs){
+  if(!text)return null;
+  const t=text.trim().toLowerCase();
+  let best=null,bestLen=0;
+  allProjs.forEach(p=>{
+    [p.id,p.tag,p.folder].filter(Boolean).forEach(c=>{
+      const cl=c.toLowerCase();
+      if((t===cl||t.includes(cl)||cl.includes(t))&&cl.length>bestLen){best=p;bestLen=cl.length;}
+    });
+  });
+  return best;
+}
+function qcParseIngredientiField(text){
+  // "farina 200g, uova 2, zucchero 50" -> [{nome,g}]
+  if(!text)return[];
+  return text.split(',').map(chunk=>{
+    const m=chunk.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*g?\s*$/i);
+    if(m)return{nome:m[1].trim(),g:parseFloat(m[2].replace(',','.'))};
+    return{nome:chunk.trim(),g:0};
+  }).filter(i=>i.nome);
+}
+
+// ── QC_ENTITIES: tabella dichiarativa — ogni entità definisce campi richiesti/opzionali e come si scrive nel database ──
+const QC_ENTITY_LABELS={
+  task:'Task',obiettivo:'Obiettivi',obiettivo_sett:'Obiettivi settimanali',esercizio:'Esercizi (progressione)',
+  scheda_allenamento:'Schede allenamento',catalogo_esercizi:'Esercizi catalogo',pasto:'Pasti',ricetta:'Ricette',
+  stretching:'Schede stretching',peso:'Registrazioni peso',entrata:'Entrate',uscita:'Uscite',
+  spesa_pianificata:'Spese pianificate',asset:'Asset',carta:'Carte',habit:'Abitudini',
+  nota:'Note',idea:'Idee',link:'Link'
+};
+const QC_ENTITIES={
+  task:{
+    required:['titolo'],optional:['progetto','data','priorità','ricorrente','note'],
+    commit:(f,ctx)=>{
+      const proj=qcMatchProject(f.progetto,ctx.allProjs);
+      const pri=qcMapPriorita(f.priorità);
+      let text=f.titolo;
+      if(f.note)text+=' — '+f.note;
+      const isRecur=f.ricorrente&&/^(s[iì]|true|giornalier[oa]|quotidian[oa])/i.test(f.ricorrente.trim());
+      if(isRecur&&proj){
+        const arr=ld('recur_'+proj.id,[]);
+        if(!arr.includes(text)){arr.push(text);sv('recur_'+proj.id,arr);}
+      } else {
+        const d=qcParseDateField(f.data)||ctx.fallbackDate;
+        const key=agendaKey(d);
+        if(!ctx.byDate[key])ctx.byDate[key]={date:d,tasks:[]};
+        ctx.byDate[key].tasks.push({text,projId:proj?proj.id:'',done:false,ts:Date.now()+Math.random(),type:'day',pri});
+      }
+      return true;
+    }
+  },
+  obiettivo:{
+    required:['titolo'],optional:['progetto'],
+    commit:(f,ctx)=>{
+      const proj=qcMatchProject(f.progetto,ctx.allProjs);
+      if(!proj)return false;
+      const goals=ld('goals_'+proj.id,[]);
+      if(!goals.includes(f.titolo)){goals.push(f.titolo);sv('goals_'+proj.id,goals);}
+      return true;
+    }
+  },
+  obiettivo_sett:{
+    required:['titolo'],optional:['progetto'],
+    commit:(f,ctx)=>{
+      const proj=qcMatchProject(f.progetto,ctx.allProjs);
+      if(!proj)return false;
+      const wg=ld('weekGoals_'+proj.id,[]);
+      if(!wg.includes(f.titolo)){wg.push(f.titolo);sv('weekGoals_'+proj.id,wg);}
+      return true;
+    }
+  },
+  esercizio:{
+    required:['nome','serie','ripetizioni'],optional:['peso','giorno','note'],
+    commit:(f,ctx)=>{
+      const serie=parseInt(f.serie),reps=parseInt(f.ripetizioni);
+      if(!serie||!reps)return false;
+      const dayIdx=qcParseGiornoIdx(f.giorno)??allWeekdayIdx(new Date());
+      const peso=f.peso?parseFloat(f.peso.replace(',','.')):0;
+      const schede=allGetSchede();
+      const scheda=schede[dayIdx];
+      const{id:catId}=allFindOrCreateCatEsercizio(f.nome);
+      let esIdx=scheda.esercizi.findIndex(e=>e.catId===catId);
+      if(esIdx<0)scheda.esercizi.push({catId,peso,reps,serie});
+      else{scheda.esercizi[esIdx].peso=peso||scheda.esercizi[esIdx].peso;scheda.esercizi[esIdx].reps=reps;scheda.esercizi[esIdx].serie=serie;}
+      sv('all_schede',schede);
+      if(f.note){
+        const cat=allGetCatalogo();const ex=cat.find(e=>e.id===catId);
+        if(ex){ex.noteEsercizio=f.note;sv('all_catalogo',cat);}
+      }
+      const todayIdxNow=allWeekdayIdx(new Date());
+      if(dayIdx===todayIdxNow){
+        const cat=allGetCatalogo();const ex=cat.find(e=>e.id===catId);
+        if(ex){
+          const todayKey=new Date().toDateString();
+          ex.storia=ex.storia||[];
+          const existing=ex.storia.findIndex(s=>s.dataKey===todayKey);
+          const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso,reps,serie};
+          if(existing>=0)ex.storia[existing]=entry;else ex.storia.push(entry);
+          sv('all_catalogo',cat);
+        }
+      }
+      return true;
+    }
+  },
+  scheda_allenamento:{
+    required:['giorno','esercizi'],optional:[],
+    commit:(f,ctx)=>{
+      const dayIdx=qcParseGiornoIdx(f.giorno);
+      if(dayIdx===null)return false;
+      const nomi=f.esercizi.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!nomi.length)return false;
+      const schede=allGetSchede();
+      const scheda=schede[dayIdx];
+      nomi.forEach(nome=>{
+        const{id:catId}=allFindOrCreateCatEsercizio(nome);
+        if(!scheda.esercizi.some(e=>e.catId===catId))scheda.esercizi.push({catId,peso:0,reps:0,serie:3});
+      });
+      sv('all_schede',schede);
+      return true;
+    }
+  },
+  catalogo_esercizi:{
+    required:['nome','gruppi_muscolari','recupero'],optional:['note','consigli'],
+    commit:(f,ctx)=>{
+      const cat=allGetCatalogo();
+      let ex=cat.find(e=>allNormName(e.nome)===allNormName(f.nome));
+      if(!ex){ex={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:f.nome,storia:[],gruppiMuscolari:[],recupero:'',noteEsercizio:''};cat.push(ex);}
+      ex.gruppiMuscolari=f.gruppi_muscolari.split(',').map(s=>s.trim()).filter(Boolean);
+      ex.recupero=f.recupero;
+      if(f.consigli)ex.noteEsercizio=f.consigli;
+      else if(f.note)ex.noteEsercizio=f.note;
+      sv('all_catalogo',cat);
+      return true;
+    }
+  },
+  pasto:{
+    required:['giorno','slot','ricetta'],optional:['porzioni','note'],
+    commit:(f,ctx)=>{
+      const dayIdx=qcParseGiornoIdx(f.giorno);
+      const slotIdx=qcParseSlotIdx(f.slot);
+      if(dayIdx===null||slotIdx===null)return false;
+      const rl=f.ricetta.trim().toLowerCase();
+      const ric=ricGetAll().find(r=>r.nome.toLowerCase()===rl)||ricGetAll().find(r=>r.nome.toLowerCase().includes(rl));
+      if(!ric)return false;
+      const porzioni=f.porzioni?parseFloat(f.porzioni.replace(',','.')):1;
+      const schede=alimGetSchede();
+      const pasto=schede[dayIdx].pasti[slotIdx];
+      pasto.ricettaId=ric.id;pasto.porzioni=porzioni;pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0;
+      sv('alim_schede',schede);
+      ricIncrementUsage(ric.id);
+      return true;
+    }
+  },
+  ricetta:{
+    required:['nome'],optional:['categoria','ingredienti','preparazione','calorie','proteine','carboidrati','grassi'],
+    commit:(f,ctx)=>{
+      const list=ricGetAll();
+      let ric=list.find(r=>r.nome.toLowerCase()===f.nome.trim().toLowerCase());
+      if(!ric){ric=ricCreate(f.nome,'pranzi');}
+      if(f.categoria){
+        const catKey=RIC_CATEGORIE.find(([k,l])=>l.toLowerCase().includes(f.categoria.toLowerCase())||k===f.categoria.toLowerCase())?.[0];
+        if(catKey)ricUpdate(ric.id,'categoria',catKey);
+      }
+      if(f.ingredienti){
+        const ings=qcParseIngredientiField(f.ingredienti);
+        ricUpdate(ric.id,'ingredienti',ings);
+      }
+      if(f.preparazione)ricUpdate(ric.id,'preparazione',f.preparazione);
+      if(f.calorie)ricUpdate(ric.id,'kcal',parseFloat(f.calorie.replace(',','.'))||0);
+      if(f.proteine)ricUpdate(ric.id,'prot',parseFloat(f.proteine.replace(',','.'))||0);
+      if(f.carboidrati)ricUpdate(ric.id,'carb',parseFloat(f.carboidrati.replace(',','.'))||0);
+      if(f.grassi)ricUpdate(ric.id,'grassi',parseFloat(f.grassi.replace(',','.'))||0);
+      return true;
+    }
+  },
+  stretching:{
+    required:['giorno','routine'],optional:[],
+    commit:(f,ctx)=>{
+      const dayIdx=qcParseGiornoIdx(f.giorno);
+      if(dayIdx===null)return false;
+      const nomi=f.routine.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!nomi.length)return false;
+      const schede=strGetSchede();
+      const scheda=schede[dayIdx];
+      nomi.forEach(nome=>{
+        const{id:catId}=strFindOrCreateCatEsercizio(nome);
+        if(!scheda.esercizi.some(e=>e.catId===catId))scheda.esercizi.push({catId,durata:0});
+      });
+      sv('str_schede',schede);
+      return true;
+    }
+  },
+  peso:{
+    required:['valore'],optional:['data'],
+    commit:(f,ctx)=>{
+      const v=parseFloat(f.valore.replace(',','.'));
+      if(!v)return false;
+      const d=qcParseDateField(f.data)||new Date();
+      const dataKey=d.toDateString();
+      const storia=ld('alim_pesoStoria',[]);
+      const entry={dataKey,peso:v,data:d.toLocaleDateString('it-IT')};
+      const existing=storia.findIndex(x=>x.dataKey===dataKey);
+      if(existing>=0)storia[existing]=entry;else storia.push(entry);
+      sv('alim_pesoStoria',storia);
+      return true;
+    }
+  },
+  entrata:{
+    required:['importo','descrizione','asset'],optional:['progetto','data','note'],
+    commit:(f,ctx)=>{
+      const importo=parseFloat(f.importo.replace(',','.'));
+      if(!importo)return false;
+      const assets=ld('assets',[]);
+      const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===f.asset.trim().toLowerCase());
+      if(assetIdx<0)return false;
+      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
+      assets[assetIdx].v+=importo;sv('assets',assets);
+      const log=ld('txLog',[]);
+      log.unshift({tipo:'entrata',desc,importo,asset:assets[assetIdx].l,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
+      sv('txLog',log);recordPatEvent();
+      return true;
+    }
+  },
+  uscita:{
+    required:['importo','descrizione','asset'],optional:['progetto','data','note'],
+    commit:(f,ctx)=>{
+      const importo=parseFloat(f.importo.replace(',','.'));
+      if(!importo)return false;
+      const assets=ld('assets',[]);
+      const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===f.asset.trim().toLowerCase());
+      if(assetIdx<0)return false;
+      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
+      assets[assetIdx].v-=importo;sv('assets',assets);
+      const log=ld('txLog',[]);
+      log.unshift({tipo:'uscita',desc,importo,asset:assets[assetIdx].l,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
+      sv('txLog',log);recordPatEvent();
+      return true;
+    }
+  },
+  spesa_pianificata:{
+    required:['importo','descrizione','data'],optional:['progetto','asset','note'],
+    commit:(f,ctx)=>{
+      const importo=parseFloat(f.importo.replace(',','.'));
+      const d=qcParseDateField(f.data);
+      if(!importo||!d)return false;
+      const proj=qcMatchProject(f.progetto,ctx.allProjs);
+      const dataStr=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
+      const key=proj?'spese_'+proj.id:'speseGen';
+      const list=ld(key,[]);
+      list.push({nome:desc,v:importo,data:dataStr,paid:false});
+      sv(key,list);
+      return true;
+    }
+  },
+  asset:{
+    required:['nome','valore'],optional:[],
+    commit:(f,ctx)=>{
+      const v=parseFloat(f.valore.replace(',','.'));
+      if(isNaN(v))return false;
+      const assets=ld('assets',[]);
+      const existing=assets.find(a=>a.l.toLowerCase()===f.nome.trim().toLowerCase());
+      if(existing)existing.v=v;
+      else assets.push({l:f.nome.trim(),v,id:'asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});
+      sv('assets',assets);recordPatEvent();
+      return true;
+    }
+  },
+  carta:{
+    required:['azione','nome','prezzo'],optional:['quantità','piattaforma','note'],
+    commit:(f,ctx)=>{
+      const azione=f.azione.trim().toLowerCase();
+      const prezzo=parseFloat(f.prezzo.replace(',','.'))||0;
+      const inv=ld('carteInv',[]);
+      if(/vend/.test(azione)){
+        const idx=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(f.nome))&&c.stato!=='Venduta');
+        if(idx<0)return false;
+        inv[idx].stato='Venduta';inv[idx].vendita=prezzo;
+      } else {
+        const qty=f.quantità?Math.max(1,parseInt(f.quantità)):1;
+        for(let i=0;i<qty;i++)inv.unshift({nome:f.nome,serie:'Pokémon',lingua:'ITA',acquisto:prezzo,ebay:prezzo,vendita:0,stato:'In Stock'});
+      }
+      sv('carteInv',inv);syncAssets();
+      return true;
+    }
+  },
+  habit:{
+    required:['nome','stato'],optional:['data'],
+    commit:(f,ctx)=>{
+      const habits=ld('habits',[]);
+      const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(f.nome))||allNormName(f.nome).includes(allNormName(h)));
+      if(idx<0)return false;
+      const done=/^(fatt[oa]|s[iì]|true)/i.test(f.stato.trim());
+      const d=qcParseDateField(f.data)||new Date();
+      const dayIdx=(d.getDay()+6)%7;
+      const dots=ld('habitDots',[]);
+      if(!dots[idx])dots[idx]=Array(7).fill(false);
+      dots[idx][dayIdx]=done;
+      sv('habitDots',dots);
+      return true;
+    }
+  },
+  nota:{required:['testo'],optional:[],commit:(f)=>qaSaveNote('nota',f.testo)},
+  idea:{required:['testo'],optional:[],commit:(f)=>qaSaveNote('idea',f.testo)},
+  link:{
+    required:['url'],optional:['titolo','descrizione'],
+    commit:(f)=>{
+      const parts=[f.titolo,f.url,f.descrizione].filter(Boolean);
+      return qaSaveNote('link',parts.join(' — '));
+    }
+  }
+};
+function qcValidateBlock(block){
+  const def=QC_ENTITIES[block.entity];
+  if(!def)return false;
+  return def.required.every(k=>block.fields[k]&&block.fields[k].trim());
+}
+
+
+const QC_CAT_LABELS={
+  obiettivo_sett:'Obiettivi settimanali',obiettivo:'Obiettivi',peso:'Registrazioni peso',carta:'Carte',
+  finanza:'Movimenti finanziari',abitudine:'Abitudini',stretching:'Stretching',scheda_allenamento:'Schede allenamento',
+  copia_giorno:'Copie scheda',catalogo_esercizio:'Esercizi catalogo',ricetta:'Assegnazioni ricetta',
+  pasti_giorno:'Pasti pianificati',scheda_stretch:'Schede stretching',spesa:'Spese pianificate',
+  multi_task:'Task multiple',allenamento:'Allenamenti',pasto:'Pasti',task:'Task',ricorrente:'Task ricorrenti'
+};
+function qcClassifyLine(line,allProjs){
+  const priRes=qcStripPriorita(line);
+  const cleanLine=priRes.clean;
+  if(isQCObiettivoSett(cleanLine)){
+    const p=qcParseObiettivo(cleanLine);
+    return{ok:!!(p.text&&p.projId),cat:'obiettivo_sett'};
+  }
+  if(isQCObiettivo(cleanLine)&&!isQCObiettivoSett(cleanLine)){
+    const p=qcParseObiettivo(cleanLine);
+    return{ok:!!(p.text&&p.projId),cat:'obiettivo'};
+  }
+  if(isQCPeso(cleanLine))return{ok:!!qcParsePeso(cleanLine),cat:'peso'};
+  if(isQCCarta(cleanLine))return{ok:!!qcParseCarta(cleanLine),cat:'carta'};
+  if(isQCFinanza(cleanLine))return{ok:!!qcParseFinanza(cleanLine),cat:'finanza'};
+  if(isQCAbitudine(cleanLine))return{ok:!!qcParseAbitudine(cleanLine),cat:'abitudine'};
+  if(isQCStretching(cleanLine))return{ok:!!qcParseStretching(cleanLine),cat:'stretching'};
+  if(isQCSchedaGiorno(cleanLine))return{ok:!!qcParseSchedaGiorno(cleanLine),cat:'scheda_allenamento'};
+  if(isQCCopiaGiorno(cleanLine))return{ok:!!qcParseCopiaGiorno(cleanLine),cat:'copia_giorno'};
+  if(isQCCatalogoEsercizio(cleanLine))return{ok:!!qcParseCatalogoEsercizio(cleanLine),cat:'catalogo_esercizio'};
+  if(isQCRicetta(cleanLine))return{ok:!!qcParseRicetta(cleanLine),cat:'ricetta'};
+  if(isQCPastiGiorno(cleanLine))return{ok:!!qcParsePastiGiorno(cleanLine),cat:'pasti_giorno'};
+  if(isQCSchedaStretch(cleanLine))return{ok:!!qcParseSchedaStretch(cleanLine),cat:'scheda_stretch'};
+  if(isQCSpesa(cleanLine))return{ok:!!qcParseSpesa(cleanLine,allProjs),cat:'spesa'};
+  if(isQCMultiTask(cleanLine))return{ok:!!qcParseMultiTask(cleanLine,allProjs),cat:'multi_task'};
+  if(isQCAllenamento(cleanLine))return{ok:!!qcParseAllenamento(cleanLine),cat:'allenamento'};
+  if(isQCAlimentazione(cleanLine))return{ok:!!qcParseAlimentazione(cleanLine),cat:'pasto'};
+  const generic=parseQCLine(cleanLine,allProjs);
+  if(generic.text)return{ok:true,cat:generic.isRecur?'ricorrente':'task'};
+  return{ok:false,cat:null};
+}
+
+// ══════════════════════════════════════════════════════════
+// SPEC 05: fase di analisi — nessuna scrittura, solo classificazione
+// ══════════════════════════════════════════════════════════
+let _qcPendingLines=[];
+let _qcPendingBlocks=[];
+function qcAnalyze(){
+  const raw=document.getElementById('qc-input').value;
+  if(!raw.trim()){toast('Scrivi o incolla qualcosa prima');return;}
   const allProjs=[...PD,...ld('customProjs',[])];
-  let _rawQC=document.getElementById('qc-input').value;
-  _rawQC=_rawQC.replace(/([^\n])(obiettivo\s+sett)/gi,'$1\n$2');
-  _rawQC=_rawQC.replace(/([^\n])(obiettivo:)/gi,'$1\n$2');
-  const lines=_rawQC.split('\n').filter(l=>l.trim());
-  if(!lines.length)return;
-  const fallbackKey=document.getElementById('qc-date').value;
-  const fallbackDate=agendaDateFromKey(fallbackKey); // v1 FIX timezone
-  let added=0,recurs=0;
+  const tally={};
+  const errorLines=[];
+  let totalCount=0;
+
+  // v1 SPEC 07: prima prova il nuovo linguaggio a blocchi (Entità\ncampo: valore\n...)
+  const{blocks,orphanLines}=qcSplitBlocks(raw);
+  const validBlocks=[];
+  blocks.forEach(b=>{
+    totalCount++;
+    if(qcValidateBlock(b)){
+      tally[b.entity]=(tally[b.entity]||0)+1;
+      validBlocks.push(b);
+    } else {
+      errorLines.push({n:b.lineNo,text:b.rawName+' (campi obbligatori mancanti)'});
+    }
+    b.badLines.forEach(bl=>{totalCount++;errorLines.push(bl);});
+  });
+
+  // Righe orfane (fuori da qualunque blocco) -> vecchio parser a riga singola, per retrocompatibilità
+  orphanLines.forEach(ol=>{
+    totalCount++;
+    const res=qcClassifyLine(ol.text,allProjs);
+    if(res.ok&&res.cat){
+      tally[res.cat]=(tally[res.cat]||0)+1;
+    } else {
+      errorLines.push(ol);
+    }
+  });
+
+  _qcPendingBlocks=validBlocks;
+  _qcPendingLines=orphanLines.map(o=>o.text).filter(text=>{
+    const res=qcClassifyLine(text,allProjs);
+    return res.ok&&res.cat;
+  });
+  qcRenderAnalysis(tally,errorLines,totalCount);
+}
+function qcRenderAnalysis(tally,errorLines,totalLines){
+  document.getElementById('qc-step-input').style.display='none';
+  const el=document.getElementById('qc-step-result');
+  el.style.display='block';
+  const recognizedCount=totalLines-errorLines.length;
+  let h=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:12px">Analisi completata</div>`;
+  h+=`<div class="card" style="margin-bottom:12px">`;
+  const catKeys=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]);
+  if(!catKeys.length){
+    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessun elemento riconosciuto.</div>`;
+  }
+  catKeys.forEach(cat=>{
+    h+=`<div class="row"><span style="flex:1;font-size:13px;color:var(--text)">${QC_CAT_LABELS[cat]||QC_ENTITY_LABELS[cat]||cat}</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${tally[cat]}</span></div>`;
+  });
+  h+=`</div>`;
+  if(errorLines.length){
+    h+=`<div style="font-family:var(--sans);font-weight:600;font-size:12px;color:var(--red);margin-bottom:6px">⚠ ${errorLines.length} riga${errorLines.length===1?'':'e'} non compres${errorLines.length===1?'a':'e'}</div>`;
+    h+=`<div class="card" style="margin-bottom:12px;max-height:160px;overflow-y:auto">`;
+    errorLines.slice(0,20).forEach(e=>{
+      h+=`<div class="row"><span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost);width:44px;flex-shrink:0">riga ${e.n}</span><span style="font-size:12px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.text)}</span></div>`;
+    });
+    if(errorLines.length>20)h+=`<div style="padding:8px 14px;font-size:11px;color:var(--text-ghost)">…e altre ${errorLines.length-20} righe</div>`;
+    h+=`</div>`;
+    h+=`<div style="font-size:11px;color:var(--text-ghost);margin-bottom:12px">Le righe non riconosciute verranno ignorate — il resto verrà importato normalmente.</div>`;
+  } else {
+    h+=`<div style="font-size:12px;color:var(--green);margin-bottom:12px">✓ Nessun errore rilevato — ${recognizedCount} element${recognizedCount===1?'o':'i'} pront${recognizedCount===1?'o':'i'} per l'importazione.</div>`;
+  }
+  h+=`<div style="display:flex;gap:8px">
+    <button onclick="qcBackToInput()" style="flex:1;font-family:var(--sans);font-weight:600;font-size:12px;padding:10px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">MODIFICA</button>
+    <button onclick="qcConfirmImport()" style="flex:2;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer" ${recognizedCount===0?'disabled style="opacity:.4"':''}>CONFERMA IMPORTAZIONE (${recognizedCount})</button>
+  </div>`;
+  el.innerHTML=h;
+}
+function qcBackToInput(){
+  document.getElementById('qc-step-input').style.display='block';
+  document.getElementById('qc-step-result').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════════
+// SPEC 05: importazione reale, a lotti, con barra di avanzamento visibile
+// ══════════════════════════════════════════════════════════
+function qcCommitBlock(block,ctx){
+  const def=QC_ENTITIES[block.entity];
+  if(!def)return false;
+  return def.commit(block.fields,ctx);
+}
+function qcConfirmImport(){
+  const blocks=_qcPendingBlocks;
+  const lines=_qcPendingLines;
+  const totalWork=blocks.length+lines.length;
+  if(!totalWork)return;
+  const el=document.getElementById('qc-step-result');
+  el.innerHTML=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:14px">Importazione in corso…</div>
+    <div style="background:var(--surface3);border-radius:99px;height:8px;overflow:hidden;margin-bottom:8px">
+      <div id="qc-progress-fill" style="height:8px;width:0%;background:var(--green);border-radius:99px;transition:width .15s ease"></div>
+    </div>
+    <div id="qc-progress-label" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-align:center">0%</div>`;
+  const BATCH=15;
+  let idx=0;
+  const results={added:0,recurs:0,allenamento_added:0,alimentazione_added:0,spese_added:0,blocks_created:0,ignored:0};
   const byDate={};
-  let allenamento_added=0,alimentazione_added=0,spese_added=0;
-  lines.forEach(line=>{
+  const allProjs=[...PD,...ld('customProjs',[])];
+  const fallbackKey=document.getElementById('qc-date').value||agendaKey(new Date());
+  const fallbackDate=agendaDateFromKey(fallbackKey);
+  const ctx={allProjs,fallbackDate,byDate};
+  function processBatch(){
+    const end=Math.min(idx+BATCH,totalWork);
+    for(;idx<end;idx++){
+      let ok;
+      if(idx<blocks.length){
+        ok=qcCommitBlock(blocks[idx],ctx);
+        if(ok)results.blocks_created++;
+      } else {
+        ok=qcCommitLine(lines[idx-blocks.length],allProjs,fallbackDate,byDate,results);
+      }
+      if(!ok)results.ignored++;
+    }
+    const pct=Math.round(idx/totalWork*100);
+    const fillEl=document.getElementById('qc-progress-fill');
+    const lblEl=document.getElementById('qc-progress-label');
+    if(fillEl)fillEl.style.width=pct+'%';
+    if(lblEl)lblEl.textContent=pct+'%';
+    if(idx<totalWork){
+      setTimeout(processBatch,10);
+    } else {
+      Object.values(byDate).forEach(({date,tasks})=>{
+        const existing=getAgendaDay(date);
+        setAgendaDay(date,[...existing,...tasks]);
+      });
+      qcRenderFinalResults(results,totalWork);
+    }
+  }
+  processBatch();
+}
+function qcRenderFinalResults(results,totalLines){
+  const created=results.added+results.recurs+results.allenamento_added+results.alimentazione_added+results.spese_added+results.blocks_created;
+  const el=document.getElementById('qc-step-result');
+  el.innerHTML=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--green);margin-bottom:12px">✓ Importazione completata</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="row"><span style="flex:1;font-size:13px;color:var(--text)">Elementi creati</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${created}</span></div>
+      ${results.ignored?`<div class="row"><span style="flex:1;font-size:13px;color:var(--text)">Righe ignorate</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${results.ignored}</span></div>`:''}
+    </div>
+    <button onclick="closeQC()" style="width:100%;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">CHIUDI</button>`;
+  const agendaTab=document.getElementById('tab-agenda');
+  if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
+  renderHome();renderTopbar();
+  if(isTodayTabActive())renderTodayFocus();
+  toast('✓ Importazione completata — '+created+' element'+(created===1?'o':'i'));
+}
+
+function qcCommitLine(line,allProjs,fallbackDate,byDate,results){
     // v1: priorità inline "!alta"/"!media"/"!bassa" — spogliata prima di ogni altro parsing
     const _priRes=qcStripPriorita(line);
     const _qcPri=_priRes.pri;
@@ -7427,7 +8396,7 @@ function submitQC(){
       if(parsed.text&&parsed.projId){
         const wg=ld('weekGoals_'+parsed.projId,[]);
         if(!wg.includes(parsed.text)){wg.push(parsed.text);sv('weekGoals_'+parsed.projId,wg);}
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova obiettivo progetto
@@ -7436,7 +8405,7 @@ function submitQC(){
       if(parsed.text&&parsed.projId){
         const goals=ld('goals_'+parsed.projId,[]);
         if(!goals.includes(parsed.text)){goals.push(parsed.text);sv('goals_'+parsed.projId,goals);}
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova peso corporeo
@@ -7452,7 +8421,7 @@ function submitQC(){
         const storia=ld('alim_pesoStoria',[]);
         storia.push({dataKey:pesoDate.toDateString(),data:pesoDate.toLocaleDateString('it-IT'),peso:parsedPeso.peso});
         sv('alim_pesoStoria',storia);
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova carte eBay
@@ -7467,7 +8436,7 @@ function submitQC(){
           inv.unshift({nome:parsedCarta.nome,serie:'Pokémon',lingua:'ITA',acquisto:parsedCarta.prezzo||0,ebay:parsedCarta.prezzo||0,vendita:0,stato:'In Stock'});
         }
         sv('carteInv',inv);
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova finanze (entrata/uscita)
@@ -7483,7 +8452,7 @@ function submitQC(){
           log.unshift({tipo:parsedFin.tipo,desc:parsedFin.desc,importo:parsedFin.importo,asset:parsedFin.asset,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
           sv('txLog',log);
         }
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova abitudine
@@ -7498,7 +8467,7 @@ function submitQC(){
           dots[habIdx][parsedHab.dayIdx]=true;
           sv('habitDots',dots);
         }
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova stretching
@@ -7524,7 +8493,7 @@ function submitQC(){
           }
           sv('str_schede',schedeStr);
         }
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova assegnazione bulk scheda giorno
@@ -7537,8 +8506,8 @@ function submitQC(){
         let assegnati=0;
         parsedSched.esercizi.forEach(nomeEs=>{
           const ex=cat.find(e=>allNormName(e.nome)===allNormName(nomeEs)||allNormName(e.nome).includes(allNormName(nomeEs))||allNormName(nomeEs).includes(allNormName(e.nome)));
-          if(!ex)return;
-          if(scheda.esercizi.some(e=>e.catId===ex.id))return; // già presente
+          if(!ex)return true;
+          if(scheda.esercizi.some(e=>e.catId===ex.id))return true; // già presente
           const lastHist=ex.storia[ex.storia.length-1];
           scheda.esercizi.push({
             catId:ex.id,
@@ -7550,7 +8519,7 @@ function submitQC(){
         });
         sv('all_schede',schede);
         added+=assegnati;
-        return;
+        return true;
       }
     }
     // Prova copia giorno
@@ -7560,7 +8529,7 @@ function submitQC(){
         const schede=allGetSchede();
         schede[parsedCopia.toDayIdx].esercizi=schede[parsedCopia.fromDayIdx].esercizi.map(e=>({...e}));
         sv('all_schede',schede);
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova catalogo esercizio bulk (formato con pipe |)
@@ -7577,7 +8546,7 @@ function submitQC(){
         if(parsedCat.recupero)ex.recupero=parsedCat.recupero;
         if(parsedCat.note)ex.noteEsercizio=parsedCat.note;
         sv('all_catalogo',cat);
-        added++;return;
+        results.added++;return true;
       }
     }
     // Prova assegnazione ricetta
@@ -7591,8 +8560,8 @@ function submitQC(){
         pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0;
         sv('alim_schede',schede);
         ricIncrementUsage(parsed.ricettaId);
-        alimentazione_added++;
-        return;
+        alimentazione_results.added++;
+        return true;
       }
     }
     // Prova pasti giornata intera
@@ -7603,7 +8572,7 @@ function submitQC(){
         parsed.pasti.forEach(({slotIdx,cibo})=>{schede[parsed.dayIdx].pasti[slotIdx].testo=cibo;});
         sv('alim_schede',schede);
         alimentazione_added+=parsed.pasti.length;
-        return;
+        return true;
       }
     }
     // Prova scheda stretching intera
@@ -7615,13 +8584,13 @@ function submitQC(){
         let assegnatiStr=0;
         parsed.esercizi.forEach(nomeEs=>{
           const{id:catIdStr}=strFindOrCreateCatEsercizio(nomeEs);
-          if(schedaStr.esercizi.some(e=>e.catId===catIdStr))return; // già presente
+          if(schedaStr.esercizi.some(e=>e.catId===catIdStr))return true; // già presente
           schedaStr.esercizi.push({catId:catIdStr,durata:0});
           assegnatiStr++;
         });
         sv('str_schede',schedeStr);
         added+=assegnatiStr;
-        return;
+        return true;
       }
     }
     // Prova spesa pianificata
@@ -7632,8 +8601,8 @@ function submitQC(){
         const list=ld(key,[]);
         list.push({nome:parsed.desc,v:parsed.importo,data:parsed.dataStr,paid:false});
         sv(key,list);
-        spese_added++;
-        return;
+        spese_results.added++;
+        return true;
       }
     }
     // Prova task multiple sullo stesso progetto
@@ -7647,7 +8616,7 @@ function submitQC(){
           byDate[key].tasks.push({text:t,projId:parsed.projId,done:false,ts:Date.now()+Math.random(),type:'day',pri:_qcPri||'none'});
         });
         added+=parsed.tasks.length;
-        return;
+        return true;
       }
     }
     // Prova allenamento
@@ -7685,8 +8654,8 @@ function submitQC(){
             sv('all_catalogo',cat);
           }
         }
-        allenamento_added++;
-        return;
+        allenamento_results.added++;
+        return true;
       }
     }
     // Prova alimentazione
@@ -7696,34 +8665,25 @@ function submitQC(){
         const schede=alimGetSchede();
         schede[parsed.dayIdx].pasti[parsed.slotIdx].testo=parsed.cibo;
         sv('alim_schede',schede);
-        alimentazione_added++;
-        return;
+        alimentazione_results.added++;
+        return true;
       }
     }
     const{text,projId,isRecur,targetDate}=parseQCLine(line,allProjs);
-    if(!text)return;
+    if(!text)return false;
     if(isRecur&&projId){
       // aggiunge alle task ricorrenti del progetto
       const arr=ld('recur_'+projId,[]);
       if(!arr.includes(text)){arr.push(text);sv('recur_'+projId,arr);}
-      recurs++;
+      results.recurs++;
     } else {
       const d=targetDate||fallbackDate;
       const key=agendaKey(d); // v1 FIX timezone
       if(!byDate[key]){byDate[key]={date:d,tasks:[]};}
       byDate[key].tasks.push({text,projId,done:false,ts:Date.now()+Math.random(),type:'day',pri:_qcPri||'none'});
-      added++;
+      results.added++;
     }
-  });
-  Object.values(byDate).forEach(({date,tasks})=>{
-    const existing=getAgendaDay(date);
-    setAgendaDay(date,[...existing,...tasks]);
-  });
-  closeQC();
-  const agendaTab=document.getElementById('tab-agenda');
-  if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
-  const msg=[added?`⚡ ${added} in agenda`:'',recurs?`↺ ${recurs} ricorrenti`:'',allenamento_added?`💪 ${allenamento_added} esercizi`:'',alimentazione_added?`🥗 ${alimentazione_added} pasti`:'',spese_added?`💶 ${spese_added} spese`:''].filter(Boolean).join(' · ');
-  toast(msg||'⚡ fatto');
+    return true;
 }
 
 document.addEventListener('keydown',e=>{
