@@ -3,15 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0d0e12">
+<meta name="theme-color" content="#0F1115">
+<meta name="description" content="LifeOS — produttività, FitOS, finanze e collezione in un'unica app personale.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LIFE OS">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjM2IiBmaWxsPSIjMGYwZjBmIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOTAiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiM0YWRlODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkc8L3RleHQ+PC9zdmc+">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <title>LIFE OS — Giovanni</title>
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkxJRkUgT1MgLSBHaW92YW5uaSIsICJzaG9ydF9uYW1lIjogIkxJRkUgT1MiLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzBkMGUxMiIsICJ0aGVtZV9jb2xvciI6ICIjMGQwZTEyIiwgImljb25zIjogW3sic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0F4T0RBZ01UZ3dJajQ4Y21WamRDQjNhV1IwYUQwaU1UZ3dJaUJvWldsbmFIUTlJakU0TUNJZ2NuZzlJak0ySWlCbWFXeHNQU0lqTUdRd1pURXlJaTgrUEhSbGVIUWdlRDBpTlRBbElpQjVQU0kxTlNVaUlHWnZiblF0Wm1GdGFXeDVQU0p0YjI1dmMzQmhZMlVpSUdadmJuUXRjMmw2WlQwaU9UQWlJR1p2Ym5RdGQyVnBaMmgwUFNJM01EQWlJR1pwYkd3OUlpTTBZV1JsT0RBaUlIUmxlSFF0WVc1amFHOXlQU0p0YVdSa2JHVWlJR1J2YldsdVlXNTBMV0poYzJWc2FXNWxQU0p0YVdSa2JHVWlQa2M4TDNSbGVIUStQQzl6ZG1jKyIsICJzaXplcyI6ICIxOTJ4MTkyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -619,6 +629,12 @@ priorità: alta</span><br>
   <div class="cc" id="fin-dashboard-wrap" style="margin-bottom:10px">
     <div id="fin-dashboard"></div>
   </div>
+  <div class="cc" style="margin-bottom:10px" id="pat-chart-wrap">
+    <div class="cct" style="margin-bottom:4px">Trend patrimonio</div>
+    <div id="pat-trend-summary" style="margin-bottom:10px;display:flex;align-items:baseline;gap:6px"></div>
+    <canvas id="pat-chart" width="600" height="150"></canvas>
+    <div id="pat-no-data" style="display:none;font-size:12px;color:var(--text-ghost);padding:20px 0;text-align:center;font-family:'Space Mono',monospace">DATI INSUFFICIENTI — TORNA TRA QUALCHE GIORNO</div>
+  </div>
   <div class="cc asset-panel">
     <div class="asset-panel-head"><div class="cct">Asset totali</div><div class="asset-total" id="asset-total">€0</div></div>
     <div class="asset-panel-body">
@@ -679,14 +695,6 @@ priorità: alta</span><br>
       <span class="pat-pct" id="pat-pct-lbl">0% del target</span>
       <span class="pat-eta" id="pat-eta-lbl">—</span>
     </div>
-  </div>
-
-  <!-- GRAFICO TREND SETTIMANALE -->
-  <div class="cc" style="margin-bottom:1rem" id="pat-chart-wrap">
-    <div class="cct" style="margin-bottom:4px">Trend patrimonio</div>
-    <div id="pat-trend-summary" style="margin-bottom:10px;display:flex;align-items:baseline;gap:6px"></div>
-    <canvas id="pat-chart" width="600" height="150"></canvas>
-    <div id="pat-no-data" style="display:none;font-size:12px;color:var(--text-ghost);padding:20px 0;text-align:center;font-family:'Space Mono',monospace">DATI INSUFFICIENTI — TORNA TRA QUALCHE GIORNO</div>
   </div>
 
   <div class="foot-btns">
@@ -816,7 +824,7 @@ function modal(type,msg,cb){
 
 function updateThemeColorMeta(theme){
   const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta)meta.setAttribute('content',theme==='light'?'#fafafa':'#0d0e12');
+  if(meta)meta.setAttribute('content',theme==='light'?'#F5F7FA':'#0F1115');
 }
 function toggleTheme(){
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
