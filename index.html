@@ -176,12 +176,12 @@ body{
   touch-action:pan-y;
   -webkit-user-select:none;user-select:none;
 }
-input,textarea,.rt,.al,.fl,.ain,.hn{-webkit-user-select:text;user-select:text;}
+input,textarea,.rt,.al,.fl,.ain,
 button{font-family:var(--sans);touch-action:manipulation;}
 input,select,textarea,button{max-width:100%;font-family:var(--sans);}
 h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--text);}
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;}
-.motto{font-size:11px;color:var(--text-ghost);font-style:italic;}
+
 .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:1.2rem 0;}
 .flbl{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--text-dim);margin:14px 0 8px;text-transform:uppercase;}
 
@@ -219,13 +219,13 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 @media(max-width:600px){.proj-list-grid{grid-template-columns:1fr;}}
 .folder-drag-handle{cursor:grab;color:var(--text-ghost);font-size:13px;padding:0 4px;opacity:0;transition:opacity .15s;flex-shrink:0;user-select:none;}
 .folder-hdr:hover .folder-drag-handle{opacity:1;}
-.folder-hdr.folder-drag-over{border-top:2px solid var(--green);}
+
 .pb{height:3px;background:var(--border-soft);border-radius:99px;margin:7px 0 8px;overflow:hidden;}
 .pbf{height:3px;border-radius:99px;transition:width .4s;}
-.psub{font-size:11px;color:var(--text-faint);}
+
 .pc-meta{display:flex;justify-content:space-between;align-items:center;margin-top:2px;}
-.pc-tasks{font-family:var(--mono);font-size:10px;color:var(--text-faint);}
-.pc-age{font-size:9.5px;color:var(--text-ghost);}
+
+
 .folder-hdr{display:flex;align-items:center;justify-content:space-between;margin:20px 0 9px;}
 .folder-name{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);outline:none;background:transparent;border:none;cursor:text;flex:1;min-width:0;}
 .folder-name:focus{border-bottom:1px solid var(--border-hover);color:var(--text);}
@@ -242,7 +242,7 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .pc-qadd{position:absolute;bottom:8px;right:8px;font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer;padding:0;opacity:0;transition:opacity .15s;z-index:2;line-height:1;}
 .pc:hover .pc-qadd{opacity:1;}
 .color-picker-pop{position:fixed;z-index:9999;background:var(--surface3);border:1px solid var(--border-hover);border-radius:var(--r-md);padding:9px;display:grid;grid-template-columns:repeat(5,22px);gap:5px;box-shadow:var(--sh-3);backdrop-filter:blur(20px);}
-.arch-section{margin-top:20px;}
+
 .arch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:9px;}
 .pc-archived{opacity:.4;}
 #det{display:none;}
@@ -275,7 +275,6 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .row.dragging{opacity:.4;background:var(--surface3);}
 .row.drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
 .xb{font-size:14px;color:var(--text-ghost);background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;transition:color .15s;}
-.xb:hover{color:var(--red);}
 .row:hover .xb,.row:hover .drag-handle{color:var(--text-faint);}
 .arow{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--border-soft);}
 .ain{flex:1;background:transparent;border:none;font-size:13px;color:var(--text-faint);font-family:var(--sans);outline:none;}
@@ -302,23 +301,22 @@ td select{background:var(--surface2);border:1px solid var(--border);color:var(--
 .istl{font-size:10px;color:var(--text-dim);margin-bottom:4px;font-weight:600;}
 .istv{font-family:var(--mono);font-size:16px;font-weight:700;}
 .hw{background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-card);}
-.hh,.hr{display:grid;grid-template-columns:1fr repeat(7,24px) 46px 18px;gap:3px;padding:9px 13px;align-items:center;}
-.hh{border-bottom:1px solid var(--border-soft);}
-.hr{border-bottom:1px solid var(--border-soft);}
+.hh,
+
+
 .hr:last-child{border-bottom:none;}
-.hdl{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--text-ghost);text-align:center;}
-.hn{font-size:13px;color:var(--text);background:transparent;border:none;outline:none;font-family:var(--sans);width:100%;}
+
+
 .hn:focus{border-bottom:1px solid var(--border-hover);}
 .hd{width:21px;height:21px;border-radius:50%;border:1px solid var(--border);background:var(--row-hover);cursor:pointer;margin:0 auto;display:block;transition:all .15s;}
-.hd:hover{border-color:var(--border-hover);}
 .hd.on{background:var(--green);border-color:var(--green);box-shadow:0 0 6px var(--green-glow);animation:checkPop .35s cubic-bezier(.34,1.56,.64,1);}
-.hp{font-family:var(--mono);font-size:10px;color:var(--text-faint);text-align:right;}
-.hx{font-size:13px;color:var(--text-ghost);background:none;border:none;cursor:pointer;}
+
+
 .hx:hover{color:var(--red);}
 .ovg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border-soft);border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border);margin-bottom:11px;box-shadow:var(--sh-card);}
-.ovc{background:var(--surface2);padding:13px 14px;}
-.ovl{font-size:10px;color:var(--text-dim);letter-spacing:.01em;margin-bottom:5px;font-weight:600;}
-.ovv{font-family:var(--mono);font-size:17px;font-weight:700;}
+
+
+
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
 .fc{background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh-card);}
 .fct{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--text-dim);margin-bottom:11px;text-transform:uppercase;}
@@ -346,7 +344,7 @@ td select{background:var(--surface2);border:1px solid var(--border);color:var(--
 .movement-control:focus{border-color:var(--border-hover);box-shadow:0 0 0 3px var(--border-soft);}
 .expense-section-title{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint);padding:11px 0 7px;}
 .expense-section-title:first-child{padding-top:0;}
-.expense-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:13px 0 0;}
+
 .ar{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-soft);}
 .ar.asset-dragging{opacity:.4;}
 .ar.asset-drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
@@ -381,13 +379,13 @@ textarea::placeholder{color:var(--text-ghost);}
 .sr-item:hover{background:var(--row-hover);}
 .sr-tag{font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-right:8px;}
 .sr-match{color:var(--green);text-shadow:0 0 5px var(--green-glow);}
-.qa-meta{font-size:11px;color:var(--text-faint);margin-top:4px;font-weight:400;}
+
 
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}
 #tab-settimana{overflow-x:auto;}
 .wday{background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--r-md);padding:11px;box-shadow:var(--sh-card);}
 .wday.today{border-color:var(--green);box-shadow:0 0 0 1px var(--green),var(--sh-card);}
-.wday-name{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--text-faint);margin-bottom:7px;letter-spacing:.02em;}
+
 .wday-task{font-size:11px;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:4px;}
 .wday-task:last-child{border-bottom:none;}
 .wday-task.done{text-decoration:line-through;opacity:.4;}
@@ -411,8 +409,8 @@ textarea::placeholder{color:var(--text-ghost);}
 @keyframes qaBadgeIn{0%{opacity:0;transform:translateY(-4px)}15%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
 .qa-overlay-anim{animation:qaFadeIn .18s ease;}
 .qa-panel-anim{animation:qaSlideUp .22s cubic-bezier(.2,.8,.2,1);}
-.qa-recover-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--green);background:var(--green-glow);padding:2px 8px;border-radius:8px;animation:qaBadgeIn 1.8s ease forwards;}
-.qa-forgive-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text-faint);background:var(--surface3);padding:2px 8px;border-radius:8px;animation:qaBadgeIn 1.8s ease forwards;}
+
+
 .qa-pulse{animation:pop .5s ease;}
 .foot-btns{display:flex;gap:9px;justify-content:center;margin-top:1.1rem;}
 .foot-btn{font-family:var(--sans);font-size:11px;font-weight:600;padding:9px 18px;border-radius:var(--r-md);cursor:pointer;border:1px solid var(--border);background:var(--surface2);transition:all .15s;}
@@ -439,6 +437,7 @@ textarea::placeholder{color:var(--text-ghost);}
   font-family:var(--sans);font-size:12.5px;font-weight:700;padding:8px 17px;border-radius:10px;
   cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);
   transition:all .18s cubic-bezier(.2,.8,.2,1);
+  display:inline-flex;align-items:center;justify-content:center;line-height:1;
 }
 .tab:hover{border-color:var(--border-hover);color:var(--text-dim);transform:translateY(-1px);}
 .tab.on{
@@ -453,7 +452,13 @@ textarea::placeholder{color:var(--text-ghost);}
   .row:hover{padding-left:14px;}
 }
 @media(max-width:768px){
-  body{padding:1rem;}
+  body{
+    padding:1rem;
+    padding-top:calc(1rem + env(safe-area-inset-top, 0px));
+    padding-right:calc(1rem + env(safe-area-inset-right, 0px));
+    padding-bottom:calc(1rem + env(safe-area-inset-bottom, 0px));
+    padding-left:calc(1rem + env(safe-area-inset-left, 0px));
+  }
   .pgrid{grid-template-columns:repeat(2,1fr);}
   .arch-grid{grid-template-columns:repeat(2,1fr);}
   .cg{grid-template-columns:1fr;}
@@ -461,7 +466,7 @@ textarea::placeholder{color:var(--text-ghost);}
   .ovg{grid-template-columns:repeat(2,1fr);}
   .isg{grid-template-columns:repeat(2,1fr);}
   .week-grid{grid-template-columns:repeat(4,1fr);}
-  .hh,.hr{grid-template-columns:1fr repeat(7,20px) 40px 18px;gap:2px;padding:7px 9px;}
+  .hh,
   canvas{max-width:100%;}
   .pat-target-vals{flex-wrap:wrap;gap:4px;}
   .asset-panel-body{grid-template-columns:1fr;gap:15px;}
@@ -558,27 +563,29 @@ textarea::placeholder{color:var(--text-ghost);}
 <button id="qc-fab" onclick="openQC()" title="Quick Capture (Ctrl+Space)" style="position:fixed;bottom:78px;bottom:calc(78px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--green);color:var(--green);font-size:20px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">⚡</button>
 <button id="qa-fab" onclick="openQuickAdd()" title="Quick Add" style="position:fixed;bottom:24px;bottom:calc(24px + env(safe-area-inset-bottom));right:24px;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--blue);color:var(--blue);font-size:22px;cursor:pointer;z-index:8000;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;box-shadow:0 4px 20px #0008">＋</button>
 <div id="qa-overlay" style="display:none;position:fixed;inset:0;background:var(--modal-overlay);z-index:9100;align-items:center;justify-content:center">
-  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:20px;width:min(420px,92vw);max-height:80vh;display:flex;flex-direction:column;gap:12px" id="qa-panel"></div>
+  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:20px;width:min(440px,92vw);max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px" id="qa-panel"></div>
 </div>
 
 <div id="qc-overlay" style="display:none;position:fixed;inset:0;background:var(--modal-overlay);z-index:9000;align-items:center;justify-content:center">
-  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:20px;width:min(560px,95vw);max-height:80vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
+  <div style="background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:12px;padding:20px;width:min(620px,95vw);max-height:85vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--green);letter-spacing:.1em">⚡ QUICK CAPTURE</div>
+      <div style="font-family:var(--sans);font-weight:600;font-size:11px;color:var(--green);letter-spacing:.1em">⚡ QUICK CAPTURE — YAML</div>
       <button onclick="closeQC()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
     </div>
     <div id="qc-step-input">
       <div style="font-size:11px;color:var(--text-ghost);font-family:var(--sans);line-height:1.6;margin-bottom:10px">
-        Formato ufficiale — un blocco per entità:<br>
-        <span style="font-family:var(--mono);color:var(--text-faint);white-space:pre">Task
-titolo: Pubblicare video
-progetto: Quartzica
-priorità: alta</span><br>
-        Entità: Task · Obiettivo · Obiettivo Settimanale · Esercizio · Scheda Allenamento · Catalogo Esercizi · Pasto · Ricetta · Stretching · Peso · Entrata · Uscita · Spesa Pianificata · Asset · Carta · Habit · Nota · Idea · Link.<br>
-        Supportata anche la vecchia sintassi a riga singola (es. <span style="color:var(--text-faint)">peso 78.4</span>, <span style="color:var(--text-faint)">entrata: 200 stosa</span>, <span style="color:var(--yellow)">#PROGETTO</span>).
+        Un documento YAML per entità, separati da <span style="font-family:var(--mono);color:var(--text-faint)">---</span>. Ogni entità supporta più azioni (es. task: crea/completa/elimina). Se <span style="font-family:var(--mono);color:var(--text-faint)">azione</span> non è specificata, viene usata quella predefinita:<br>
+        <span style="font-family:var(--mono);color:var(--text-faint);white-space:pre">tipo: task
+titolo: Comprare pollo
+data: domani</span><br>
+        Entità disponibili: task · obiettivo · obiettivo_settimanale · giorno_allenamento · catalogo_esercizi · ricetta · stretching · peso · movimento · spesa_pianificata · asset · carta · abitudine · link.<br>
+        I progetti devono già esistere in LifeOS (non creabili da qui). Alimentazione completa (pasti) rimandata a una spec dedicata.
       </div>
-      <textarea id="qc-input" rows="8" placeholder="fare post TikTok #QUARTZICA&#10;call con cliente&#10;studiare copywriting #KDP" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:var(--sans);resize:vertical;line-height:1.7" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();qcAnalyze()}"></textarea>
-      <select id="qc-date" style="display:none"></select>
+      <textarea id="qc-input" rows="10" placeholder="tipo: task&#10;titolo: Comprare pollo&#10;progetto: Quartzica&#10;data: domani" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:var(--mono);resize:vertical;line-height:1.6" onkeydown="if(event.key==='Enter'&&event.ctrlKey){event.preventDefault();qcAnalyze()}"></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <span style="font-size:10px;color:var(--text-faint);font-family:var(--sans)">Data di fallback (se un'entità non la specifica):</span>
+        <select id="qc-date" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-faint);font-family:var(--mono);font-size:10px;padding:5px 8px;border-radius:6px;outline:none"></select>
+      </div>
       <button onclick="qcAnalyze()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:8px 20px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;margin-top:10px">ANALIZZA →</button>
     </div>
     <div id="qc-step-result" style="display:none"></div>
@@ -1076,7 +1083,6 @@ const calcPctWeek=id=>{
   const ch=ld('weekGoalChecks_'+id,[]);
   return t.length?Math.round(t.filter((_,i)=>ch[i]).length/t.length*100):0;
 };
-const tasksDone=id=>{const p=PD.find(x=>x.id===id);const t=ld('tasks_'+id,p?p.tasks0||[]:[]);const c=ld('tchecks_'+id,[]);return{done:c.filter(Boolean).length,tot:t.length};};
 const getAge=id=>{const ts=ld('updated_'+id,null);if(!ts)return null;const d=Math.floor((Date.now()-ts)/86400000);return d===0?'oggi':d===1?'ieri':d+'gg fa';};
 const getPri=id=>{const p=ld('proj_pri_'+id,'none');return p==='high'?{dot:'#f87171',label:'ALTA'}:p==='medium'?{dot:'#e8b04a',label:'MEDIA'}:{dot:'transparent',label:''};};
 
@@ -1132,12 +1138,6 @@ function calcProjDebt(projId){
   const weekForgiven=ld('debt_week_forgiven_'+projId,false);
   const weekDebt=weekForgiven?0:ld('debt_week_count_'+projId,0);
   return{total:total+weekDebt,perRecur,weekDebt};
-}
-function allProjectsDebt(){
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
-  const map={};
-  allProjs.forEach(p=>{map[p.id]=calcProjDebt(p.id).total;});
-  return map;
 }
 function recoverRecurDebt(projId,recurIdx){
   const recovered=ld('debt_recovered_'+projId,{});
@@ -1244,11 +1244,6 @@ function getWeekLabel(){
   start.setDate(n.getDate()-day);
   const end=new Date(start);end.setDate(start.getDate()+6);
   return start.getDate()+' '+MM[start.getMonth()]+' — '+end.getDate()+' '+MM[end.getMonth()]+' '+n.getFullYear();
-}
-function getPatHistoryValue(snapshot){
-  if(!snapshot.assets)return snapshot.v;
-  const visibleLabels=new Set(visibleAssets().map(x=>x.l));
-  return Object.keys(snapshot.assets).reduce((sum,label)=>sum+(visibleLabels.has(label)?snapshot.assets[label]:0),0);
 }
 // v1 SPEC FINANZE: sostituisce il vecchio sistema di snapshot manuale/settimanale.
 // Ogni evento economico (entrata, uscita, modifica asset, spesa pagata, transazione annullata)
@@ -1594,51 +1589,10 @@ function updateTodayBadge(){
 }
 
 // ── FOLDER OPS ───────────────────────────────────────────
-let _folderDragIdx=null;
-function folderDragStart(e,fi){
-  _folderDragIdx=fi;
-  e.dataTransfer.effectAllowed='move';
-}
-function folderDragOver(e,fi){
-  if(_folderDragIdx===null||_folderDragIdx===fi)return;
-  e.preventDefault();
-  document.querySelectorAll('.folder-hdr').forEach(el=>el.classList.remove('folder-drag-over'));
-  e.currentTarget.classList.add('folder-drag-over');
-}
-function folderDragLeave(e){e.currentTarget.classList.remove('folder-drag-over');}
-function folderDrop(e,fi){
-  e.currentTarget.classList.remove('folder-drag-over');
-  if(_folderDragIdx===null||_folderDragIdx===fi){_folderDragIdx=null;return;}
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
-  const [moved]=folders.splice(_folderDragIdx,1);
-  folders.splice(fi,0,moved);
-  sv('folders',folders);
-  _folderDragIdx=null;
-  renderHome();
-}
 function addFolder(){
   modal('prompt','Nome folder:',name=>{
     const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
     folders.push(name.trim().toUpperCase());sv('folders',folders);renderHome();toast('FOLDER CREATA');
-  });
-}
-function renameFolder(fi,name){
-  if(!name||!name.trim())return;
-  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
-  const old=folders[fi];folders[fi]=name.trim().toUpperCase();sv('folders',folders);
-  const orders=ld('projOrders',{});if(orders[old]){orders[folders[fi]]=orders[old];delete orders[old];sv('projOrders',orders);}
-  const allProjs=[...PD,...ld('customProjs',[])];
-  allProjs.forEach(p=>{if(p.folder===old){sv('proj_folder_'+p.id,folders[fi]);}});
-  toast('RINOMINATA');
-}
-function delFolder(fi){
-  modal('confirm','Eliminare la folder? I progetti verranno archiviati.',()=>{
-    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
-    const f=folders[fi];
-    const allProjs=[...PD,...ld('customProjs',[])];
-    const archived=ld('archived',[]);
-    allProjs.filter(p=>p.folder===f).forEach(p=>{if(!archived.includes(p.id))archived.push(p.id);});
-    sv('archived',archived);folders.splice(fi,1);sv('folders',folders);renderHome();toast('FOLDER ELIMINATA');
   });
 }
 function toggleArchive(){
@@ -2694,12 +2648,6 @@ function cycleRecurPri(i,id){
   if(isTodayTabActive())renderTodayFocus();
   else if(document.getElementById('det')?.style.display==='block')openProj(id);
 }
-function cycleTaskPri(i,id){
-  const tp=ld('taskpri_'+id,[]);
-  const cur=tp[i]||'none';
-  tp[i]=cur==='none'?'medium':cur==='medium'?'high':'none';
-  sv('taskpri_'+id,tp);openProj(id);
-}
 
 // ── MINI CALENDARIO PROGETTO ─────────────────────────────
 function toggleMiniCalDay(projId,key){
@@ -2926,10 +2874,6 @@ function drop(e,type,id){
 }
 
 // ── TASK/GOAL/SPESA OPS ──────────────────────────────────
-function ckTask(el,id){const r=el.closest('.row');r.classList.toggle('done');el.classList.toggle('on',r.classList.contains('done'));const rows=[...document.querySelectorAll('#tg .row')];const checks=rows.map(x=>x.classList.contains('done'));sv('tchecks_'+id,checks);const i=rows.indexOf(r);const text=r.querySelector('.rt')?.value||'';if(i>=0)updateTaskHistory(id,'normal',i,text,checks[i]);toast();}
-function edTask(i,id,v){const allProjs=[...PD,...ld('customProjs',[])];const t=ld('tasks_'+id,allProjs.find(p=>p.id===id).tasks0||[]);t[i]=v;sv('tasks_'+id,t);toast();}
-function addTask(id){const inp=document.getElementById('ti-'+id);const t=inp.value.trim();if(!t)return;const allProjs=[...PD,...ld('customProjs',[])];const a=ld('tasks_'+id,allProjs.find(p=>p.id===id).tasks0||[]);a.push(t);sv('tasks_'+id,a);inp.value='';openProj(id);}
-function delTask(i,id){const allProjs=[...PD,...ld('customProjs',[])];const t=ld('tasks_'+id,allProjs.find(p=>p.id===id).tasks0||[]);t.splice(i,1);sv('tasks_'+id,t);openProj(id);}
 function ckGoal(el,id){
   const r=el.closest('.row');r.classList.toggle('done');el.classList.toggle('on',r.classList.contains('done'));
   const gc=[...document.querySelectorAll(`#gg-${id} .row`)].map(x=>x.classList.contains('done'));
@@ -3949,12 +3893,6 @@ function allCloseFocusMode(){
   if(isTodayTabActive())renderTodayFocus();
 }
 
-function focusCurrentExercise(){
-  if(!_focusState)return null;
-  const schede=allGetSchede();
-  const scheda=schede[_focusState.schedaIdx];
-  return scheda.esercizi[_focusState.exIdx]||null;
-}
 
 function focusSkipExercise(){
   if(!_focusState||_focusActionLock)return;
@@ -5518,43 +5456,6 @@ function cryptoSyncAsset(){
 }
 
 // ── HABITS ───────────────────────────────────────────────
-function calcHabStreak(hi){
-  const habits=ld('habits',[]);
-  const dots=ld('habitDots',[]);
-  const hist=ld('habHist',[]);
-  const curDots=dots[hi]||Array(7).fill(false);
-  let streak=curDots.some(Boolean)?1:0;
-  for(let w=0;w<hist.length;w++){
-    const entry=hist[w];
-    const habitName=habits[hi];
-    const histIdx=entry.habits?entry.habits.indexOf(habitName):hi;
-    if(histIdx<0)break;
-    const weekDots=entry.data[histIdx]||Array(7).fill(false);
-    if(weekDots.some(Boolean))streak++;
-    else break;
-  }
-  return streak;
-}
-function renderHab(){
-  const hw=document.getElementById('hw');if(!hw)return;
-  const habits=ld('habits',[]),dots=ld('habitDots',[]);
-  let h=`<div class="hh"><div></div><div class="hdl">L</div><div class="hdl">M</div><div class="hdl">M</div><div class="hdl">G</div><div class="hdl">V</div><div class="hdl">S</div><div class="hdl">D</div><div class="hdl">%</div><div></div></div>`;
-  habits.forEach((hb,hi)=>{
-    const d=dots[hi]||Array(7).fill(false);
-    const pct=Math.round(d.filter(Boolean).length/7*100);
-    const streak=calcHabStreak(hi);
-    h+=`<div class="hr"><input class="hn" value="${esc(hb)}" onchange="edHab(${hi},this.value)">`;
-    d.forEach((on,di)=>h+=`<div class="hd${on?' on':''}" onclick="tDot(${hi},${di})"></div>`);
-    h+=`<span class="hp" style="line-height:1.2">${pct}%${streak>1?`<br><span style="font-size:8px;color:var(--yellow)">🔥${streak}w</span>`:''}</span><button class="hx" onclick="delHab(${hi})">×</button></div>`;
-  });
-  hw.innerHTML=h;
-}
-function edHab(i,v){const h=ld('habits',[]);h[i]=v;sv('habits',h);toast();}
-function tDot(hi,di){const d=ld('habitDots',[]);if(!d[hi])d[hi]=Array(7).fill(false);d[hi][di]=!d[hi][di];sv('habitDots',d);renderHab();}
-function addHab(){const inp=document.getElementById('nh');const t=inp.value.trim();if(!t)return;const h=ld('habits',[]);h.push(t);sv('habits',h);const d=ld('habitDots',[]);d.push(Array(7).fill(false));sv('habitDots',d);inp.value='';renderHab();toast();}
-function delHab(i){const h=ld('habits',[]);h.splice(i,1);sv('habits',h);const d=ld('habitDots',[]);d.splice(i,1);sv('habitDots',d);renderHab();toast();}
-function resetHabits(){modal('confirm','Azzerare i dot di questa settimana? Verranno salvati nello storico.',()=>{const habits=ld('habits',[]),dots=ld('habitDots',[]);const hist=ld('habHist',[]);hist.unshift({week:getWeekLabel(),data:dots.map(d=>[...d]),habits:[...habits]});if(hist.length>4)hist.pop();sv('habHist',hist);sv('habitDots',habits.map(()=>Array(7).fill(false)));renderHab();toast('SETTIMANA SALVATA E AZZERATA');});}
-function toggleHabHist(){habHistVisible=!habHistVisible;document.getElementById('histbtn').style.color=habHistVisible?'var(--text)':'var(--blue)';const el=document.getElementById('habHist');if(!habHistVisible){el.style.display='none';return;}const hist=ld('habHist',[]);if(!hist.length){el.innerHTML='<div style="font-size:13px;color:var(--text-ghost);padding:8px 0">Nessuno storico ancora.</div>';el.style.display='block';return;}let h='';hist.forEach(w=>{h+=`<div style="margin-bottom:12px"><div style="font-family:Space Mono,monospace;font-size:10px;color:var(--text-faint);margin-bottom:6px">${w.week}</div><div style="display:grid;grid-template-columns:1fr repeat(7,20px);gap:3px;align-items:center">`;w.habits.forEach((hb,hi)=>{const d=w.data[hi]||[];h+=`<span style="font-size:12px;color:var(--text-faint)">${esc(hb)}</span>`;d.forEach(on=>h+=`<div style="width:16px;height:16px;border-radius:50%;background:${on?'var(--green)':'var(--border-soft)'};border:1px solid var(--border);margin:0 auto"></div>`);});h+=`</div></div>`;});el.innerHTML=`<div class="card" style="padding:14px">${h}</div>`;el.style.display='block';}
 
 // ── ASSETS ───────────────────────────────────────────────
 function openAssetDetail(assetId){
@@ -5755,7 +5656,6 @@ function addAsset(){const a=ld('assets',[]);a.push({l:'Nuovo asset',v:0});sv('as
 
 // ── FINANCE ──────────────────────────────────────────────
 // ── SISTEMA FINANZIARIO ──────────────────────────────────
-function getAssets(){return ld('assets',[]);}
 function moveAsset(assetLabel,delta){
   const a=ld('assets',[]);
   const idx=a.findIndex(x=>x.l===assetLabel);
@@ -5776,10 +5676,6 @@ function currentMonthKey(){const d=new Date();return d.getFullYear()+'-'+(d.getM
 function txThisMonth(){
   const key=currentMonthKey();
   return ld('txLog',[]).filter(t=>{const d=new Date(t.ts);return d.getFullYear()+'-'+(d.getMonth()+1)===key;});
-}
-function txToday(){
-  const todayStr=new Date().toDateString();
-  return ld('txLog',[]).filter(t=>new Date(t.ts).toDateString()===todayStr);
 }
 // v1 SPEC FINANZE: dashboard giornaliera — patrimonio + andamento della giornata economica
 function renderFinanzeDashboard(){
@@ -5804,13 +5700,6 @@ function renderFinanzeDashboard(){
   `;
 }
 function nettoMese(){return txThisMonth().reduce((s,t)=>s+(t.tipo==='entrata'?t.importo:-t.importo),0);}
-function speseNonPagate(){
-  const allProjs=[...PD,...ld('customProjs',[])];
-  let tot=0;
-  allProjs.forEach(p=>ld('spese_'+p.id,[]).forEach(s=>{if(!s.paid)tot+=s.v;}));
-  ld('speseGen',[]).forEach(s=>{if(!s.paid)tot+=s.v;});
-  return tot;
-}
 function updateOv(){
   syncAssets();
   const a=ld('assets',[]);
@@ -5871,8 +5760,6 @@ function registraMovimento(){
   renderAssets();renderTxMonth();updateOv();renderTopbar();renderCharts();renderPatTarget();renderPatChart();
   toast(wentNegative?'⚠ '+asset+' in negativo':(tipo==='entrata'?'+€'+imp+' → '+asset:'-€'+imp+' da '+asset));
 }
-function registraEntrata(){const el=document.getElementById('reg-tipo');if(el)el.value='entrata';registraMovimento();}
-function registraUscita(){const el=document.getElementById('reg-tipo');if(el)el.value='uscita';registraMovimento();}
 
 function deleteTx(ts){
   modal('confirm','Annullare la transazione? Effetto invertito sull asset.',()=>{
@@ -6145,8 +6032,6 @@ function ckSpeseGen(i){
     updateOv();renderSpeseGen();renderTopbar();toast();
   }
 }
-function edSpeseGen(i,k,v){const s=ld('speseGen',[]);s[i][k]=v;sv('speseGen',s);renderTopbar();toast();}
-function delSpeseGen(i){const s=ld('speseGen',[]);s.splice(i,1);sv('speseGen',s);renderSpeseGen();renderTopbar();toast();}
 
 // ── CHARTS ───────────────────────────────────────────────
 function renderCharts(){
@@ -6169,15 +6054,8 @@ function renderCharts(){
 }
 
 // ── EXPORT / IMPORT ──────────────────────────────────────
-function toggleQuicknote(){
-  const wrap=document.getElementById('qn-wrap');
-  const arrow=document.getElementById('qn-arrow');
-  const open=wrap.style.display!=='none';
-  wrap.style.display=open?'none':'block';
-  if(arrow)arrow.textContent=open?'▼':'▲';
-}
 function exportData(){const keys=Object.keys(localStorage).filter(k=>k.startsWith('g_'));const data={};keys.forEach(k=>data[k.slice(2)]=JSON.parse(localStorage.getItem(k)));const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lifeOS_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('BACKUP ESPORTATO');}
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.keys(data).forEach(k=>localStorage.setItem('g_'+k,JSON.stringify(data[k])));toast('IMPORTATO — RICARICA');setTimeout(()=>{renderHome();renderHab();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();updateOv();const qn=document.getElementById('quicknote');if(qn)qn.value=ld('quicknote','');const tgt=document.getElementById('pat-tgt-inp');if(tgt)tgt.value='€'+(ld('pat_target',0)).toFixed(0);},300);}catch(err){toast('ERRORE IMPORT');}};reader.readAsText(file);}
+function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.keys(data).forEach(k=>localStorage.setItem('g_'+k,JSON.stringify(data[k])));toast('IMPORTATO — RICARICA');setTimeout(()=>{renderHome();renderAssets();renderTxMonth();renderSpese();renderSpeseGen();renderCharts();renderPatTarget();renderPatChart();updateOv();const tgt=document.getElementById('pat-tgt-inp');if(tgt)tgt.value='€'+(ld('pat_target',0)).toFixed(0);},300);}catch(err){toast('ERRORE IMPORT');}};reader.readAsText(file);}
 
 // ── BOOT ─────────────────────────────────────────────────
 window._refreshTxLog=function(){
@@ -6207,15 +6085,12 @@ window._refreshAll=function(changedKeys){
       const t=detEl?.querySelector('.dn');
       if(t){const allP=[...PD,...ld('customProjs',[])];const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
     }
-    if(!editing)renderHab();
     if(!editing)renderTodayFocus();
     renderAssets();
     if(!keys.length||keys.includes('txLog'))window._refreshTxLog();
     if(!keys.length||keys.includes('assets')){renderCharts();renderPatTarget();renderPatChart();}
     if(!keys.length||keys.some(k=>k.startsWith('spese')||k==='speseGen')){renderSpese();renderSpeseGen();}
     updateOv();
-    const qn=document.getElementById('quicknote');
-    if(qn&&document.activeElement!==qn)qn.value=ld('quicknote','');
     if(Date.now()-_lastSyncToast>5000){_lastSyncToast=Date.now();toast('↕ sync');}
   },400);
 };
@@ -6541,12 +6416,22 @@ function renderTodayFocus(){
 }
 
 function setOggiSort(mode){sv('oggi_sort',mode);renderTodayFocus();}
+function calcHabStreak(hi){
+  const dots=ld('habitDots',[])[hi]||[];
+  const todayDow=(new Date().getDay()+6)%7;
+  let streak=0;
+  for(let d=todayDow;d>=0;d--){
+    if(dots[d])streak++;
+    else break;
+  }
+  return streak;
+}
 function tDotToday(hi,di){
   const d=ld('habitDots',[]);
   if(!d[hi])d[hi]=Array(7).fill(false);
   d[hi][di]=!d[hi][di];
   sv('habitDots',d);
-  renderTodayFocus();renderHab();updateTodayBadge();
+  renderTodayFocus();updateTodayBadge();
 }
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
@@ -6676,22 +6561,22 @@ function migrateData(){
 function bootApp(){
   initData();migrateData();ensureAssetIds();autoSnapOnce();
   const _he=document.getElementById('home-extra');if(_he)_he.style.display='none';
-  renderHome();renderTopbar();renderHab();renderAssets();
+  renderHome();renderTopbar();renderAssets();
   // Attiva tab OGGI come default
   const _oggiBtn=document.getElementById('tab-oggi-btn');
   if(_oggiBtn)showTab('oggi',_oggiBtn);
   renderTxMonth();renderSpese();renderSpeseGen();
-  const _qnel=document.getElementById('quicknote');if(_qnel)_qnel.value=ld('quicknote','');
+  
   setTimeout(()=>{
     renderCharts();renderPatTarget();renderPatChart();updateOv();
     if(window._fbListen)window._fbListen();
     setTimeout(autoWeeklyBackup,3000);
     if(!localStorage.getItem('g_folders')&&window._fbLoadAll){
       window._fbLoadAll(()=>{
-        renderHome();renderTopbar();renderHab();renderAssets();
+        renderHome();renderTopbar();renderAssets();
         renderTxMonth();renderSpese();renderSpeseGen();
         renderCharts();renderPatTarget();renderPatChart();updateOv();
-        const _qnel=document.getElementById('quicknote');if(_qnel)_qnel.value=ld('quicknote','');
+        
       });
     }
   },1500);
@@ -6717,1173 +6602,53 @@ function tryFirebaseBoot(){
 tryFirebaseBoot();
 
 // ── QUICK CAPTURE ──
-const QC_MONTHS={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};
+// ══════════════════════════════════════════════════════════
+// SPEC 01 — QUICK CAPTURE: rifondazione completa su YAML
+// Pipeline: YAML Parser → Schema Validator → Entity Mapper → Preview Engine → Import Engine → Database
+// Nessuna retrocompatibilità con il vecchio formato testuale.
+// ══════════════════════════════════════════════════════════
+
+// ── helper di data/campo condivisi (riusati dai mapper, non conoscono YAML né entità) ──
+const QC_MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
 const QC_DAYS={lunedì:1,lun:1,martedì:2,mar:2,mercoledì:3,mer:3,giovedì:4,gio:4,venerdì:5,ven:5,sabato:6,sab:6,domenica:0,dom:0};
-const QC_MONTH_NAMES=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-const QC_DAY_NAMES=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-
-function _escRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-
-function parseQCLine(line,allProjs){
-  // Normalizza #giorno → giorno (es. #lunedì → lunedì)
-  line=line.replace(/#(lunedì|lun|martedì|mar|mercoledì|mer|giovedì|gio|venerdì|ven|sabato|sab|domenica|dom)\b/gi,
-    (m,d)=>' '+d+' ');
-  let text=line.trim();
-  let projId='',proj=null,targetDate=null,isRecur=false;
-
-  // 0. FORMATO STRUTTURATO: "task ; progetto ; data|ricorrente"
-  if(line.includes(';')){
-    const parts=line.split(';').map(s=>s.trim());
-    text=parts[0]||'';
-    const projRaw=parts[1]||'';
-    const third=parts[2]||'';
-
-    // Cerca progetto nel secondo campo
-    let bestProj=null,bestLen=0;
-    allProjs.forEach(p=>{
-      const candidates=[p.id,p.tag,p.folder,...(p.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=2);
-      candidates.forEach(tok=>{
-        const re=new RegExp('(?:^|\\b)'+_escRe(tok)+'(?:\\b|$)','i');
-        if(re.test(projRaw)&&tok.length>bestLen){bestProj=p;bestLen=tok.length;}
-      });
-    });
-    if(!bestProj&&projRaw){
-      // fallback: match diretto su id/folder/tag
-      allProjs.forEach(p=>{
-        if([p.id,p.tag,p.folder].some(v=>v&&v.toLowerCase()===projRaw.toLowerCase()))bestProj=p;
-      });
-    }
-    if(bestProj){proj=bestProj;projId=bestProj.id;}
-
-    // Analizza il terzo campo
-    if(third){
-      if(/\bricorr\w*\b/i.test(third)||/\/r\b/i.test(third)){
-        isRecur=true;
-      } else {
-        // DD MM YY o DD MM YYYY (es. "18 06 26" o "18 06 2026")
-        const ddmmyy=third.match(/^(\d{1,2})\s+(\d{1,2})\s+(\d{2,4})$/);
-        if(ddmmyy){
-          let yr=parseInt(ddmmyy[3]);
-          if(yr<100)yr+=2000;
-          targetDate=new Date(yr,parseInt(ddmmyy[2])-1,parseInt(ddmmyy[1]));
-        } else {
-          // DD/MM o DD/MM/YYYY
-          const ddmm=third.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
-          if(ddmm){
-            let yr=ddmm[3]?parseInt(ddmm[3]):new Date().getFullYear();
-            if(yr<100)yr+=2000;
-            targetDate=new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));
-          }
-        }
-      }
-    }
-
-    return{text:text||line.trim(),projId,proj,targetDate,isRecur};
-  }
-
-  // 1. RICORRENTE — parole chiave: ricorrente, ricorr, ogni giorno, /r
-  if(/\bricorr\w*\b/i.test(text)||/\bogni\s+giorno\b/i.test(text)||/\/r\b/i.test(text)){
-    isRecur=true;
-    text=text.replace(/\bricorr\w*\b/gi,'').replace(/\bogni\s+giorno\b/gi,'').replace(/\/r\b/gi,'').trim();
-  }
-
-  // 2. DATA — solo se non ricorrente
-  if(!isRecur){
-    const today=new Date();today.setHours(0,0,0,0);
-    let matched='';
-
-    // dopodomani
-    if(/\bdopodomani\b/i.test(text)){
-      targetDate=new Date(today);targetDate.setDate(today.getDate()+2);
-      matched='dopodomani';
-    }
-    // domani
-    else if(/\bdomani\b/i.test(text)){
-      targetDate=new Date(today);targetDate.setDate(today.getDate()+1);
-      matched='domani';
-    }
-    // oggi
-    else if(/\boggi\b/i.test(text)){
-      targetDate=new Date(today);
-      matched='oggi';
-    }
-    // tra N giorni
-    else{
-      const traN=text.match(/\btra\s+(\d+)\s+giorni?\b/i);
-      if(traN){
-        targetDate=new Date(today);targetDate.setDate(today.getDate()+parseInt(traN[1]));
-        matched=traN[0];
-      }
-    }
-
-    if(!matched){
-      // DD/MM o DD/MM/YYYY
-      const ddmm=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?\b/);
-      if(ddmm){
-        const yr=ddmm[3]?parseInt(ddmm[3]):today.getFullYear();
-        targetDate=new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));
-        matched=ddmm[0];
-      } else {
-        // DD mese (es. "15 giu")
-        const _MLONG={gennaio:0,febbraio:1,marzo:2,aprile:3,maggio:4,giugno:5,luglio:6,agosto:7,settembre:8,ottobre:9,novembre:10,dicembre:11};
-        const ddmon=text.match(/\b(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)\b/i);
-        if(ddmon){
-          const _mr=ddmon[2].toLowerCase();const _mi=QC_MONTHS[_mr]!==undefined?QC_MONTHS[_mr]:(_MLONG[_mr]!==undefined?_MLONG[_mr]:QC_MONTHS[_mr.slice(0,3)]);
-          targetDate=new Date(today.getFullYear(),_mi,parseInt(ddmon[1]));
-          matched=ddmon[0];
-        } else {
-          // giorno della settimana (prossimo)
-          for(const [name,num] of Object.entries(QC_DAYS)){
-            const re=new RegExp('\\b'+_escRe(name)+'\\b','i');
-            if(re.test(text)){
-              const d=new Date(today);
-              const diff=(num-d.getDay()+7)%7;
-              d.setDate(d.getDate()+diff);
-              targetDate=d;matched=name;break;
-            }
-          }
-        }
-      }
-    }
-    if(matched) text=text.replace(new RegExp(_escRe(matched),'i'),'').trim();
-  }
-
-  // 3. PROGETTO — match su id, tag, folder (min 3 chars, caso insensitivo)
-  let bestProj=null,bestLen=0;
-  allProjs.forEach(p=>{
-    const candidates=[p.id,p.tag,p.folder,...(p.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=3);
-    candidates.forEach(tok=>{
-      const re=new RegExp('\\b'+_escRe(tok)+'\\b','i');
-      if(re.test(text)&&tok.length>bestLen){bestProj=p;bestLen=tok.length;}
-    });
-  });
-  if(bestProj){
-    proj=bestProj;projId=bestProj.id;
-    const toks=[bestProj.id,bestProj.tag,bestProj.folder,...(bestProj.tag||'').split(/[\s·—\-]+/)].filter(t=>t&&t.length>=3);
-    toks.sort((a,b)=>b.length-a.length);
-    toks.forEach(tok=>{text=text.replace(new RegExp('\\b'+_escRe(tok)+'\\b','gi'),'');});
-    text=text.replace(/\s+/g,' ').trim();
-  }
-
-  return{text:text||line.trim(),projId,proj,targetDate,isRecur};
-}
-
-function _qcDateLabel(d){
-  const today=new Date();today.setHours(0,0,0,0);
-  const diff=Math.round((d-today)/86400000);
-  if(diff===0)return'oggi';
-  if(diff===1)return'domani';
-  return QC_DAY_NAMES[d.getDay()]+' '+d.getDate()+' '+QC_MONTH_NAMES[d.getMonth()];
-}
-
-// ══════════════════════════════════════════════════════════
-// QUICK ADD — aggiunta rapidissima di una singola informazione
-// Riusa lo stesso parser e lo stesso database della Quick Capture.
-// ══════════════════════════════════════════════════════════
-const QA_CATS=[
-  ['organizza','📋','Organizza'],
-  ['salute','💪','Salute'],
-  ['denaro','💰','Denaro'],
-  ['note','📝','Note'],
-  ['collezione','📦','Collezione']
-];
-const QA_ACTIONS={
-  organizza:[['task','Task'],['obiettivo','Obiettivo'],['evento','Evento'],['progetto','Progetto']],
-  salute:[['allenamento','Allenamento'],['pasto','Pasto'],['peso','Peso'],['stretching','Stretching'],['acqua','Acqua']],
-  denaro:[['entrata','Entrata'],['uscita','Uscita'],['spesa','Spesa pianificata'],['asset','Asset']],
-  note:[['nota','Nota'],['idea','Idea'],['link','Link'],['prompt','Prompt']],
-  collezione:[['carta_acq','Carta acquistata'],['carta_vend','Carta venduta'],['carta_add','Carta aggiunta']]
-};
-const QA_LABELS={task:'Task',obiettivo:'Obiettivo',evento:'Evento',progetto:'Progetto',allenamento:'Allenamento',pasto:'Pasto',peso:'Peso',stretching:'Stretching',acqua:'Acqua',entrata:'Entrata',uscita:'Uscita',spesa:'Spesa pianificata',asset:'Asset',nota:'Nota',idea:'Idea',link:'Link',prompt:'Prompt',carta_acq:'Carta acquistata',carta_vend:'Carta venduta',carta_add:'Carta aggiunta'};
-const QA_PLACEHOLDERS={
-  task:'Comprare pollo domani',obiettivo:'Pubblicare 10 video #progetto',evento:'Riunione con cliente alle 15',progetto:'Nome del progetto',
-  pasto:'Yogurt greco e granola',peso:'61.4',acqua:'250 (ml — vuoto = un bicchiere)',
-  entrata:'250 Stosa',uscita:'18 benzina',spesa:'40 abbonamento #progetto 15 luglio',asset:'Liquidità 500',
-  nota:'Scrivi qui…',idea:'Scrivi qui…',link:'Incolla il link…',prompt:'Scrivi il prompt…',
-  carta_acq:'Charizard 50',carta_vend:'Charizard 80',carta_add:'Charizard'
-};
-const QA_NO_INPUT=['allenamento','stretching']; // azioni "un tap e via", senza campo di testo
-
-let _qaState={step:'cat',category:null,action:null,text:''};
-function openQuickAdd(){
-  _qaState={step:'cat',category:null,action:null,text:''};
-  const overlay=document.getElementById('qa-overlay');
-  overlay.style.display='flex';overlay.style.opacity='';
-  overlay.classList.add('qa-overlay-anim');
-  document.getElementById('qa-panel').classList.add('qa-panel-anim');
-  renderQuickAdd();
-}
-function closeQuickAdd(){
-  const overlay=document.getElementById('qa-overlay');
-  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
-  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';},150);
-}
-function qaSelectCategory(key){_qaState.category=key;_qaState.step='action';renderQuickAdd();}
-function qaSelectAction(key){
-  _qaState.action=key;
-  _qaState.step=QA_NO_INPUT.includes(key)?'preview':'input';
-  renderQuickAdd();
-  if(_qaState.step==='input')setTimeout(()=>document.getElementById('qa-input')?.focus(),50);
-}
-function qaBack(){
-  if(_qaState.step==='action'){_qaState.step='cat';_qaState.category=null;}
-  else if(_qaState.step==='input'){_qaState.step='action';_qaState.action=null;}
-  else if(_qaState.step==='preview'){_qaState.step=QA_NO_INPUT.includes(_qaState.action)?'action':'input';}
-  renderQuickAdd();
-}
-function qaGoPreview(){
-  const inp=document.getElementById('qa-input');
-  _qaState.text=inp?inp.value.trim():'';
-  if(!_qaState.text){toast('Scrivi qualcosa');return;}
-  _qaState.step='preview';
-  renderQuickAdd();
-}
-function qaGuessSlot(){
-  const h=new Date().getHours();
-  if(h<11)return 0; if(h<15)return 2; if(h<19)return 1; return 4;
-}
-function _qcDateLabelSafe(d){
-  const days=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  const months=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  return days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()];
-}
-
-// ── ogni azione: preview(text)→{ok,html,error} e commit(text)→bool ──
-const QA_HANDLERS={
-  task:{
-    preview:(t)=>{
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const p=parseQCLine(t,allProjs);
-      if(!p.text)return{ok:false,error:'Non ho capito cosa aggiungere'};
-      const dateLabel=p.isRecur?'ricorrente':_qcDateLabelSafe(p.targetDate||new Date());
-      return{ok:true,html:`<b>${esc(p.text)}</b><div class="qa-meta">${p.proj?esc(p.proj.tag):'nessun progetto'} · ${dateLabel}</div>`};
-    },
-    commit:(t)=>{
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const p=parseQCLine(t,allProjs);
-      if(!p.text)return false;
-      if(p.isRecur&&p.projId){
-        const arr=ld('recur_'+p.projId,[]);
-        if(!arr.includes(p.text)){arr.push(p.text);sv('recur_'+p.projId,arr);}
-      } else {
-        const d=p.targetDate||new Date();
-        const tasks=getAgendaDay(d);
-        tasks.push({text:p.text,projId:p.projId||'',done:false,ts:Date.now()+Math.random(),type:'day',pri:'none'});
-        setAgendaDay(d,tasks);
-      }
-      renderHome();renderTopbar();if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  evento:{ // stesso modello del Task — LifeOS non ha un'entità Evento separata
-    preview:(t)=>QA_HANDLERS.task.preview(t),
-    commit:(t)=>QA_HANDLERS.task.commit(t)
-  },
-  obiettivo:{
-    preview:(t)=>{
-      const m=t.match(/#([\wàèéìòù]+)/i);
-      if(!m)return{ok:false,error:'Aggiungi #progetto al testo per associarlo'};
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const tagRaw=m[1].toLowerCase();
-      const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
-      if(!proj)return{ok:false,error:'Progetto non trovato'};
-      const text=t.replace(m[0],'').trim();
-      if(!text)return{ok:false,error:'Manca il testo dell\'obiettivo'};
-      return{ok:true,html:`<b>${esc(text)}</b><div class="qa-meta">${esc(proj.tag)}</div>`};
-    },
-    commit:(t)=>{
-      const m=t.match(/#([\wàèéìòù]+)/i);
-      if(!m)return false;
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const tagRaw=m[1].toLowerCase();
-      const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
-      if(!proj)return false;
-      const text=t.replace(m[0],'').trim();
-      if(!text)return false;
-      const wg=ld('weekGoals_'+proj.id,[]);
-      if(!wg.includes(text)){wg.push(text);sv('weekGoals_'+proj.id,wg);}
-      if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  progetto:{
-    preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">nuovo progetto</div>`}:{ok:false,error:'Scrivi un nome'},
-    commit:(t)=>{
-      const nome=t.trim();if(!nome)return false;
-      const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
-      const folder=folders[0]||'BRAND DIGITALE';
-      const id='cp_'+Date.now();
-      const color=PROJ_COLORS[Math.floor(Math.random()*PROJ_COLORS.length)];
-      const custom=ld('customProjs',[]);
-      custom.push({id,tag:nome.toUpperCase(),color,sub:'nuovo progetto',folder,tasks0:[],goals0:[],note0:''});
-      sv('customProjs',custom);
-      renderHome();
-      return true;
-    }
-  },
-  allenamento:{
-    preview:()=>{
-      const today=new Date();today.setHours(0,0,0,0);
-      const scheda=allGetSchede()[allWeekdayIdx(today)];
-      if(!scheda.esercizi.length)return{ok:false,error:'Nessun esercizio pianificato oggi'};
-      return{ok:true,html:`<b>${esc(scheda.nome)}</b><div class="qa-meta">${scheda.esercizi.length} esercizi verranno segnati come completati</div>`};
-    },
-    commit:()=>{
-      const today=new Date();today.setHours(0,0,0,0);
-      const todayIdx=allWeekdayIdx(today);
-      const scheda=allGetSchede()[todayIdx];
-      if(!scheda.esercizi.length)return false;
-      const todayKey=today.toDateString();
-      const all=ld('all_checksOggi',{});
-      if(!all[todayKey])all[todayKey]={};
-      scheda.esercizi.forEach((_,j)=>{all[todayKey][todayIdx+'_'+j]=true;});
-      sv('all_checksOggi',all);
-      renderHome();updateTodayBadge();if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  stretching:{
-    preview:()=>{
-      const today=new Date();today.setHours(0,0,0,0);
-      const scheda=strGetSchede()[allWeekdayIdx(today)];
-      if(!scheda.esercizi.length)return{ok:false,error:'Nessuna routine pianificata oggi'};
-      return{ok:true,html:`<b>${esc(scheda.nome)}</b><div class="qa-meta">${scheda.esercizi.length} routine verranno segnate come completate</div>`};
-    },
-    commit:()=>{
-      const today=new Date();today.setHours(0,0,0,0);
-      const todayIdx=allWeekdayIdx(today);
-      const scheda=strGetSchede()[todayIdx];
-      if(!scheda.esercizi.length)return false;
-      const todayKey=today.toDateString();
-      const all=ld('str_checksOggi',{});
-      if(!all[todayKey])all[todayKey]={};
-      scheda.esercizi.forEach((_,j)=>{all[todayKey][todayIdx+'_'+j]=true;});
-      sv('str_checksOggi',all);
-      renderHome();updateTodayBadge();if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  pasto:{
-    preview:(t)=>{
-      if(!t.trim())return{ok:false,error:'Scrivi cosa mangi'};
-      const slotNames=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
-      return{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">${slotNames[qaGuessSlot()]} · oggi</div>`};
-    },
-    commit:(t)=>{
-      if(!t.trim())return false;
-      const today=new Date();
-      const todayIdx=allWeekdayIdx(today);
-      const slotIdx=qaGuessSlot();
-      const schede=alimGetSchede();
-      schede[todayIdx].pasti[slotIdx].testo=t.trim();
-      sv('alim_schede',schede);
-      renderHome();if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  peso:{
-    preview:(t)=>{
-      const v=parseFloat(t.replace(',','.'));
-      if(!v)return{ok:false,error:'Scrivi un peso valido, es. 61.4'};
-      return{ok:true,html:`<b>${v} kg</b><div class="qa-meta">oggi</div>`};
-    },
-    commit:(t)=>{
-      const v=parseFloat(t.replace(',','.'));if(!v)return false;
-      const storia=ld('alim_pesoStoria',[]);
-      const dataKey=new Date().toDateString();
-      const entry={dataKey,peso:v,data:new Date().toLocaleDateString('it-IT')};
-      const existing=storia.findIndex(x=>x.dataKey===dataKey);
-      if(existing>=0)storia[existing]=entry;else storia.push(entry);
-      sv('alim_pesoStoria',storia);
-      if(isTodayTabActive())renderTodayFocus();
-      return true;
-    }
-  },
-  acqua:{
-    preview:(t)=>{
-      const v=t.trim()?parseInt(t):250;
-      if(!v||v<=0)return{ok:false,error:'Quantità non valida'};
-      return{ok:true,html:`<b>+${v} ml</b><div class="qa-meta">oggi</div>`};
-    },
-    commit:(t)=>{
-      const v=t.trim()?parseInt(t):250;if(!v||v<=0)return false;
-      const dk=dayKey(new Date());
-      const acqua=ld('acqua_log',{});
-      acqua[dk]=(acqua[dk]||0)+v;
-      sv('acqua_log',acqua);
-      return true;
-    }
-  },
-  entrata:{
-    preview:(t)=>{
-      const p=qcParseFinanza('entrata: '+t);
-      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 250 Stosa'};
-      return{ok:true,html:`<b>+€${p.importo}</b><div class="qa-meta">${esc(p.desc)} · ${esc(p.asset)}</div>`};
-    },
-    commit:(t)=>{
-      const p=qcParseFinanza('entrata: '+t);if(!p)return false;
-      moveAsset(p.asset,p.importo);logTx('entrata',p.desc,p.importo,p.asset);recordPatEvent();
-      renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();renderCharts();renderPatChart();
-      return true;
-    }
-  },
-  uscita:{
-    preview:(t)=>{
-      const p=qcParseFinanza('uscita: '+t);
-      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 18 benzina'};
-      return{ok:true,html:`<b>−€${p.importo}</b><div class="qa-meta">${esc(p.desc)} · ${esc(p.asset)}</div>`};
-    },
-    commit:(t)=>{
-      const p=qcParseFinanza('uscita: '+t);if(!p)return false;
-      moveAsset(p.asset,-p.importo);logTx('uscita',p.desc,p.importo,p.asset);recordPatEvent();
-      renderTopbar();renderFinanzeDashboard();renderAssets();renderTxMonth();renderCharts();renderPatChart();
-      return true;
-    }
-  },
-  spesa:{
-    preview:(t)=>{
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const p=qcParseSpesa('spesa '+t,allProjs);
-      if(!p)return{ok:false,error:'Scrivi importo e descrizione, es. 40 abbonamento'};
-      const proj=allProjs.find(x=>x.id===p.projId);
-      return{ok:true,html:`<b>−€${p.importo}</b><div class="qa-meta">${esc(p.desc)}${proj?' · '+esc(proj.tag):''}${p.dataStr!=='—'?' · '+p.dataStr:''}</div>`};
-    },
-    commit:(t)=>{
-      const allProjs=[...PD,...ld('customProjs',[])];
-      const p=qcParseSpesa('spesa '+t,allProjs);if(!p)return false;
-      const key=p.projId?'spese_'+p.projId:'speseGen';
-      const list=ld(key,[]);
-      list.push({nome:p.desc,v:p.importo,data:p.dataStr,paid:false});
-      sv(key,list);
-      renderSpese();
-      return true;
-    }
-  },
-  asset:{
-    preview:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
-      if(!m)return{ok:false,error:'Scrivi nome e valore, es. Liquidità 500'};
-      return{ok:true,html:`<b>${esc(m[1].trim())}</b><div class="qa-meta">€${m[2]}</div>`};
-    },
-    commit:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);if(!m)return false;
-      const nome=m[1].trim(),valore=parseFloat(m[2].replace(',','.'));
-      const assets=ld('assets',[]);
-      const existing=assets.find(a=>a.l.toLowerCase()===nome.toLowerCase());
-      if(existing)existing.v=valore;
-      else assets.push({l:nome,v:valore,id:'asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});
-      sv('assets',assets);recordPatEvent();
-      renderAssets();renderCharts();renderPatTarget();renderPatChart();renderFinanzeDashboard();
-      return true;
-    }
-  },
-  nota:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">nota</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('nota',t)},
-  idea:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">idea</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('idea',t)},
-  link:{preview:(t)=>t.trim()?{ok:true,html:`<b style="word-break:break-all">${esc(t.trim())}</b><div class="qa-meta">link</div>`}:{ok:false,error:'Incolla un link'},commit:(t)=>qaSaveNote('link',t)},
-  prompt:{preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">prompt</div>`}:{ok:false,error:'Scrivi qualcosa'},commit:(t)=>qaSaveNote('prompt',t)},
-  carta_acq:{
-    preview:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
-      const nome=m?m[1].trim():t.trim();
-      if(!nome)return{ok:false,error:'Scrivi il nome della carta'};
-      return{ok:true,html:`<b>${esc(nome)}</b><div class="qa-meta">${m?'€'+m[2]+' · ':''}aggiunta allo stock</div>`};
-    },
-    commit:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
-      const nome=m?m[1].trim():t.trim();if(!nome)return false;
-      const prezzo=m?parseFloat(m[2].replace(',','.')):0;
-      const inv=ld('carteInv',[]);
-      inv.unshift({nome,serie:'Pokémon',lingua:'ITA',acquisto:prezzo,ebay:0,vendita:0,stato:'In Stock'});
-      sv('carteInv',inv);syncAssets();
-      return true;
-    }
-  },
-  carta_vend:{
-    preview:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);
-      if(!m)return{ok:false,error:'Scrivi nome e prezzo, es. Charizard 80'};
-      const inv=ld('carteInv',[]);
-      const found=inv.find(c=>c.nome.toLowerCase().includes(m[1].trim().toLowerCase())&&c.stato!=='Venduta');
-      if(!found)return{ok:false,error:'Carta non trovata nello stock'};
-      return{ok:true,html:`<b>${esc(found.nome)}</b><div class="qa-meta">venduta a €${m[2]}</div>`};
-    },
-    commit:(t)=>{
-      const m=t.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*$/);if(!m)return false;
-      const prezzo=parseFloat(m[2].replace(',','.'));
-      const inv=ld('carteInv',[]);
-      const idx=inv.findIndex(c=>c.nome.toLowerCase().includes(m[1].trim().toLowerCase())&&c.stato!=='Venduta');
-      if(idx<0)return false;
-      inv[idx].stato='Venduta';inv[idx].vendita=prezzo;
-      sv('carteInv',inv);syncAssets();
-      return true;
-    }
-  },
-  carta_add:{
-    preview:(t)=>t.trim()?{ok:true,html:`<b>${esc(t.trim())}</b><div class="qa-meta">aggiunta alla collezione</div>`}:{ok:false,error:'Scrivi il nome della carta'},
-    commit:(t)=>{
-      const nome=t.trim();if(!nome)return false;
-      const inv=ld('carteInv',[]);
-      inv.unshift({nome,serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:0,stato:'In Stock'});
-      sv('carteInv',inv);
-      return true;
-    }
-  }
-};
-function qaSaveNote(tipo,text){
-  if(!text.trim())return false;
-  const notes=ld('quickNotes',[]);
-  notes.unshift({id:'qn_'+Date.now(),tipo,testo:text.trim(),ts:Date.now()});
-  sv('quickNotes',notes);
-  return true;
-}
-
-function qaConfirm(){
-  const h=QA_HANDLERS[_qaState.action];
-  if(!h)return;
-  const ok=h.commit(_qaState.text);
-  if(ok){
-    closeQuickAdd();
-    toast('✓ '+QA_LABELS[_qaState.action]+' salvat'+(QA_LABELS[_qaState.action].match(/a$/)?'a':'o'));
-  } else {
-    toast('Qualcosa non ha funzionato, riprova');
-  }
-}
-
-function renderQuickAdd(){
-  const el=document.getElementById('qa-panel');if(!el)return;
-  let h='';
-  if(_qaState.step==='cat'){
-    h+=`<div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text)">Cosa vuoi aggiungere?</div>
-      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
-    QA_CATS.forEach(([key,emoji,label])=>{
-      h+=`<button onclick="qaSelectCategory('${key}')" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);cursor:pointer">
-        <span style="font-size:26px">${emoji}</span>
-        <span style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--text)">${label}</span>
-      </button>`;
-    });
-    h+=`</div>`;
-  } else if(_qaState.step==='action'){
-    h+=`<div style="display:flex;align-items:center;gap:8px">
-      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
-      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">${QA_CATS.find(c=>c[0]===_qaState.category)[1]} ${QA_CATS.find(c=>c[0]===_qaState.category)[2]}</div>
-      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px">`;
-    QA_ACTIONS[_qaState.category].forEach(([key,label])=>{
-      h+=`<button onclick="qaSelectAction('${key}')" style="text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer">${label}</button>`;
-    });
-    h+=`</div>`;
-  } else if(_qaState.step==='input'){
-    h+=`<div style="display:flex;align-items:center;gap:8px">
-      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
-      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">${QA_LABELS[_qaState.action]}</div>
-      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
-    </div>
-    <input id="qa-input" value="${esc(_qaState.text)}" placeholder="${esc(QA_PLACEHOLDERS[_qaState.action]||'')}" style="background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);outline:none" onkeydown="if(event.key==='Enter')qaGoPreview()">
-    <button onclick="qaGoPreview()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer">CONTINUA</button>`;
-  } else if(_qaState.step==='preview'){
-    const h2=QA_HANDLERS[_qaState.action];
-    const prev=h2?h2.preview(_qaState.text):{ok:false,error:'Azione non disponibile'};
-    h+=`<div style="display:flex;align-items:center;gap:8px">
-      <button onclick="qaBack()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">←</button>
-      <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">Verrà creato</div>
-      <button onclick="closeQuickAdd()" style="font-size:18px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
-    </div>`;
-    if(prev.ok){
-      h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px">
-        <div style="font-family:var(--sans);font-size:11px;color:var(--green);font-weight:700;margin-bottom:8px">✓ ${QA_LABELS[_qaState.action]}</div>
-        <div style="font-family:var(--sans);font-size:16px;color:var(--text);line-height:1.5">${prev.html}</div>
-      </div>
-      <button onclick="qaConfirm()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">CONFERMA</button>`;
-    } else {
-      h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:12px;padding:16px;font-size:13px;color:var(--red)">${esc(prev.error||'Errore')}</div>
-      <button onclick="qaBack()" style="font-family:var(--sans);font-weight:700;font-size:13px;padding:12px;border-radius:10px;border:1px solid var(--border-hover);background:transparent;color:var(--text);cursor:pointer">MODIFICA</button>`;
-    }
-  }
-  el.innerHTML=h;
-}
-document.getElementById('qa-overlay').addEventListener('click',e=>{if(e.target.id==='qa-overlay')closeQuickAdd();});
-
-function openQC(){
-  const overlay=document.getElementById('qc-overlay');
-  overlay.style.display='flex';
-  overlay.classList.add('qa-overlay-anim');
-  const panel=overlay.querySelector(':scope > div');
-  if(panel)panel.classList.add('qa-panel-anim');
-  const sel=document.getElementById('qc-date');
-  sel.innerHTML='';
-  const today=new Date();today.setHours(0,0,0,0);
-  for(let i=0;i<8;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);
-    const key=agendaKey(d); // v1 FIX timezone
-    const opt=document.createElement('option');
-    opt.value=key;opt.textContent=(i===0?'Default: oggi — ':'')+_qcDateLabel(d);
-    sel.appendChild(opt);
-  }
-  const inp=document.getElementById('qc-input');
-  inp.value='';
-  document.getElementById('qc-step-input').style.display='block';
-  document.getElementById('qc-step-result').style.display='none';
-  document.getElementById('qc-step-result').innerHTML='';
-  setTimeout(()=>inp.focus(),50);
-}
-
-function closeQC(){
-  const overlay=document.getElementById('qc-overlay');
-  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
-  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';},150);
-}
-
-
-// ── QC: parser allenamento ──
-// Sintassi: "squat 4x10 80kg #lunedì" o "squat 4x10 80kg" (oggi)
-function qcParseAllenamento(line){
-  let text=line.trim();
-  const _dext=qcExtractDayIdx(text,allWeekdayIdx(new Date()));
-  let dayIdx=_dext.dayIdx;
-  text=_dext.clean;
-  // Estrai NxM (serie x reps)
-  const srMatch=text.match(/(\d+)[x×](\d+)/i);
-  const serie=srMatch?parseInt(srMatch[1]):0;
-  const reps=srMatch?parseInt(srMatch[2]):0;
-  if(srMatch)text=text.replace(srMatch[0],'').trim();
-  // Estrai peso, supporta anche +N/-N come delta relativo
-  const pesoMatch=text.match(/([+-]?\d+(?:\.\d+)?)\s*kg?/i);
-  let peso=pesoMatch?parseFloat(pesoMatch[1]):0;
-  const isRelative=pesoMatch&&(pesoMatch[1].startsWith('+')||pesoMatch[1].startsWith('-'));
-  if(pesoMatch)text=text.replace(pesoMatch[0],'').trim();
-  const nome=text.trim();
-  if(!nome)return null;
-  return{nome,serie,reps,peso,dayIdx,pesoRelativo:isRelative};
-}
-
-// Sintassi: "pranzo: riso e pollo #lunedì" o "pranzo: riso e pollo"
-function qcParseAlimentazione(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const SLOT_MAP={colazione:0,spuntino1:1,'spuntino 1':1,pranzo:2,spuntino2:3,'spuntino 2':3,cena:4};
-  let text=line.trim();
-  let dayIdx=allWeekdayIdx(new Date());
-  const dayMatch=text.match(/#([a-zA-Zàèéìòù]+)/i);
-  if(dayMatch){
-    const d=dayMatch[1].toLowerCase();
-    if(DAY_MAP[d]!==undefined)dayIdx=DAY_MAP[d];
-    text=text.replace(dayMatch[0],'').trim();
-  }
-  // Cerca "slot: cibo"
-  const colonIdx=text.indexOf(':');
-  if(colonIdx<0)return null;
-  const slotRaw=text.slice(0,colonIdx).trim().toLowerCase();
-  const cibo=text.slice(colonIdx+1).trim();
-  if(!cibo)return null;
-  const slotIdx=SLOT_MAP[slotRaw];
-  if(slotIdx===undefined)return null;
-  return{slotIdx,cibo,dayIdx};
-}
-
-function isQCObiettivoSett(line){
-  return /^obiettivo\s+sett(imana)?:\s*/i.test(line.trim());
-}
-function isQCObiettivo(line){
-  return /^obiettivo:\s*/i.test(line.trim());
-}
-function qcParseObiettivo(line){
-  const allProjs=[...PD,...ld('customProjs',[])];
-  // Estrai !PROGETTO
-  const projMatch=line.match(/!([\w\s&àèéìòù.\-]+?)(?:\s*#|$)/i);
-  let projId=null;
-  let text=line;
-  if(projMatch){
-    const tag=projMatch[1].trim().toLowerCase().replace(/[_\-]+/g,' ');
-    const normalize=s=>s.toLowerCase().replace(/[_\-—·]+/g,' ').replace(/\s+/g,' ').trim();
-    const p=allProjs.find(x=>{
-      const nt=normalize(x.tag);const ni=normalize(x.id);
-      return nt.includes(tag)||tag.includes(nt)||ni.includes(tag)||tag.includes(ni)||
-             tag.split(' ').every(w=>w.length<3||nt.includes(w));
-    });
-    if(p)projId=p.id;
-    text=text.replace(projMatch[0],'').trim();
-  }
-  // Rimuovi prefisso e pulizia
-  text=text.replace(/^obiettivo\s+sett(imana)?:\s*/i,'').replace(/^obiettivo:\s*/i,'').replace(/^:/,'').trim();
-  // Rimuovi eventuale !TAG residuo
-  text=text.replace(/!\S+/g,'').trim();
-  return{text,projId};
-}
-function qcExtractDayIdx(text,defaultIdx){
-  // Riconosce sia #giorno che "DD mese" e ritorna {dayIdx, cleanText}
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
-  let dayIdx=defaultIdx;
-  let clean=text;
-  // Prova #giorno
-  const hashMatch=clean.match(/#([a-zA-Zàèéìòù]+)/i);
-  if(hashMatch){
-    const d=hashMatch[1].toLowerCase();
-    if(DAY_MAP[d]!==undefined){
-      dayIdx=DAY_MAP[d];
-      clean=clean.replace(hashMatch[0],'').trim();
-      return{dayIdx,clean};
-    }
-  }
-  // Prova "DD mese" (anche a inizio riga, es "7 luglio squat 4x10")
-  const dateMatch=clean.match(/\b(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)\b/i);
-  if(dateMatch){
-    const today=new Date();
-    const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
-    dayIdx=allWeekdayIdx(targetDate);
-    clean=clean.replace(dateMatch[0],'').trim();
-  }
-  return{dayIdx,clean};
-}
-// ── QC: carte eBay ──
-// Sintassi: "carta Nome €N" (acquisto) oppure "vendi carta Nome €N"
-function isQCCarta(line){
-  return /^(carta|vendi carta|venduta carta)\s+/i.test(line.trim());
-}
-function qcParseCarta(line){
-  let text=line.trim();
-  const isVendi=/^vendi\s+carta|^venduta\s+carta/i.test(text);
-  text=text.replace(/^(vendi\s+carta|venduta\s+carta|carta)\s+/i,'');
-  const prezzoMatch=text.match(/€?\s*(\d+(?:[.,]\d+)?)\s*€?/);
-  const prezzo=prezzoMatch?parseFloat(prezzoMatch[1].replace(',','.')):0;
-  if(prezzoMatch)text=text.replace(prezzoMatch[0],'').trim();
-  const nome=text.trim();
-  if(!nome)return null;
-  return{nome,prezzo,azione:isVendi?'vendi':'acquisto'};
-}
-
-// ── QC: finanze ──
-// Sintassi: "entrata: descrizione €N asset" oppure "uscita: descrizione €N asset"
-function isQCFinanza(line){
-  return /^(entrata|uscita)\s*:/i.test(line.trim());
-}
-function qcParseFinanza(line){
-  let text=line.trim();
-  const tipoMatch=text.match(/^(entrata|uscita)\s*:\s*/i);
-  if(!tipoMatch)return null;
-  const tipo=tipoMatch[1].toLowerCase();
-  text=text.replace(tipoMatch[0],'');
-  const prezzoMatch=text.match(/€?\s*(\d+(?:[.,]\d+)?)\s*€?/);
-  const importo=prezzoMatch?parseFloat(prezzoMatch[1].replace(',','.')):0;
-  if(prezzoMatch)text=text.replace(prezzoMatch[0],'').trim();
-  // Ultimo token è l'asset (es "Liquidità", "Risparmi")
-  const assets=ld('assets',[]);
-  let asset=assets[0]?.l||'Liquidità';
-  let desc=text;
-  const foundAsset=assets.find(a=>text.toLowerCase().includes(a.l.toLowerCase()));
-  if(foundAsset){
-    asset=foundAsset.l;
-    desc=text.replace(new RegExp(foundAsset.l,'i'),'').trim();
-  }
-  if(!desc)return null;
-  return{tipo,desc,importo,asset};
-}
-
-// ── QC: abitudini ──
-// Sintassi: "abitudine: nome fatta" oppure "nome abitudine fatta #giorno"
-function isQCAbitudine(line){
-  return /fatt[oa]\s*$/i.test(line.trim())&&!isQCStretchingFatto(line);
-}
-function qcParseAbitudine(line){
-  let text=line.trim();
-  const _dext=qcExtractDayIdx(text,(new Date().getDay()+6)%7);
-  text=_dext.clean;
-  text=text.replace(/fatt[oa]\s*$/i,'').replace(/^abitudine\s*:\s*/i,'').trim();
-  if(!text)return null;
-  return{nome:text,dayIdx:_dext.dayIdx};
-}
-
-// ── QC: catalogo esercizi bulk ──
-// Sintassi: "Nome | Gruppo1, Gruppo2 | Recupero | Note (opzionale)"
-function isQCCatalogoEsercizio(line){
-  return line.includes('|');
-}
-function qcParseCatalogoEsercizio(line){
-  const parts=line.split('|').map(p=>p.trim());
-  if(parts.length<2)return null;
-  const nome=parts[0];
-  if(!nome)return null;
-  const gruppi=parts[1]?parts[1].split(',').map(g=>g.trim()).filter(Boolean):[];
-  let recupero='',note='';
-  if(parts[2]&&/^\d+\s*['"]|^\d+\s*(min|sec)/i.test(parts[2])){
-    recupero=parts[2];
-    note=parts[3]||'';
-  } else if(parts[2]){
-    note=parts[2];
-  }
-  return{nome,gruppi,recupero,note};
-}
-// ── QC: assegna piu esercizi del catalogo a un giorno in un colpo ──
-// Sintassi: "scheda lunedì: panca piana, rematore, military press"
-function isQCSchedaGiorno(line){
-  return /^scheda\s+/i.test(line.trim())&&line.includes(':');
-}
-function qcParseSchedaGiorno(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
-  let text=line.trim().replace(/^scheda\s+/i,'');
-  const colonIdx=text.indexOf(':');
-  if(colonIdx<0)return null;
-  let giornoRaw=text.slice(0,colonIdx).trim().toLowerCase();
-  let dayIdx=null;
-  if(DAY_MAP[giornoRaw]!==undefined){
-    dayIdx=DAY_MAP[giornoRaw];
-  } else {
-    const dateMatch=giornoRaw.match(/(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)/i);
-    if(dateMatch){
-      const today=new Date();
-      const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
-      dayIdx=allWeekdayIdx(targetDate);
-    }
-  }
-  if(dayIdx===null)return null;
-  const esercizi=text.slice(colonIdx+1).split(',').map(e=>e.trim()).filter(Boolean);
-  if(!esercizi.length)return null;
-  return{dayIdx,esercizi};
-}
-
-// ── QC: copia scheda giorno su un altro giorno ──
-// Sintassi: "copia lunedì su giovedì"
-function isQCCopiaGiorno(line){
-  return /^copia\s+.+\s+su\s+/i.test(line.trim());
-}
-function qcParseCopiaGiorno(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const m=line.trim().match(/^copia\s+(.+?)\s+su\s+(.+)$/i);
-  if(!m)return null;
-  const fromD=DAY_MAP[m[1].trim().toLowerCase()];
-  const toD=DAY_MAP[m[2].trim().toLowerCase()];
-  if(fromD===undefined||toD===undefined)return null;
-  return{fromDayIdx:fromD,toDayIdx:toD};
-}
-
-function isQCAllenamento(line){
-  // Ha formato NxM o Nkg e NON ha ":"
-  return !line.includes(':')&&(/\d+[x×]\d+/i.test(line)||/\d+\s*kg/i.test(line));
-}
-function isQCAlimentazione(line){
-  // Ha formato "slot: cibo"
-  const SLOTS=['colazione','pranzo','cena','spuntino'];
-  const colonIdx=line.indexOf(':');
-  if(colonIdx<0)return false;
-  const slot=line.slice(0,colonIdx).trim().toLowerCase();
-  return SLOTS.some(s=>slot.startsWith(s));
-}
-
-// ── QC: peso corporeo ──
-// Sintassi: "peso 61.3" / "peso: 61.3" / "peso 61.3 12 luglio" / "peso 61.3 #lunedì"
-function isQCPeso(line){
-  return /^peso\s*:?\s*\d+([.,]\d+)?/i.test(line.trim());
-}
-function qcParsePeso(line){
-  let text=line.trim();
-  const m=text.match(/^peso\s*:?\s*(\d+(?:[.,]\d+)?)/i);
-  if(!m)return null;
-  const peso=parseFloat(m[1].replace(',','.'));
-  text=text.replace(m[0],'').trim();
-  const _dext=qcExtractDayIdx(text,null);
-  return{peso,dayIdx:_dext.dayIdx};
-}
-
-// ── QC: stretching ──
-// Sintassi: "nome routine 20min #giorno" oppure "stretching fatto" / "stretching fatto #giorno"
-function isQCStretchingFatto(line){
-  return /^stretching\s+fatt[oa]/i.test(line.trim());
-}
-function isQCStretching(line){
-  if(isQCStretchingFatto(line))return true;
-  // formato "nome Nmin" (senza x, senza kg — per distinguerlo da allenamento)
-  return /\d+\s*min\b/i.test(line)&&!/[x×]\d+/i.test(line);
-}
-function qcParseStretching(line){
-  let text=line.trim();
-  const _dext=qcExtractDayIdx(text,allWeekdayIdx(new Date()));
-  let dayIdx=_dext.dayIdx;
-  text=_dext.clean;
-  if(isQCStretchingFatto(text)){
-    return{fattoOnly:true,dayIdx};
-  }
-  const durMatch=text.match(/(\d+)\s*min/i);
-  const durata=durMatch?parseInt(durMatch[1]):0;
-  if(durMatch)text=text.replace(durMatch[0],'').trim();
-  const nome=text.trim();
-  if(!nome)return null;
-  return{nome,durata,dayIdx,fattoOnly:false};
-}
-
-// ══════════════════════════════════════════════════════════
-// QC v2 — nuovi comandi (pasti giornata, scheda stretch, multi-task, spesa, priorità)
-// ══════════════════════════════════════════════════════════
-
-// ── QC: pasti di un'intera giornata in una riga ──
-// Sintassi: "pasti lunedì: colazione=yogurt e granola, pranzo=riso e pollo, cena=salmone"
-function isQCPastiGiorno(line){
-  return /^pasti\s+/i.test(line.trim())&&line.includes(':');
-}
-function qcParsePastiGiorno(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
-  const SLOT_MAP={colazione:0,spuntino1:1,'spuntino 1':1,pranzo:2,spuntino2:3,'spuntino 2':3,cena:4};
-  let text=line.trim().replace(/^pasti\s+/i,'');
-  const colonIdx=text.indexOf(':');
-  if(colonIdx<0)return null;
-  let giornoRaw=text.slice(0,colonIdx).trim().toLowerCase();
-  let dayIdx=null;
-  if(DAY_MAP[giornoRaw]!==undefined){
-    dayIdx=DAY_MAP[giornoRaw];
-  } else {
-    const dateMatch=giornoRaw.match(/(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)/i);
-    if(dateMatch){
-      const today=new Date();
-      const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
-      dayIdx=allWeekdayIdx(targetDate);
-    }
-  }
-  if(dayIdx===null)return null;
-  const pastiRaw=text.slice(colonIdx+1).split(',').map(s=>s.trim()).filter(Boolean);
-  const pasti=[];
-  pastiRaw.forEach(p=>{
-    const eqIdx=p.indexOf('=');
-    if(eqIdx<0)return;
-    const slotRaw=p.slice(0,eqIdx).trim().toLowerCase();
-    const cibo=p.slice(eqIdx+1).trim();
-    const slotIdx=SLOT_MAP[slotRaw];
-    if(slotIdx===undefined||!cibo)return;
-    pasti.push({slotIdx,cibo});
-  });
-  if(!pasti.length)return null;
-  return{dayIdx,pasti};
-}
-
-// ── QC: scheda stretching intera ──
-// Sintassi: "stretch lunedì: quadricipiti, schiena, collo"
-function isQCSchedaStretch(line){
-  return /^stretch\s+/i.test(line.trim())&&line.includes(':');
-}
-function qcParseSchedaStretch(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
-  let text=line.trim().replace(/^stretch\s+/i,'');
-  const colonIdx=text.indexOf(':');
-  if(colonIdx<0)return null;
-  let giornoRaw=text.slice(0,colonIdx).trim().toLowerCase();
-  let dayIdx=null;
-  if(DAY_MAP[giornoRaw]!==undefined){
-    dayIdx=DAY_MAP[giornoRaw];
-  } else {
-    const dateMatch=giornoRaw.match(/(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)/i);
-    if(dateMatch){
-      const today=new Date();
-      const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
-      dayIdx=allWeekdayIdx(targetDate);
-    }
-  }
-  if(dayIdx===null)return null;
-  const esercizi=text.slice(colonIdx+1).split(',').map(e=>e.trim()).filter(Boolean);
-  if(!esercizi.length)return null;
-  return{dayIdx,esercizi};
-}
-
-// ── QC: task multiple sullo stesso progetto in una riga ──
-// Sintassi: "#QUARTZICA: post TikTok; rispondere commenti; batch grafiche"
-function isQCMultiTask(line){
-  return /^#[\wàèéìòù]+\s*:/i.test(line.trim());
-}
-function qcParseMultiTask(line,allProjs){
-  const m=line.trim().match(/^#([\wàèéìòù]+)\s*:\s*(.+)$/i);
-  if(!m)return null;
-  const tagRaw=m[1].toLowerCase();
-  const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
-  if(!proj)return null;
-  const tasks=m[2].split(';').map(s=>s.trim()).filter(Boolean);
-  if(!tasks.length)return null;
-  return{projId:proj.id,tasks};
-}
-
-// ── QC: spesa pianificata da riga singola ──
-// Sintassi: "spesa 40 abbonamento #KDP 15 luglio" (progetto e data opzionali → senza #progetto va in spese generali)
-function isQCSpesa(line){
-  return /^spesa\s+\d/i.test(line.trim());
-}
-function qcParseSpesa(line,allProjs){
-  const MONTHS_FULL={gennaio:0,febbraio:1,marzo:2,aprile:3,maggio:4,giugno:5,luglio:6,agosto:7,settembre:8,ottobre:9,novembre:10,dicembre:11};
-  let text=line.trim().replace(/^spesa\s+/i,'');
-  const impMatch=text.match(/^(\d+(?:[.,]\d+)?)\s*/);
-  if(!impMatch)return null;
-  const importo=parseFloat(impMatch[1].replace(',','.'));
-  text=text.slice(impMatch[0].length).trim();
-  let projId='';
-  const tagMatch=text.match(/#([\wàèéìòù]+)/i);
-  if(tagMatch){
-    const tagRaw=tagMatch[1].toLowerCase();
-    const proj=allProjs.find(p=>p.id.toLowerCase()===tagRaw||p.tag.toLowerCase().replace(/\s+/g,'')===tagRaw||p.tag.toLowerCase().includes(tagRaw));
-    if(proj)projId=proj.id;
-    text=text.replace(tagMatch[0],'').trim();
-  }
-  let dataStr='—';
-  const ddMonMatch=text.match(/\b(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)\b/i);
-  if(ddMonMatch){
-    const mr=ddMonMatch[2].toLowerCase();
-    const mi=QC_MONTHS[mr]!==undefined?QC_MONTHS[mr]:(MONTHS_FULL[mr]!==undefined?MONTHS_FULL[mr]:QC_MONTHS[mr.slice(0,3)]);
-    const todayQC=new Date();
-    const dd=new Date(todayQC.getFullYear(),mi,parseInt(ddMonMatch[1]));
-    if(dd<todayQC)dd.setFullYear(todayQC.getFullYear()+1);
-    dataStr=String(dd.getDate()).padStart(2,'0')+'/'+String(dd.getMonth()+1).padStart(2,'0')+'/'+dd.getFullYear();
-    text=text.replace(ddMonMatch[0],'').trim();
-  }
-  const desc=text.trim();
-  if(!desc||!importo)return null;
-  return{importo,desc,projId,dataStr};
-}
-
-// ── QC: priorità inline — prefisso "!alta"/"!media"/"!bassa" a inizio riga ──
-function qcStripPriorita(line){
-  const m=line.match(/^\s*!(alta|alt|media|med|bassa|bas)\b\s*/i);
-  if(!m)return{pri:null,clean:line};
-  const w=m[1].toLowerCase();
-  const pri=w.startsWith('a')?'high':w.startsWith('m')?'medium':'none';
-  return{pri,clean:line.slice(m[0].length)};
-}
-
-// ── QC: assegna una ricetta esistente a un pasto ──
-// Sintassi: "ricetta lunedì: pranzo = Pasta al Pomodoro" o "...x1.5" per le porzioni
-function isQCRicetta(line){
-  return /^ricetta\s+/i.test(line.trim())&&line.includes(':')&&line.includes('=');
-}
-function qcParseRicetta(line){
-  const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
-  const MONTHS={gen:0,gennaio:0,feb:1,febbraio:1,mar:2,marzo:2,apr:3,aprile:3,mag:4,maggio:4,giu:5,giugno:5,lug:6,luglio:6,ago:7,agosto:7,set:8,settembre:8,ott:9,ottobre:9,nov:10,novembre:10,dic:11,dicembre:11};
-  const SLOT_MAP={colazione:0,spuntino1:1,'spuntino 1':1,pranzo:2,spuntino2:3,'spuntino 2':3,cena:4};
-  let text=line.trim().replace(/^ricetta\s+/i,'');
-  const colonIdx=text.indexOf(':');
-  if(colonIdx<0)return null;
-  let giornoRaw=text.slice(0,colonIdx).trim().toLowerCase();
-  let dayIdx=null;
-  if(DAY_MAP[giornoRaw]!==undefined){
-    dayIdx=DAY_MAP[giornoRaw];
-  } else {
-    const dateMatch=giornoRaw.match(/(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)/i);
-    if(dateMatch){
-      const today=new Date();
-      const targetDate=new Date(today.getFullYear(),MONTHS[dateMatch[2].toLowerCase()],parseInt(dateMatch[1]));
-      dayIdx=allWeekdayIdx(targetDate);
-    }
-  }
-  if(dayIdx===null)return null;
-  let rest=text.slice(colonIdx+1).trim();
-  const eqIdx=rest.indexOf('=');
-  if(eqIdx<0)return null;
-  const slotRaw=rest.slice(0,eqIdx).trim().toLowerCase();
-  const slotIdx=SLOT_MAP[slotRaw];
-  if(slotIdx===undefined)return null;
-  let ricettaText=rest.slice(eqIdx+1).trim();
-  let porzioni=1;
-  const xMatch=ricettaText.match(/[x×]\s*(\d+(?:[.,]\d+)?)\s*$/i);
-  if(xMatch){porzioni=parseFloat(xMatch[1].replace(',','.'));ricettaText=ricettaText.slice(0,xMatch.index).trim();}
-  if(!ricettaText)return null;
-  const rl=ricettaText.toLowerCase();
-  const ric=ricGetAll().find(r=>r.nome.toLowerCase()===rl)||ricGetAll().find(r=>r.nome.toLowerCase().includes(rl));
-  if(!ric)return null;
-  return{dayIdx,slotIdx,ricettaId:ric.id,ricettaNome:ric.nome,porzioni};
-}
-
-// ══════════════════════════════════════════════════════════
-// SPEC 07: Linguaggio Ufficiale Quick Capture — formato a blocchi
-// Entità\ncampo: valore\ncampo: valore\n\nEntità\n...
-// ══════════════════════════════════════════════════════════
-const QC_ENTITY_NAMES={
-  'task':'task','obiettivo':'obiettivo','obiettivo settimanale':'obiettivo_sett',
-  'esercizio':'esercizio','scheda allenamento':'scheda_allenamento','catalogo esercizi':'catalogo_esercizi',
-  'pasto':'pasto','ricetta':'ricetta','stretching':'stretching','peso':'peso',
-  'entrata':'entrata','uscita':'uscita','spesa pianificata':'spesa_pianificata',
-  'asset':'asset','carta':'carta','habit':'habit','nota':'nota','idea':'idea','link':'link'
-};
-// v1: divide il testo incollato in blocchi {entity,fields,lineNo,badLines}. Le righe fuori
-// da qualunque blocco (o non nel formato "campo: valore") finiscono negli orphanLines/badLines
-// e vengono gestite dal parser a riga singola (retrocompatibilità con la vecchia sintassi).
-function qcSplitBlocks(rawText){
-  const rawLines=rawText.split('\n');
-  const blocks=[];
-  const orphanLines=[];
-  let current=null;
-  let lastField=null;
-  rawLines.forEach((rawLine,i)=>{
-    const trimmed=rawLine.trim();
-    if(!trimmed)return;
-    const lower=trimmed.toLowerCase();
-    const entityKey=QC_ENTITY_NAMES[lower];
-    if(entityKey&&!trimmed.includes(':')){
-      current={entity:entityKey,fields:{},lineNo:i+1,rawName:trimmed,badLines:[]};
-      blocks.push(current);
-      lastField=null;
-    } else if(current){
-      const colonIdx=trimmed.indexOf(':');
-      const def=QC_ENTITIES[current.entity];
-      const knownFields=def?[...def.required,...(def.optional||[])]:[];
-      const fieldNameCandidate=colonIdx>0?trimmed.slice(0,colonIdx).trim().toLowerCase():null;
-      if(fieldNameCandidate&&knownFields.includes(fieldNameCandidate)){
-        current.fields[fieldNameCandidate]=trimmed.slice(colonIdx+1).trim();
-        lastField=fieldNameCandidate;
-      } else if(lastField){
-        // v1: continuazione multi-riga del campo precedente (es. preparazione su più righe)
-        current.fields[lastField]+=' '+trimmed;
-      } else {
-        current.badLines.push({n:i+1,text:trimmed});
-      }
-    } else {
-      orphanLines.push({n:i+1,text:trimmed});
-    }
-  });
-  return{blocks,orphanLines};
-}
-
-// ── helper di parsing campo condivisi tra tutte le entità ──
 function qcParseDateField(text){
-  if(!text)return null;
-  const t=text.trim().toLowerCase();
+  if(text===undefined||text===null||text==='')return null;
+  const t=String(text).trim().toLowerCase();
   const today=new Date();today.setHours(0,0,0,0);
   if(t==='oggi')return new Date(today);
   if(t==='domani'){const d=new Date(today);d.setDate(d.getDate()+1);return d;}
   if(t==='dopodomani'){const d=new Date(today);d.setDate(d.getDate()+2);return d;}
   const traN=t.match(/^tra\s+(\d+)\s+giorni?$/);
   if(traN){const d=new Date(today);d.setDate(d.getDate()+parseInt(traN[1]));return d;}
-  const ddmm=t.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  const ddmm=t.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
   if(ddmm){let yr=ddmm[3]?parseInt(ddmm[3]):today.getFullYear();if(yr<100)yr+=2000;return new Date(yr,parseInt(ddmm[2])-1,parseInt(ddmm[1]));}
-  const MLONG={gennaio:0,febbraio:1,marzo:2,aprile:3,maggio:4,giugno:5,luglio:6,agosto:7,settembre:8,ottobre:9,novembre:10,dicembre:11};
   const ddmon=t.match(/^(\d{1,2})\s+(gen(?:naio)?|feb(?:braio)?|mar(?:zo)?|apr(?:ile)?|mag(?:gio)?|giu(?:gno)?|lug(?:lio)?|ago(?:sto)?|set(?:tembre)?|ott(?:obre)?|nov(?:embre)?|dic(?:embre)?)$/);
-  if(ddmon){const mr=ddmon[2];const mi=QC_MONTHS[mr]!==undefined?QC_MONTHS[mr]:(MLONG[mr]!==undefined?MLONG[mr]:QC_MONTHS[mr.slice(0,3)]);const d=new Date(today.getFullYear(),mi,parseInt(ddmon[1]));if(d<today)d.setFullYear(today.getFullYear()+1);return d;}
+  if(ddmon){const mi=QC_MONTHS[ddmon[2]];const d=new Date(today.getFullYear(),mi,parseInt(ddmon[1]));if(d<today)d.setFullYear(today.getFullYear()+1);return d;}
   for(const[name,num]of Object.entries(QC_DAYS)){
     if(t===name){const d=new Date(today);const diff=(num-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));return d;}
   }
+  const asDate=new Date(t);
+  if(!isNaN(asDate.getTime()))return asDate;
   return null;
 }
 function qcParseGiornoIdx(text){
   if(!text)return null;
-  const t=text.trim().toLowerCase();
+  const t=String(text).trim().toLowerCase();
   const DAY_MAP={lunedì:0,lun:0,martedì:1,mar:1,mercoledì:2,mer:2,giovedì:3,gio:3,venerdì:4,ven:4,sabato:5,sab:5,domenica:6,dom:6};
   if(DAY_MAP[t]!==undefined)return DAY_MAP[t];
   if(t==='oggi')return allWeekdayIdx(new Date());
   return null;
 }
-function qcParseSlotIdx(text){
-  if(!text)return null;
-  const t=text.trim().toLowerCase();
-  const SLOT_MAP={colazione:0,'spuntino 1':1,spuntino1:1,pranzo:2,'spuntino 2':3,spuntino2:3,cena:4};
-  return SLOT_MAP[t]!==undefined?SLOT_MAP[t]:null;
-}
 function qcMapPriorita(text){
   if(!text)return'none';
-  const t=text.trim().toLowerCase();
+  const t=String(text).trim().toLowerCase();
   if(t.startsWith('alt'))return'high';
   if(t.startsWith('med'))return'medium';
   return'none';
 }
 function qcMatchProject(text,allProjs){
   if(!text)return null;
-  const t=text.trim().toLowerCase();
+  const t=String(text).trim().toLowerCase();
   let best=null,bestLen=0;
   allProjs.forEach(p=>{
     [p.id,p.tag,p.folder].filter(Boolean).forEach(c=>{
@@ -7893,428 +6658,1080 @@ function qcMatchProject(text,allProjs){
   });
   return best;
 }
-function qcParseIngredientiField(text){
-  // "farina 200g, uova 2, zucchero 50" -> [{nome,g}]
-  if(!text)return[];
-  return text.split(',').map(chunk=>{
-    const m=chunk.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*g?\s*$/i);
-    if(m)return{nome:m[1].trim(),g:parseFloat(m[2].replace(',','.'))};
-    return{nome:chunk.trim(),g:0};
-  }).filter(i=>i.nome);
+function qcNum(v){
+  if(typeof v==='number')return v;
+  if(typeof v==='string')return parseFloat(v.replace(',','.'))||0;
+  return 0;
+}
+function qcList(v){
+  // accetta sia una sequenza YAML nativa (array) sia una stringa "a, b, c"
+  if(Array.isArray(v))return v.map(x=>typeof x==='object'?x:String(x).trim()).filter(Boolean);
+  if(typeof v==='string')return v.split(',').map(s=>s.trim()).filter(Boolean);
+  return[];
 }
 
-// ── QC_ENTITIES: tabella dichiarativa — ogni entità definisce campi richiesti/opzionali e come si scrive nel database ──
-const QC_ENTITY_LABELS={
-  task:'Task',obiettivo:'Obiettivi',obiettivo_sett:'Obiettivi settimanali',esercizio:'Esercizi (progressione)',
-  scheda_allenamento:'Schede allenamento',catalogo_esercizi:'Esercizi catalogo',pasto:'Pasti',ricetta:'Ricette',
-  stretching:'Schede stretching',peso:'Registrazioni peso',entrata:'Entrate',uscita:'Uscite',
-  spesa_pianificata:'Spese pianificate',asset:'Asset',carta:'Carte',habit:'Abitudini',
-  nota:'Note',idea:'Idee',link:'Link'
-};
-const QC_ENTITIES={
-  task:{
-    required:['titolo'],optional:['progetto','data','priorità','ricorrente','note'],
-    commit:(f,ctx)=>{
-      const proj=qcMatchProject(f.progetto,ctx.allProjs);
-      const pri=qcMapPriorita(f.priorità);
-      let text=f.titolo;
-      if(f.note)text+=' — '+f.note;
-      const isRecur=f.ricorrente&&/^(s[iì]|true|giornalier[oa]|quotidian[oa])/i.test(f.ricorrente.trim());
-      if(isRecur&&proj){
-        const arr=ld('recur_'+proj.id,[]);
-        if(!arr.includes(text)){arr.push(text);sv('recur_'+proj.id,arr);}
-      } else {
-        const d=qcParseDateField(f.data)||ctx.fallbackDate;
-        const key=agendaKey(d);
-        if(!ctx.byDate[key])ctx.byDate[key]={date:d,tasks:[]};
-        ctx.byDate[key].tasks.push({text,projId:proj?proj.id:'',done:false,ts:Date.now()+Math.random(),type:'day',pri});
+// ══════════════════════════════════════════════════════════
+// STADIO 1 — YAML PARSER
+// Responsabilità unica: leggere YAML e produrre oggetti JS.
+// Non conosce alcuna entità di LifeOS, non valida, non salva.
+// ══════════════════════════════════════════════════════════
+function yamlIndentOf(line){const m=line.match(/^(\s*)/);return m[1].length;}
+function yamlStripComment(line){
+  let inS=false,inD=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==="'"&&!inD)inS=!inS;
+    else if(c==='"'&&!inS)inD=!inD;
+    else if(c==='#'&&!inS&&!inD){
+      if(i===0||/\s/.test(line[i-1]))return line.slice(0,i);
+    }
+  }
+  return line;
+}
+function yamlParseScalar(raw){
+  let s=raw.trim();
+  if(s==='')return null;
+  if((s.startsWith('"')&&s.endsWith('"'))||(s.startsWith("'")&&s.endsWith("'")))return s.slice(1,-1);
+  if(s==='null'||s==='~')return null;
+  if(/^(true|sì|si)$/i.test(s))return true;
+  if(/^(false|no)$/i.test(s))return false;
+  if(/^-?\d+$/.test(s))return parseInt(s,10);
+  if(/^-?\d+[.,]\d+$/.test(s))return parseFloat(s.replace(',','.'));
+  if(s.startsWith('[')&&s.endsWith(']')){
+    const inner=s.slice(1,-1).trim();
+    if(!inner)return[];
+    return inner.split(',').map(x=>yamlParseScalar(x.trim()));
+  }
+  return s;
+}
+function yamlFindKeyColon(t){
+  let inS=false,inD=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(c==="'"&&!inD)inS=!inS;
+    else if(c==='"'&&!inS)inD=!inD;
+    else if(c===':'&&!inS&&!inD){
+      if(i===t.length-1||/\s/.test(t[i+1]))return i;
+    }
+  }
+  return -1;
+}
+function yamlParseBlock(lines,startIdx,minIndent){
+  if(startIdx>=lines.length)return{value:null,nextIdx:startIdx};
+  const indent=yamlIndentOf(lines[startIdx]);
+  if(indent<minIndent)return{value:null,nextIdx:startIdx};
+  const trimmed=lines[startIdx].trim();
+  if(trimmed.startsWith('- ')||trimmed==='-')return yamlParseSequence(lines,startIdx,indent);
+  return yamlParseMapping(lines,startIdx,indent);
+}
+function yamlParseMapping(lines,startIdx,indent){
+  const obj={};
+  let i=startIdx;
+  while(i<lines.length){
+    const curIndent=yamlIndentOf(lines[i]);
+    if(curIndent<indent)break;
+    if(curIndent>indent){i++;continue;}
+    const trimmed=lines[i].trim();
+    const colonIdx=yamlFindKeyColon(trimmed);
+    if(colonIdx<0){i++;continue;}
+    const key=trimmed.slice(0,colonIdx).trim().replace(/^['"]|['"]$/g,'');
+    const rest=trimmed.slice(colonIdx+1).trim();
+    i++;
+    if(rest==='|'||rest==='>'){
+      const blockIndent=indent+2;
+      const collected=[];
+      while(i<lines.length&&yamlIndentOf(lines[i])>=blockIndent){
+        collected.push(lines[i].slice(blockIndent));
+        i++;
       }
-      return true;
+      obj[key]=rest==='|'?collected.join('\n').trim():collected.join(' ').trim();
+    } else if(rest===''){
+      const{value,nextIdx}=yamlParseBlock(lines,i,indent+1);
+      obj[key]=value;
+      i=nextIdx>i?nextIdx:i;
+    } else {
+      obj[key]=yamlParseScalar(rest);
+    }
+  }
+  return{value:obj,nextIdx:i};
+}
+function yamlParseSequence(lines,startIdx,indent){
+  const arr=[];
+  let i=startIdx;
+  while(i<lines.length){
+    const curIndent=yamlIndentOf(lines[i]);
+    if(curIndent<indent)break;
+    if(curIndent>indent){i++;continue;}
+    const trimmed=lines[i].trim();
+    if(!trimmed.startsWith('-'))break;
+    const afterDash=trimmed.slice(1).trim();
+    if(afterDash===''){
+      i++;
+      const{value,nextIdx}=yamlParseBlock(lines,i,indent+1);
+      arr.push(value);
+      i=nextIdx;
+    } else if(yamlFindKeyColon(afterDash)>=0){
+      const virtualLines=[' '.repeat(indent+2)+afterDash];
+      let j=i+1;
+      while(j<lines.length&&yamlIndentOf(lines[j])>indent){virtualLines.push(lines[j]);j++;}
+      const{value}=yamlParseMapping(virtualLines,0,indent+2);
+      arr.push(value);
+      i=j;
+    } else {
+      arr.push(yamlParseScalar(afterDash));
+      i++;
+    }
+  }
+  return{value:arr,nextIdx:i};
+}
+function yamlParseDocument(text){
+  const lines=text.split('\n').map(l=>yamlStripComment(l).replace(/\s+$/,'')).filter(l=>l.trim()!=='');
+  if(!lines.length)return null;
+  const{value}=yamlParseBlock(lines,0,0);
+  return value;
+}
+
+// ══════════════════════════════════════════════════════════
+// STADIO 2 — SCHEMA VALIDATOR
+// Unico componente che conosce gli schemi delle entità.
+// Non trasforma, non salva: solo valida e produce errori leggibili.
+// ══════════════════════════════════════════════════════════
+function validateAgainstSchema(obj,schema){
+  const errors=[];
+  if(!obj||typeof obj!=='object'){
+    return{valid:false,errors:['Il documento non è un oggetto YAML valido']};
+  }
+  schema.required.forEach(field=>{
+    const val=obj[field];
+    if(val===undefined||val===null||val===''){
+      errors.push(`Campo obbligatorio mancante: "${field}"`);
+    }
+  });
+  // controllo tipo: i campi elencati in schema.numeric devono essere convertibili in numero
+  (schema.numeric||[]).forEach(field=>{
+    const val=obj[field];
+    if(val===undefined||val===null||val==='')return; // l'assenza è già gestita da required, sopra
+    const n=typeof val==='number'?val:parseFloat(String(val).replace(',','.'));
+    if(isNaN(n)){
+      errors.push(`Campo "${field}" deve essere un numero (trovato: "${val}")`);
+    }
+  });
+  // controllo valori ammessi: i campi elencati in schema.values devono appartenere all'elenco dichiarato
+  Object.entries(schema.values||{}).forEach(([field,allowed])=>{
+    const val=obj[field];
+    if(val===undefined||val===null||val==='')return;
+    const normalized=String(val).trim().toLowerCase();
+    if(!allowed.some(a=>a.toLowerCase()===normalized)){
+      errors.push(`Campo "${field}" ha un valore non ammesso: "${val}" (ammessi: ${allowed.join(', ')})`);
+    }
+  });
+  return{valid:errors.length===0,errors};
+}
+
+// ══════════════════════════════════════════════════════════
+// STADIO 3 — ENTITY REGISTRY (schema + mapper + commit)
+// Nessun if(type==="..."){}: dispatch sempre tramite lookup nel registro.
+// Aggiungere una nuova entità = aggiungere una voce qui, nient'altro.
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// ENTITY REGISTRY con AZIONI — ogni entità dichiara le operazioni
+// coerenti con la propria natura, non solo una creazione implicita.
+// Formato YAML: tipo: <entità>, azione: <azione> (opzionale, default dichiarato)
+// ══════════════════════════════════════════════════════════
+
+function qaSaveNote(tipo,text){
+  if(!text||!text.trim())return false;
+  const notes=ld('quickNotes',[]);
+  notes.unshift({id:'qn_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),tipo,testo:text.trim(),ts:Date.now()});
+  sv('quickNotes',notes);
+  return true;
+}
+function qcGetOrCreateAltroProject(ctx){
+  let proj=ctx.allProjs.find(p=>(p.tag||'').toUpperCase()==='ALTRO');
+  if(proj)return proj;
+  const custom=ld('customProjs',[]);
+  const existing=custom.find(p=>(p.tag||'').toUpperCase()==='ALTRO');
+  if(existing){ctx.allProjs.push(existing);return existing;}
+  const id='cp_altro_'+Date.now();
+  const newProj={id,tag:'ALTRO',color:'#6b7280',sub:'',folder:'BRAND DIGITALE',tasks0:[],goals0:[],note0:''};
+  custom.push(newProj);sv('customProjs',custom);
+  ctx.allProjs.push(newProj);
+  return newProj;
+}
+
+const ENTITY_REGISTRY={
+  task:{
+    label:'Task',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','data'],optional:['progetto','priorità','ricorrente','orario'],numeric:[],values:{priorità:['alta','media','bassa'],ricorrente:['sì','no']}},
+        validateRefs(obj,ctx){
+          const errors=[];
+          if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))errors.push(`Progetto non trovato: "${obj.progetto}"`);
+          return errors;
+        },
+        toInternal(obj,ctx){
+          const proj=obj.progetto?qcMatchProject(obj.progetto,ctx.allProjs):qcGetOrCreateAltroProject(ctx);
+          const pri=qcMapPriorita(obj.priorità);
+          const isRecur=obj.ricorrente?/^s[iì]$/i.test(String(obj.ricorrente).trim()):false;
+          const date=isRecur?null:(qcParseDateField(obj.data)||ctx.fallbackDate);
+          return{
+            text:obj.titolo,projId:proj?proj.id:null,pri,isRecur,date,orario:obj.orario||'',
+            preview:{Titolo:obj.titolo,Progetto:proj?proj.tag:'—',Quando:isRecur?'ricorrente':(date?date.toLocaleDateString('it-IT'):'—'),Orario:obj.orario||'—',Priorità:pri}
+          };
+        },
+        commit(internal,ctx){
+          if(internal.isRecur&&internal.projId){
+            const arr=ld('recur_'+internal.projId,[]);
+            if(!arr.includes(internal.text)){arr.push(internal.text);sv('recur_'+internal.projId,arr);}
+          } else {
+            const key=agendaKey(internal.date);
+            if(!ctx.byDate[key])ctx.byDate[key]={date:internal.date,tasks:[]};
+            ctx.byDate[key].tasks.push({text:internal.text,projId:internal.projId||'',done:false,ts:Date.now()+Math.random(),type:'day',pri:internal.pri,time:internal.orario||''});
+          }
+          return true;
+        }
+      },
+      completa:{
+        schema:{required:['titolo'],optional:['data'],numeric:[]},
+        toInternal(obj,ctx){
+          const date=qcParseDateField(obj.data)||ctx.fallbackDate;
+          return{titolo:obj.titolo,date,preview:{Azione:'Completa',Titolo:obj.titolo,Data:date.toLocaleDateString('it-IT')}};
+        },
+        commit(internal){
+          const list=getAgendaDay(internal.date);
+          const idx=list.findIndex(t=>allNormName(t.text).includes(allNormName(internal.titolo))||allNormName(internal.titolo).includes(allNormName(t.text)));
+          if(idx<0)return false;
+          list[idx].done=true;setAgendaDay(internal.date,list);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:['data'],numeric:[]},
+        toInternal(obj,ctx){
+          const date=qcParseDateField(obj.data)||ctx.fallbackDate;
+          return{titolo:obj.titolo,date,preview:{Azione:'Elimina',Titolo:obj.titolo,Data:date.toLocaleDateString('it-IT')}};
+        },
+        commit(internal){
+          const list=getAgendaDay(internal.date);
+          const idx=list.findIndex(t=>allNormName(t.text).includes(allNormName(internal.titolo))||allNormName(internal.titolo).includes(allNormName(t.text)));
+          if(idx<0)return false;
+          list.splice(idx,1);setAgendaDay(internal.date,list);
+          return true;
+        }
+      }
     }
   },
   obiettivo:{
-    required:['titolo'],optional:['progetto'],
-    commit:(f,ctx)=>{
-      const proj=qcMatchProject(f.progetto,ctx.allProjs);
-      if(!proj)return false;
-      const goals=ld('goals_'+proj.id,[]);
-      if(!goals.includes(f.titolo)){goals.push(f.titolo);sv('goals_'+proj.id,goals);}
-      return true;
-    }
-  },
-  obiettivo_sett:{
-    required:['titolo'],optional:['progetto'],
-    commit:(f,ctx)=>{
-      const proj=qcMatchProject(f.progetto,ctx.allProjs);
-      if(!proj)return false;
-      const wg=ld('weekGoals_'+proj.id,[]);
-      if(!wg.includes(f.titolo)){wg.push(f.titolo);sv('weekGoals_'+proj.id,wg);}
-      return true;
-    }
-  },
-  esercizio:{
-    required:['nome','serie','ripetizioni'],optional:['peso','giorno','note'],
-    commit:(f,ctx)=>{
-      const serie=parseInt(f.serie),reps=parseInt(f.ripetizioni);
-      if(!serie||!reps)return false;
-      const dayIdx=qcParseGiornoIdx(f.giorno)??allWeekdayIdx(new Date());
-      const peso=f.peso?parseFloat(f.peso.replace(',','.')):0;
-      const schede=allGetSchede();
-      const scheda=schede[dayIdx];
-      const{id:catId}=allFindOrCreateCatEsercizio(f.nome);
-      let esIdx=scheda.esercizi.findIndex(e=>e.catId===catId);
-      if(esIdx<0)scheda.esercizi.push({catId,peso,reps,serie});
-      else{scheda.esercizi[esIdx].peso=peso||scheda.esercizi[esIdx].peso;scheda.esercizi[esIdx].reps=reps;scheda.esercizi[esIdx].serie=serie;}
-      sv('all_schede',schede);
-      if(f.note){
-        const cat=allGetCatalogo();const ex=cat.find(e=>e.id===catId);
-        if(ex){ex.noteEsercizio=f.note;sv('all_catalogo',cat);}
-      }
-      const todayIdxNow=allWeekdayIdx(new Date());
-      if(dayIdx===todayIdxNow){
-        const cat=allGetCatalogo();const ex=cat.find(e=>e.id===catId);
-        if(ex){
-          const todayKey=new Date().toDateString();
-          ex.storia=ex.storia||[];
-          const existing=ex.storia.findIndex(s=>s.dataKey===todayKey);
-          const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso,reps,serie};
-          if(existing>=0)ex.storia[existing]=entry;else ex.storia.push(entry);
-          sv('all_catalogo',cat);
+    label:'Obiettivo',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','progetto','tipo'],optional:[],numeric:[],values:{tipo:['generale','settimanale']}},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          const isSettimanale=String(obj.tipo).trim().toLowerCase()==='settimanale';
+          return{titolo:obj.titolo,projId:proj?proj.id:null,isSettimanale,preview:{Titolo:obj.titolo,Progetto:proj?proj.tag:'—',Tipo:obj.tipo}};
+        },
+        commit(internal){
+          if(!internal.projId)return false;
+          const key=(internal.isSettimanale?'weekGoals_':'goals_')+internal.projId;
+          const list=ld(key,[]);
+          if(!list.includes(internal.titolo)){list.push(internal.titolo);sv(key,list);}
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo','progetto','tipo'],optional:[],numeric:[],values:{tipo:['generale','settimanale']}},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          const isSettimanale=String(obj.tipo).trim().toLowerCase()==='settimanale';
+          return{titolo:obj.titolo,projId:proj?proj.id:null,isSettimanale,preview:{Azione:'Elimina',Titolo:obj.titolo,Progetto:proj?proj.tag:'—'}};
+        },
+        commit(internal){
+          if(!internal.projId)return false;
+          const key=(internal.isSettimanale?'weekGoals_':'goals_')+internal.projId;
+          const list=ld(key,[]);
+          const idx=list.findIndex(g=>allNormName(g).includes(allNormName(internal.titolo))||allNormName(internal.titolo).includes(allNormName(g)));
+          if(idx<0)return false;
+          list.splice(idx,1);sv(key,list);
+          return true;
         }
       }
-      return true;
     }
   },
-  scheda_allenamento:{
-    required:['giorno','esercizi'],optional:[],
-    commit:(f,ctx)=>{
-      const dayIdx=qcParseGiornoIdx(f.giorno);
-      if(dayIdx===null)return false;
-      const nomi=f.esercizi.split(',').map(s=>s.trim()).filter(Boolean);
-      if(!nomi.length)return false;
-      const schede=allGetSchede();
-      const scheda=schede[dayIdx];
-      nomi.forEach(nome=>{
-        const{id:catId}=allFindOrCreateCatEsercizio(nome);
-        if(!scheda.esercizi.some(e=>e.catId===catId))scheda.esercizi.push({catId,peso:0,reps:0,serie:3});
-      });
-      sv('all_schede',schede);
-      return true;
-    }
-  },
-  catalogo_esercizi:{
-    required:['nome','gruppi_muscolari','recupero'],optional:['note','consigli'],
-    commit:(f,ctx)=>{
-      const cat=allGetCatalogo();
-      let ex=cat.find(e=>allNormName(e.nome)===allNormName(f.nome));
-      if(!ex){ex={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:f.nome,storia:[],gruppiMuscolari:[],recupero:'',noteEsercizio:''};cat.push(ex);}
-      ex.gruppiMuscolari=f.gruppi_muscolari.split(',').map(s=>s.trim()).filter(Boolean);
-      ex.recupero=f.recupero;
-      if(f.consigli)ex.noteEsercizio=f.consigli;
-      else if(f.note)ex.noteEsercizio=f.note;
-      sv('all_catalogo',cat);
-      return true;
-    }
-  },
-  pasto:{
-    required:['giorno','slot','ricetta'],optional:['porzioni','note'],
-    commit:(f,ctx)=>{
-      const dayIdx=qcParseGiornoIdx(f.giorno);
-      const slotIdx=qcParseSlotIdx(f.slot);
-      if(dayIdx===null||slotIdx===null)return false;
-      const rl=f.ricetta.trim().toLowerCase();
-      const ric=ricGetAll().find(r=>r.nome.toLowerCase()===rl)||ricGetAll().find(r=>r.nome.toLowerCase().includes(rl));
-      if(!ric)return false;
-      const porzioni=f.porzioni?parseFloat(f.porzioni.replace(',','.')):1;
-      const schede=alimGetSchede();
-      const pasto=schede[dayIdx].pasti[slotIdx];
-      pasto.ricettaId=ric.id;pasto.porzioni=porzioni;pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0;
-      sv('alim_schede',schede);
-      ricIncrementUsage(ric.id);
-      return true;
-    }
-  },
-  ricetta:{
-    required:['nome'],optional:['categoria','ingredienti','preparazione','calorie','proteine','carboidrati','grassi'],
-    commit:(f,ctx)=>{
-      const list=ricGetAll();
-      let ric=list.find(r=>r.nome.toLowerCase()===f.nome.trim().toLowerCase());
-      if(!ric){ric=ricCreate(f.nome,'pranzi');}
-      if(f.categoria){
-        const catKey=RIC_CATEGORIE.find(([k,l])=>l.toLowerCase().includes(f.categoria.toLowerCase())||k===f.categoria.toLowerCase())?.[0];
-        if(catKey)ricUpdate(ric.id,'categoria',catKey);
+  obiettivo_settimanale:{
+    label:'Obiettivo settimanale',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','progetto'],optional:[],numeric:[]},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          return{titolo:obj.titolo,projId:proj?proj.id:null,preview:{Titolo:obj.titolo,Progetto:proj?proj.tag:'—'}};
+        },
+        commit(internal){
+          if(!internal.projId)return false;
+          const wg=ld('weekGoals_'+internal.projId,[]);
+          if(!wg.includes(internal.titolo)){wg.push(internal.titolo);sv('weekGoals_'+internal.projId,wg);}
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo','progetto'],optional:[],numeric:[]},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          return{titolo:obj.titolo,projId:proj?proj.id:null,preview:{Azione:'Elimina',Titolo:obj.titolo,Progetto:proj?proj.tag:'—'}};
+        },
+        commit(internal){
+          if(!internal.projId)return false;
+          const wg=ld('weekGoals_'+internal.projId,[]);
+          const idx=wg.findIndex(g=>allNormName(g).includes(allNormName(internal.titolo))||allNormName(internal.titolo).includes(allNormName(g)));
+          if(idx<0)return false;
+          wg.splice(idx,1);sv('weekGoals_'+internal.projId,wg);
+          return true;
+        }
       }
-      if(f.ingredienti){
-        const ings=qcParseIngredientiField(f.ingredienti);
-        ricUpdate(ric.id,'ingredienti',ings);
+    }
+  },
+  movimento:{
+    label:'Movimento',defaultAzione:'registra',
+    azioni:{
+      registra:{
+        schema:{required:['direzione','titolo','asset','cifra'],optional:['data','note'],numeric:['cifra'],values:{direzione:['entrata','uscita']}},
+        validateRefs(obj){const e=[];if(obj.asset&&!ld('assets',[]).some(a=>a.l.toLowerCase()===String(obj.asset).trim().toLowerCase()))e.push(`Asset non trovato: "${obj.asset}"`);return e;},
+        toInternal(obj){
+          const isEntrata=String(obj.direzione).trim().toLowerCase()==='entrata';
+          let desc=obj.titolo;if(obj.note)desc+=' ('+obj.note+')';
+          return{isEntrata,importo:qcNum(obj.cifra),desc,asset:obj.asset,
+            preview:{Direzione:obj.direzione,Titolo:desc,Cifra:'€'+obj.cifra,Asset:obj.asset}};
+        },
+        commit(internal){
+          const assets=ld('assets',[]);
+          const idx=assets.findIndex(a=>a.l.toLowerCase()===internal.asset.trim().toLowerCase());
+          if(idx<0)return false;
+          assets[idx].v+=internal.isEntrata?internal.importo:-internal.importo;sv('assets',assets);
+          const log=ld('txLog',[]);
+          log.unshift({tipo:internal.isEntrata?'entrata':'uscita',desc:internal.desc,importo:internal.importo,asset:assets[idx].l,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
+          sv('txLog',log);recordPatEvent();
+          return true;
+        }
       }
-      if(f.preparazione)ricUpdate(ric.id,'preparazione',f.preparazione);
-      if(f.calorie)ricUpdate(ric.id,'kcal',parseFloat(f.calorie.replace(',','.'))||0);
-      if(f.proteine)ricUpdate(ric.id,'prot',parseFloat(f.proteine.replace(',','.'))||0);
-      if(f.carboidrati)ricUpdate(ric.id,'carb',parseFloat(f.carboidrati.replace(',','.'))||0);
-      if(f.grassi)ricUpdate(ric.id,'grassi',parseFloat(f.grassi.replace(',','.'))||0);
-      return true;
-    }
-  },
-  stretching:{
-    required:['giorno','routine'],optional:[],
-    commit:(f,ctx)=>{
-      const dayIdx=qcParseGiornoIdx(f.giorno);
-      if(dayIdx===null)return false;
-      const nomi=f.routine.split(',').map(s=>s.trim()).filter(Boolean);
-      if(!nomi.length)return false;
-      const schede=strGetSchede();
-      const scheda=schede[dayIdx];
-      nomi.forEach(nome=>{
-        const{id:catId}=strFindOrCreateCatEsercizio(nome);
-        if(!scheda.esercizi.some(e=>e.catId===catId))scheda.esercizi.push({catId,durata:0});
-      });
-      sv('str_schede',schede);
-      return true;
-    }
-  },
-  peso:{
-    required:['valore'],optional:['data'],
-    commit:(f,ctx)=>{
-      const v=parseFloat(f.valore.replace(',','.'));
-      if(!v)return false;
-      const d=qcParseDateField(f.data)||new Date();
-      const dataKey=d.toDateString();
-      const storia=ld('alim_pesoStoria',[]);
-      const entry={dataKey,peso:v,data:d.toLocaleDateString('it-IT')};
-      const existing=storia.findIndex(x=>x.dataKey===dataKey);
-      if(existing>=0)storia[existing]=entry;else storia.push(entry);
-      sv('alim_pesoStoria',storia);
-      return true;
-    }
-  },
-  entrata:{
-    required:['importo','descrizione','asset'],optional:['progetto','data','note'],
-    commit:(f,ctx)=>{
-      const importo=parseFloat(f.importo.replace(',','.'));
-      if(!importo)return false;
-      const assets=ld('assets',[]);
-      const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===f.asset.trim().toLowerCase());
-      if(assetIdx<0)return false;
-      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
-      assets[assetIdx].v+=importo;sv('assets',assets);
-      const log=ld('txLog',[]);
-      log.unshift({tipo:'entrata',desc,importo,asset:assets[assetIdx].l,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
-      sv('txLog',log);recordPatEvent();
-      return true;
-    }
-  },
-  uscita:{
-    required:['importo','descrizione','asset'],optional:['progetto','data','note'],
-    commit:(f,ctx)=>{
-      const importo=parseFloat(f.importo.replace(',','.'));
-      if(!importo)return false;
-      const assets=ld('assets',[]);
-      const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===f.asset.trim().toLowerCase());
-      if(assetIdx<0)return false;
-      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
-      assets[assetIdx].v-=importo;sv('assets',assets);
-      const log=ld('txLog',[]);
-      log.unshift({tipo:'uscita',desc,importo,asset:assets[assetIdx].l,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
-      sv('txLog',log);recordPatEvent();
-      return true;
     }
   },
   spesa_pianificata:{
-    required:['importo','descrizione','data'],optional:['progetto','asset','note'],
-    commit:(f,ctx)=>{
-      const importo=parseFloat(f.importo.replace(',','.'));
-      const d=qcParseDateField(f.data);
-      if(!importo||!d)return false;
-      const proj=qcMatchProject(f.progetto,ctx.allProjs);
-      const dataStr=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-      let desc=f.descrizione;if(f.note)desc+=' ('+f.note+')';
-      const key=proj?'spese_'+proj.id:'speseGen';
-      const list=ld(key,[]);
-      list.push({nome:desc,v:importo,data:dataStr,paid:false});
-      sv(key,list);
-      return true;
+    label:'Spesa pianificata',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','cifra','data'],optional:['progetto','asset','note'],numeric:['cifra']},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const d=qcParseDateField(obj.data);
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          let desc=obj.titolo;if(obj.note)desc+=' ('+obj.note+')';
+          return{importo:qcNum(obj.cifra),desc,data:d,projId:proj?proj.id:null,
+            preview:{Titolo:desc,Cifra:'€'+obj.cifra,Data:d?d.toLocaleDateString('it-IT'):'⚠',Progetto:proj?proj.tag:'generale'}};
+        },
+        commit(internal){
+          if(!internal.importo||!internal.data)return false;
+          const dataStr=String(internal.data.getDate()).padStart(2,'0')+'/'+String(internal.data.getMonth()+1).padStart(2,'0')+'/'+internal.data.getFullYear();
+          const key=internal.projId?'spese_'+internal.projId:'speseGen';
+          const list=ld(key,[]);
+          list.push({nome:internal.desc,v:internal.importo,data:dataStr,paid:false});
+          sv(key,list);
+          return true;
+        }
+      },
+      segna_pagata:{
+        schema:{required:['titolo'],optional:['progetto'],numeric:[]},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          return{desc:obj.titolo,projId:proj?proj.id:null,preview:{Azione:'Segna pagata',Titolo:obj.titolo}};
+        },
+        commit(internal){
+          const key=internal.projId?'spese_'+internal.projId:'speseGen';
+          const list=ld(key,[]);
+          const idx=list.findIndex(s=>allNormName(s.nome).includes(allNormName(internal.desc))||allNormName(internal.desc).includes(allNormName(s.nome)));
+          if(idx<0)return false;
+          list[idx].paid=true;sv(key,list);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:['progetto'],numeric:[]},
+        validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
+        toInternal(obj,ctx){
+          const proj=qcMatchProject(obj.progetto,ctx.allProjs);
+          return{desc:obj.titolo,projId:proj?proj.id:null,preview:{Azione:'Elimina',Titolo:obj.titolo}};
+        },
+        commit(internal){
+          const key=internal.projId?'spese_'+internal.projId:'speseGen';
+          const list=ld(key,[]);
+          const idx=list.findIndex(s=>allNormName(s.nome).includes(allNormName(internal.desc))||allNormName(internal.desc).includes(allNormName(s.nome)));
+          if(idx<0)return false;
+          list.splice(idx,1);sv(key,list);
+          return true;
+        }
+      }
     }
   },
   asset:{
-    required:['nome','valore'],optional:[],
-    commit:(f,ctx)=>{
-      const v=parseFloat(f.valore.replace(',','.'));
-      if(isNaN(v))return false;
-      const assets=ld('assets',[]);
-      const existing=assets.find(a=>a.l.toLowerCase()===f.nome.trim().toLowerCase());
-      if(existing)existing.v=v;
-      else assets.push({l:f.nome.trim(),v,id:'asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});
-      sv('assets',assets);recordPatEvent();
-      return true;
+    label:'Asset',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo'],optional:['cifra'],numeric:['cifra']},
+        toInternal(obj){return{nome:obj.titolo,valore:obj.cifra!==undefined?qcNum(obj.cifra):0,preview:{Titolo:obj.titolo,Cifra:'€'+(obj.cifra||0)}};},
+        commit(internal){
+          const assets=ld('assets',[]);
+          const existing=assets.find(a=>a.l.toLowerCase()===internal.nome.trim().toLowerCase());
+          if(existing)existing.v=internal.valore;
+          else assets.push({l:internal.nome.trim(),v:internal.valore,id:'asset_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});
+          sv('assets',assets);recordPatEvent();
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const assets=ld('assets',[]);
+          const idx=assets.findIndex(a=>a.l.toLowerCase()===internal.nome.trim().toLowerCase());
+          if(idx<0)return false;
+          assets.splice(idx,1);sv('assets',assets);recordPatEvent();
+          return true;
+        }
+      }
+    }
+  },
+  catalogo_esercizi:{
+    label:'Esercizio catalogo',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','gruppi muscolari'],optional:['recupero','note','consigli'],numeric:[]},
+        toInternal(obj){
+          return{nome:obj.titolo,gruppi:qcList(obj['gruppi muscolari']),recupero:obj.recupero||'',note:obj.consigli||obj.note||'',
+            preview:{Titolo:obj.titolo,Gruppi:qcList(obj['gruppi muscolari']).join(', ')}};
+        },
+        commit(internal){
+          const cat=allGetCatalogo();
+          let ex=cat.find(e=>allNormName(e.nome)===allNormName(internal.nome));
+          if(!ex){ex={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:internal.nome,storia:[],gruppiMuscolari:[],recupero:'',noteEsercizio:''};cat.push(ex);}
+          ex.gruppiMuscolari=internal.gruppi;
+          if(internal.recupero)ex.recupero=internal.recupero;
+          if(internal.note)ex.noteEsercizio=internal.note;
+          sv('all_catalogo',cat);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const cat=allGetCatalogo();
+          const idx=cat.findIndex(e=>allNormName(e.nome)===allNormName(internal.nome));
+          if(idx<0)return false;
+          cat.splice(idx,1);sv('all_catalogo',cat);
+          return true;
+        }
+      }
+    }
+  },
+  giorno_allenamento:{
+    label:'Scheda allenamento',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['giorno','esercizi'],optional:[],numeric:[]},
+        toInternal(obj){
+          const dayIdx=qcParseGiornoIdx(obj.giorno);
+          const esRaw=qcList(obj.esercizi);
+          const es=esRaw.map(x=>typeof x==='string'?{nome:x,serie:3,reps:0,peso:0}:{nome:x.nome,serie:x.serie?parseInt(x.serie):3,reps:x.ripetizioni?parseInt(x.ripetizioni):0,peso:qcNum(x.peso)});
+          return{dayIdx,es,preview:{Giorno:obj.giorno,Esercizi:es.map(e=>e.nome).join(', ')}};
+        },
+        commit(internal){
+          if(internal.dayIdx===null||!internal.es.length)return false;
+          const schede=allGetSchede();
+          const scheda=schede[internal.dayIdx];
+          internal.es.forEach(e=>{
+            const{id:catId}=allFindOrCreateCatEsercizio(e.nome);
+            const exIdx=scheda.esercizi.findIndex(x=>x.catId===catId);
+            if(exIdx<0)scheda.esercizi.push({catId,peso:e.peso,reps:e.reps,serie:e.serie});
+            else{scheda.esercizi[exIdx].serie=e.serie;scheda.esercizi[exIdx].reps=e.reps;if(e.peso)scheda.esercizi[exIdx].peso=e.peso;}
+          });
+          sv('all_schede',schede);
+          return true;
+        }
+      },
+      rimuovi:{
+        schema:{required:['giorno','esercizi'],optional:[],numeric:[]},
+        toInternal(obj){
+          const dayIdx=qcParseGiornoIdx(obj.giorno);
+          const nomi=qcList(obj.esercizi).map(x=>typeof x==='string'?x:x.nome);
+          return{dayIdx,nomi,preview:{Azione:'Rimuovi',Giorno:obj.giorno,Esercizi:nomi.join(', ')}};
+        },
+        commit(internal){
+          if(internal.dayIdx===null||!internal.nomi.length)return false;
+          const schede=allGetSchede();
+          const scheda=schede[internal.dayIdx];
+          const cat=allGetCatalogo();
+          internal.nomi.forEach(nome=>{
+            const ex=cat.find(e=>allNormName(e.nome)===allNormName(nome));
+            if(ex)scheda.esercizi=scheda.esercizi.filter(e=>e.catId!==ex.id);
+          });
+          sv('all_schede',schede);
+          return true;
+        }
+      }
+    }
+  },
+  peso:{
+    label:'Registrazione peso',defaultAzione:'registra',
+    azioni:{
+      registra:{
+        schema:{required:['data','cifra'],optional:[],numeric:['cifra']},
+        toInternal(obj){
+          const d=qcParseDateField(obj.data);
+          return{valore:qcNum(obj.cifra),data:d,preview:{Cifra:obj.cifra+' kg',Data:d?d.toLocaleDateString('it-IT'):'⚠'}};
+        },
+        commit(internal){
+          if(!internal.valore||!internal.data)return false;
+          const dataKey=internal.data.toDateString();
+          const storia=ld('alim_pesoStoria',[]);
+          const entry={dataKey,peso:internal.valore,data:internal.data.toLocaleDateString('it-IT')};
+          const existing=storia.findIndex(x=>x.dataKey===dataKey);
+          if(existing>=0)storia[existing]=entry;else storia.push(entry);
+          sv('alim_pesoStoria',storia);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['data'],optional:[],numeric:[]},
+        toInternal(obj){const d=qcParseDateField(obj.data);return{data:d,preview:{Azione:'Elimina',Data:d?d.toLocaleDateString('it-IT'):'⚠'}};},
+        commit(internal){
+          if(!internal.data)return false;
+          const dataKey=internal.data.toDateString();
+          const storia=ld('alim_pesoStoria',[]);
+          const idx=storia.findIndex(x=>x.dataKey===dataKey);
+          if(idx<0)return false;
+          storia.splice(idx,1);sv('alim_pesoStoria',storia);
+          return true;
+        }
+      }
+    }
+  },
+  ricetta:{
+    label:'Ricetta',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo','ingredienti'],optional:['macro','tempo di preparazione','preparazione','difficoltà'],numeric:[],values:{difficoltà:['facile','media','difficile']}},
+        toInternal(obj){
+          const ings=qcList(obj.ingredienti).map(i=>typeof i==='object'?{nome:i.nome,g:qcNum(i.grammi)}:{nome:i,g:0});
+          const macro=obj.macro||{};
+          return{
+            nome:obj.titolo,ingredienti:ings,preparazione:obj.preparazione,
+            tempoPrep:qcNum(obj['tempo di preparazione']),difficolta:obj.difficoltà||'facile',
+            calorie:qcNum(macro.calorie),proteine:qcNum(macro.proteine),carboidrati:qcNum(macro.carboidrati),grassi:qcNum(macro.grassi),
+            preview:{Titolo:obj.titolo,Ingredienti:ings.length+' voci',Difficoltà:obj.difficoltà||'facile'}
+          };
+        },
+        commit(internal){
+          const list=ricGetAll();
+          let ric=list.find(r=>r.nome.toLowerCase()===internal.nome.trim().toLowerCase());
+          if(!ric)ric=ricCreate(internal.nome,'pranzi');
+          ricUpdate(ric.id,'ingredienti',internal.ingredienti);
+          if(internal.preparazione)ricUpdate(ric.id,'preparazione',internal.preparazione);
+          if(internal.tempoPrep)ricUpdate(ric.id,'tempoPrep',internal.tempoPrep);
+          ricUpdate(ric.id,'difficolta',internal.difficolta);
+          if(internal.calorie)ricUpdate(ric.id,'kcal',internal.calorie);
+          if(internal.proteine)ricUpdate(ric.id,'prot',internal.proteine);
+          if(internal.carboidrati)ricUpdate(ric.id,'carb',internal.carboidrati);
+          if(internal.grassi)ricUpdate(ric.id,'grassi',internal.grassi);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const list=ricGetAll();
+          const idx=list.findIndex(r=>r.nome.toLowerCase()===internal.nome.trim().toLowerCase());
+          if(idx<0)return false;
+          list.splice(idx,1);sv('ricette',list);
+          return true;
+        }
+      }
+    }
+  },
+  stretching:{
+    label:'Routine stretching',defaultAzione:'crea',
+    azioni:{
+      crea:{
+        schema:{required:['titolo'],optional:['esercizi'],numeric:[]},
+        toInternal(obj){
+          const nomi=qcList(obj.esercizi).map(x=>typeof x==='string'?x:x.nome);
+          return{nome:obj.titolo,nomi,preview:{Titolo:obj.titolo,Esercizi:nomi.length?nomi.join(', '):'—'}};
+        },
+        commit(internal){
+          const{id:catId}=strFindOrCreateCatEsercizio(internal.nome);
+          if(internal.nomi.length){
+            const cat=ld('str_catalogo',[]);
+            const ex=cat.find(e=>e.id===catId);
+            if(ex){ex.componenti=internal.nomi;sv('str_catalogo',cat);}
+          }
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const cat=ld('str_catalogo',[]);
+          const idx=cat.findIndex(e=>allNormName(e.nome)===allNormName(internal.nome));
+          if(idx<0)return false;
+          cat.splice(idx,1);sv('str_catalogo',cat);
+          return true;
+        }
+      }
     }
   },
   carta:{
-    required:['azione','nome','prezzo'],optional:['quantità','piattaforma','note'],
-    commit:(f,ctx)=>{
-      const azione=f.azione.trim().toLowerCase();
-      const prezzo=parseFloat(f.prezzo.replace(',','.'))||0;
-      const inv=ld('carteInv',[]);
-      if(/vend/.test(azione)){
-        const idx=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(f.nome))&&c.stato!=='Venduta');
-        if(idx<0)return false;
-        inv[idx].stato='Venduta';inv[idx].vendita=prezzo;
-      } else {
-        const qty=f.quantità?Math.max(1,parseInt(f.quantità)):1;
-        for(let i=0;i<qty;i++)inv.unshift({nome:f.nome,serie:'Pokémon',lingua:'ITA',acquisto:prezzo,ebay:prezzo,vendita:0,stato:'In Stock'});
+    label:'Carta',defaultAzione:'acquista',
+    azioni:{
+      acquista:{
+        schema:{required:['titolo','cifra'],optional:['quantità','piattaforma','note'],numeric:['cifra','quantità']},
+        toInternal(obj){
+          return{nome:obj.titolo,prezzo:qcNum(obj.cifra),quantita:obj.quantità?parseInt(obj.quantità):1,
+            preview:{Titolo:obj.titolo,Cifra:'€'+obj.cifra}};
+        },
+        commit(internal){
+          const inv=ld('carteInv',[]);
+          const qty=Math.max(1,internal.quantita);
+          for(let i=0;i<qty;i++)inv.unshift({nome:internal.nome,serie:'Pokémon',lingua:'ITA',acquisto:internal.prezzo,ebay:internal.prezzo,vendita:0,stato:'In Stock'});
+          sv('carteInv',inv);syncAssets();
+          return true;
+        }
+      },
+      vendi:{
+        schema:{required:['titolo','cifra'],optional:['note'],numeric:['cifra']},
+        toInternal(obj){return{nome:obj.titolo,prezzo:qcNum(obj.cifra),preview:{Titolo:obj.titolo,Cifra:'€'+obj.cifra}};},
+        commit(internal){
+          const inv=ld('carteInv',[]);
+          const idx=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(internal.nome))&&c.stato!=='Venduta');
+          if(idx<0)return false;
+          inv[idx].stato='Venduta';inv[idx].vendita=internal.prezzo;
+          sv('carteInv',inv);syncAssets();
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const inv=ld('carteInv',[]);
+          const idx=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(internal.nome)));
+          if(idx<0)return false;
+          inv.splice(idx,1);sv('carteInv',inv);syncAssets();
+          return true;
+        }
       }
-      sv('carteInv',inv);syncAssets();
-      return true;
     }
   },
-  habit:{
-    required:['nome','stato'],optional:['data'],
-    commit:(f,ctx)=>{
-      const habits=ld('habits',[]);
-      const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(f.nome))||allNormName(f.nome).includes(allNormName(h)));
-      if(idx<0)return false;
-      const done=/^(fatt[oa]|s[iì]|true)/i.test(f.stato.trim());
-      const d=qcParseDateField(f.data)||new Date();
-      const dayIdx=(d.getDay()+6)%7;
-      const dots=ld('habitDots',[]);
-      if(!dots[idx])dots[idx]=Array(7).fill(false);
-      dots[idx][dayIdx]=done;
-      sv('habitDots',dots);
-      return true;
+  abitudine:{
+    label:'Abitudine',defaultAzione:'segna',
+    azioni:{
+      segna:{
+        schema:{required:['titolo','stato'],optional:['data'],numeric:[]},
+        validateRefs(obj){
+          const e=[];
+          if(obj.titolo){
+            const habits=ld('habits',[]);
+            if(!habits.some(h=>allNormName(h).includes(allNormName(obj.titolo))||allNormName(obj.titolo).includes(allNormName(h))))e.push(`Abitudine non trovata: "${obj.titolo}"`);
+          }
+          return e;
+        },
+        toInternal(obj){
+          const d=qcParseDateField(obj.data)||new Date();
+          const done=/^(fatt[oa]|s[iì]|true)/i.test(String(obj.stato).trim());
+          return{nome:obj.titolo,done,data:d,preview:{Titolo:obj.titolo,Stato:done?'fatto':'non fatto',Data:d.toLocaleDateString('it-IT')}};
+        },
+        commit(internal){
+          const habits=ld('habits',[]);
+          const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h)));
+          if(idx<0)return false;
+          const dayIdx=(internal.data.getDay()+6)%7;
+          const dots=ld('habitDots',[]);
+          if(!dots[idx])dots[idx]=Array(7).fill(false);
+          dots[idx][dayIdx]=internal.done;
+          sv('habitDots',dots);
+          return true;
+        }
+      }
     }
   },
-  nota:{required:['testo'],optional:[],commit:(f)=>qaSaveNote('nota',f.testo)},
-  idea:{required:['testo'],optional:[],commit:(f)=>qaSaveNote('idea',f.testo)},
   link:{
-    required:['url'],optional:['titolo','descrizione'],
-    commit:(f)=>{
-      const parts=[f.titolo,f.url,f.descrizione].filter(Boolean);
-      return qaSaveNote('link',parts.join(' — '));
+    label:'Link',defaultAzione:'crea',
+    azioni:{crea:{
+      schema:{required:['url'],optional:['titolo','descrizione'],numeric:[]},
+      toInternal(obj){const parts=[obj.titolo,obj.url,obj.descrizione].filter(Boolean);return{testo:parts.join(' — '),preview:{Url:obj.url,Titolo:obj.titolo||'—'}};},
+      commit(internal){return qaSaveNote('link',internal.testo);}
+    }}
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// QUICK ADD — percorso guidato categoria → entità → modulo.
+// Riusa lo stesso ENTITY_REGISTRY di Quick Capture (stesso schema,
+// stessa validazione, stesso commit): cambia solo il modo in cui
+// l'utente fornisce i dati (form invece di YAML incollato).
+// ══════════════════════════════════════════════════════════
+const QA_CATEGORIES={
+  organizzazione:{label:'Organizzazione',icon:'📋',entities:['task','obiettivo','obiettivo_settimanale']},
+  fitos:{label:'FitOS',icon:'💪',entities:['peso','giorno_allenamento','catalogo_esercizi','ricetta','stretching']},
+  finanze:{label:'Finanze',icon:'💶',entities:['movimento','spesa_pianificata','asset']},
+  collezione:{label:'Collezione',icon:'🎴',entities:['carta']},
+  abitudini:{label:'Abitudini',icon:'✓',entities:['abitudine']},
+  note:{label:'Note',icon:'📝',entities:['nota','idea','link']}
+};
+// nota/idea non fanno parte del linguaggio YAML di Quick Capture (SPEC 04) ma restano
+// disponibili qui come semplice testo libero salvato con qaSaveNote.
+const QA_SPECIAL={
+  nota:{label:'Nota',fields:[{name:'testo',label:'Testo',type:'textarea',required:true}]},
+  idea:{label:'Idea',fields:[{name:'testo',label:'Testo',type:'textarea',required:true}]}
+};
+const QA_ENTITY_LABELS={
+  task:'Task',obiettivo:'Obiettivo',obiettivo_settimanale:'Obiettivo settimanale',
+  peso:'Peso',giorno_allenamento:'Scheda allenamento',catalogo_esercizi:'Esercizio catalogo',
+  ricetta:'Ricetta',stretching:'Routine stretching',movimento:'Movimento',
+  spesa_pianificata:'Spesa pianificata',asset:'Asset',carta:'Carta',abitudine:'Abitudine',
+  nota:'Nota',idea:'Idea',link:'Link'
+};
+
+let _qaState={step:'categories',category:null,entity:null};
+
+function openQuickAdd(){
+  const overlay=document.getElementById('qa-overlay');
+  overlay.style.display='flex';overlay.style.opacity='';
+  overlay.classList.add('qa-overlay-anim');
+  const panel=document.getElementById('qa-panel');
+  panel.classList.add('qa-panel-anim');
+  _qaState={step:'categories',category:null,entity:null};
+  qaRenderCategories();
+}
+function closeQuickAdd(){
+  const overlay=document.getElementById('qa-overlay');
+  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';document.getElementById('qa-panel').innerHTML='';},150);
+}
+function qaHeader(title,onBack){
+  return `<div style="display:flex;align-items:center;gap:10px">
+    ${onBack?`<button onclick="${onBack}" style="background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer;padding:0">←</button>`:''}
+    <div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);flex:1">${esc(title)}</div>
+    <button onclick="closeQuickAdd()" style="font-size:16px;color:var(--text-faint);background:none;border:none;cursor:pointer">×</button>
+  </div>`;
+}
+
+// ── STEP 1: categorie ──
+function qaRenderCategories(){
+  _qaState.step='categories';
+  let h=qaHeader('Quick Add');
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">';
+  Object.entries(QA_CATEGORIES).forEach(([key,cat])=>{
+    h+=`<button onclick="qaRenderEntities('${key}')" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer">
+      <span style="font-size:22px">${cat.icon}</span>
+      <span style="font-family:var(--sans);font-weight:600;font-size:11px;text-align:center">${esc(cat.label)}</span>
+    </button>`;
+  });
+  h+='</div>';
+  document.getElementById('qa-panel').innerHTML=h;
+}
+
+// ── STEP 2: entità della categoria ──
+function qaRenderEntities(catKey){
+  _qaState.step='entities';_qaState.category=catKey;
+  const cat=QA_CATEGORIES[catKey];
+  let h=qaHeader(cat.label,'qaRenderCategories()');
+  h+='<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">';
+  cat.entities.forEach(entType=>{
+    const label=QA_ENTITY_LABELS[entType]||entType;
+    h+=`<button onclick="qaRenderForm('${entType}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:var(--sans);font-weight:600;font-size:13px">
+      <span>${esc(label)}</span><span style="color:var(--text-ghost)">→</span>
+    </button>`;
+  });
+  h+='</div>';
+  document.getElementById('qa-panel').innerHTML=h;
+}
+
+// ── STEP 3: modulo di inserimento ──
+function qaFieldInputType(entityType,field,schema){
+  if((schema.numeric||[]).includes(field))return'number';
+  if(field==='data')return'text-date';
+  return'text';
+}
+function qaRenderForm(entityType){
+  _qaState.step='form';_qaState.entity=entityType;
+  const label=QA_ENTITY_LABELS[entityType]||entityType;
+  let h=qaHeader(label,`qaRenderEntities('${_qaState.category}')`);
+  h+=`<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px" id="qa-form-fields">`;
+
+  if(QA_SPECIAL[entityType]){
+    QA_SPECIAL[entityType].fields.forEach(f=>{
+      h+=qaFieldHTML(f.name,f.label,f.required,'textarea',null);
+    });
+  } else {
+    const entityDef=ENTITY_REGISTRY[entityType];
+    const azioneDef=entityDef.azioni[entityDef.defaultAzione];
+    const schema=azioneDef.schema;
+    schema.required.forEach(field=>{
+      const type=qaFieldInputType(entityType,field,schema);
+      h+=qaFieldHTML(field,qaFieldLabel(field),true,type,schema.values&&schema.values[field]);
+    });
+    (schema.optional||[]).forEach(field=>{
+      const type=qaFieldInputType(entityType,field,schema);
+      h+=qaFieldHTML(field,qaFieldLabel(field),false,type,schema.values&&schema.values[field]);
+    });
+  }
+  h+='</div>';
+  h+=`<div id="qa-form-error" style="font-size:11px;color:var(--red);display:none"></div>`;
+  h+=`<button onclick="qaSubmitForm('${entityType}')" style="margin-top:8px;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer">+ AGGIUNGI</button>`;
+  document.getElementById('qa-panel').innerHTML=h;
+  const firstInput=document.querySelector('#qa-form-fields input,#qa-form-fields select,#qa-form-fields textarea');
+  if(firstInput)setTimeout(()=>firstInput.focus(),50);
+}
+function qaFieldLabel(field){
+  return field.charAt(0).toUpperCase()+field.slice(1);
+}
+function qaFieldHTML(field,label,required,type,values){
+  const id='qa-f-'+field.replace(/\s+/g,'_');
+  let input;
+  if(values){
+    input=`<select id="${id}" data-field="${esc(field)}" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+      <option value="">—</option>
+      ${values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+    </select>`;
+  } else if(type==='textarea'){
+    input=`<textarea id="${id}" data-field="${esc(field)}" rows="3" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;color:var(--text);resize:vertical;font-family:var(--sans)"></textarea>`;
+  } else if(type==='number'){
+    input=`<input id="${id}" data-field="${esc(field)}" type="number" step="any" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">`;
+  } else if(type==='text-date'){
+    input=`<input id="${id}" data-field="${esc(field)}" type="text" placeholder="oggi, domani, 15 luglio…" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">`;
+  } else {
+    input=`<input id="${id}" data-field="${esc(field)}" type="text" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">`;
+  }
+  return `<div>
+    <label style="display:block;font-size:11px;color:var(--text-faint);margin-bottom:4px;font-family:var(--sans);font-weight:600">${esc(label)}${required?' <span style="color:var(--red)">*</span>':''}</label>
+    ${input}
+  </div>`;
+}
+
+// parsing leggero per ingredienti scritti come testo libero "farina 200, zucchero 100"
+function qaParseIngredientiText(text){
+  if(!text)return[];
+  return text.split(',').map(chunk=>{
+    const m=chunk.trim().match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*g?\s*$/i);
+    if(m)return{nome:m[1].trim(),grammi:parseFloat(m[2].replace(',','.'))};
+    return{nome:chunk.trim(),grammi:0};
+  }).filter(i=>i.nome);
+}
+
+function qaCollectFormValues(entityType){
+  const obj={};
+  document.querySelectorAll('#qa-form-fields [data-field]').forEach(el=>{
+    const field=el.dataset.field;
+    const val=el.value.trim();
+    if(!val)return;
+    if(field==='ingredienti')obj[field]=qaParseIngredientiText(val);
+    else obj[field]=val;
+  });
+  return obj;
+}
+
+function qaSubmitForm(entityType){
+  const errEl=document.getElementById('qa-form-error');
+  errEl.style.display='none';
+  const obj=qaCollectFormValues(entityType);
+
+  if(QA_SPECIAL[entityType]){
+    if(!obj.testo){errEl.textContent='Il testo è obbligatorio';errEl.style.display='block';return;}
+    qaSaveNote(entityType,obj.testo);
+    qaSubmitSuccess(QA_ENTITY_LABELS[entityType]);
+    return;
+  }
+
+  const entityDef=ENTITY_REGISTRY[entityType];
+  const azioneNome=entityDef.defaultAzione;
+  const azioneDef=entityDef.azioni[azioneNome];
+  const validation=validateAgainstSchema(obj,azioneDef.schema);
+  if(!validation.valid){
+    errEl.innerHTML=validation.errors.map(e=>esc(e)).join('<br>');
+    errEl.style.display='block';
+    return;
+  }
+  const ctx=qcBuildCtx();
+  if(azioneDef.validateRefs){
+    const refErrors=azioneDef.validateRefs(obj,ctx);
+    if(refErrors&&refErrors.length){
+      errEl.innerHTML=refErrors.map(e=>esc(e)).join('<br>');
+      errEl.style.display='block';
+      return;
     }
   }
-};
-function qcValidateBlock(block){
-  const def=QC_ENTITIES[block.entity];
-  if(!def)return false;
-  return def.required.every(k=>block.fields[k]&&block.fields[k].trim());
+  let internal;
+  try{ internal=azioneDef.toInternal(obj,ctx); }
+  catch(e){ errEl.textContent='Errore: '+e.message;errEl.style.display='block';return; }
+  let ok;
+  try{ ok=azioneDef.commit(internal,ctx); }
+  catch(e){ errEl.textContent='Errore durante il salvataggio: '+e.message;errEl.style.display='block';return; }
+  if(!ok){ errEl.textContent='Salvataggio non riuscito — controlla i riferimenti (progetto/asset/ricetta).';errEl.style.display='block';return; }
+
+  if(entityType==='task'){
+    Object.values(ctx.byDate).forEach(({date,tasks})=>{
+      const existing=getAgendaDay(date);
+      setAgendaDay(date,[...existing,...tasks]);
+    });
+  }
+  qaSubmitSuccess(QA_ENTITY_LABELS[entityType]);
+}
+
+function qaSubmitSuccess(label){
+  toast('✓ '+label+' aggiunto');
+  renderHome();renderTopbar();
+  if(isTodayTabActive())renderTodayFocus();
+  const agendaTab=document.getElementById('tab-agenda');
+  if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
+  closeQuickAdd();
 }
 
 
-const QC_CAT_LABELS={
-  obiettivo_sett:'Obiettivi settimanali',obiettivo:'Obiettivi',peso:'Registrazioni peso',carta:'Carte',
-  finanza:'Movimenti finanziari',abitudine:'Abitudini',stretching:'Stretching',scheda_allenamento:'Schede allenamento',
-  copia_giorno:'Copie scheda',catalogo_esercizio:'Esercizi catalogo',ricetta:'Assegnazioni ricetta',
-  pasti_giorno:'Pasti pianificati',scheda_stretch:'Schede stretching',spesa:'Spese pianificate',
-  multi_task:'Task multiple',allenamento:'Allenamenti',pasto:'Pasti',task:'Task',ricorrente:'Task ricorrenti'
-};
-function qcClassifyLine(line,allProjs){
-  const priRes=qcStripPriorita(line);
-  const cleanLine=priRes.clean;
-  if(isQCObiettivoSett(cleanLine)){
-    const p=qcParseObiettivo(cleanLine);
-    return{ok:!!(p.text&&p.projId),cat:'obiettivo_sett'};
+// ══════════════════════════════════════════════════════════
+// STADIO 4 — PREVIEW ENGINE
+// Area temporanea, separata dal database. Nulla viene scritto finché
+// l'utente non conferma esplicitamente l'importazione.
+// ══════════════════════════════════════════════════════════
+let _qcPreviewItems=[]; // {id, type, rawYaml, valid, errors, unknownType, internal, previewFields}
+let _qcItemSeq=0;
+
+function qcBuildPreviewItem(rawYamlDoc,ctx){
+  const id='qi_'+(_qcItemSeq++);
+  let parsedObj;
+  try{ parsedObj=yamlParseDocument(rawYamlDoc); }
+  catch(e){ return{id,type:null,rawYaml:rawYamlDoc,valid:false,errors:['YAML non valido: '+e.message],unknownType:false,internal:null,previewFields:null}; }
+  if(!parsedObj||typeof parsedObj!=='object'){
+    return{id,type:null,rawYaml:rawYamlDoc,valid:false,errors:['Documento vuoto o non interpretabile'],unknownType:false,internal:null,previewFields:null};
   }
-  if(isQCObiettivo(cleanLine)&&!isQCObiettivoSett(cleanLine)){
-    const p=qcParseObiettivo(cleanLine);
-    return{ok:!!(p.text&&p.projId),cat:'obiettivo'};
+  const type=parsedObj.tipo;
+  const entityDef=type?ENTITY_REGISTRY[type]:null;
+  if(!entityDef){
+    return{id,type:type||null,rawYaml:rawYamlDoc,valid:false,errors:[type?`Tipo sconosciuto: "${type}"`:'Campo "tipo" mancante'],unknownType:true,internal:null,previewFields:null};
   }
-  if(isQCPeso(cleanLine))return{ok:!!qcParsePeso(cleanLine),cat:'peso'};
-  if(isQCCarta(cleanLine))return{ok:!!qcParseCarta(cleanLine),cat:'carta'};
-  if(isQCFinanza(cleanLine))return{ok:!!qcParseFinanza(cleanLine),cat:'finanza'};
-  if(isQCAbitudine(cleanLine))return{ok:!!qcParseAbitudine(cleanLine),cat:'abitudine'};
-  if(isQCStretching(cleanLine))return{ok:!!qcParseStretching(cleanLine),cat:'stretching'};
-  if(isQCSchedaGiorno(cleanLine))return{ok:!!qcParseSchedaGiorno(cleanLine),cat:'scheda_allenamento'};
-  if(isQCCopiaGiorno(cleanLine))return{ok:!!qcParseCopiaGiorno(cleanLine),cat:'copia_giorno'};
-  if(isQCCatalogoEsercizio(cleanLine))return{ok:!!qcParseCatalogoEsercizio(cleanLine),cat:'catalogo_esercizio'};
-  if(isQCRicetta(cleanLine))return{ok:!!qcParseRicetta(cleanLine),cat:'ricetta'};
-  if(isQCPastiGiorno(cleanLine))return{ok:!!qcParsePastiGiorno(cleanLine),cat:'pasti_giorno'};
-  if(isQCSchedaStretch(cleanLine))return{ok:!!qcParseSchedaStretch(cleanLine),cat:'scheda_stretch'};
-  if(isQCSpesa(cleanLine))return{ok:!!qcParseSpesa(cleanLine,allProjs),cat:'spesa'};
-  if(isQCMultiTask(cleanLine))return{ok:!!qcParseMultiTask(cleanLine,allProjs),cat:'multi_task'};
-  if(isQCAllenamento(cleanLine))return{ok:!!qcParseAllenamento(cleanLine),cat:'allenamento'};
-  if(isQCAlimentazione(cleanLine))return{ok:!!qcParseAlimentazione(cleanLine),cat:'pasto'};
-  const generic=parseQCLine(cleanLine,allProjs);
-  if(generic.text)return{ok:true,cat:generic.isRecur?'ricorrente':'task'};
-  return{ok:false,cat:null};
+  const azioneNome=parsedObj.azione||entityDef.defaultAzione;
+  const def=entityDef.azioni[azioneNome];
+  if(!def){
+    const disponibili=Object.keys(entityDef.azioni).join(', ');
+    return{id,type,rawYaml:rawYamlDoc,valid:false,errors:[`Azione "${azioneNome}" non valida per "${type}" (disponibili: ${disponibili})`],unknownType:false,internal:null,previewFields:null};
+  }
+  const validation=validateAgainstSchema(parsedObj,def.schema);
+  if(!validation.valid){
+    return{id,type,rawYaml:rawYamlDoc,valid:false,errors:validation.errors,unknownType:false,internal:null,previewFields:null};
+  }
+  if(def.validateRefs){
+    const refErrors=def.validateRefs(parsedObj,ctx);
+    if(refErrors&&refErrors.length){
+      return{id,type,rawYaml:rawYamlDoc,valid:false,errors:refErrors,unknownType:false,internal:null,previewFields:null};
+    }
+  }
+  let internal;
+  try{ internal=def.toInternal(parsedObj,ctx); }
+  catch(e){ return{id,type,rawYaml:rawYamlDoc,valid:false,errors:['Errore durante la trasformazione: '+e.message],unknownType:false,internal:null,previewFields:null}; }
+  return{id,type,azione:azioneNome,rawYaml:rawYamlDoc,valid:true,errors:[],unknownType:false,internal,previewFields:internal.preview};
 }
 
-// ══════════════════════════════════════════════════════════
-// SPEC 05: fase di analisi — nessuna scrittura, solo classificazione
-// ══════════════════════════════════════════════════════════
-let _qcPendingLines=[];
-let _qcPendingBlocks=[];
+function qcBuildCtx(){
+  const allProjs=[...PD,...ld('customProjs',[])];
+  const fallbackKey=document.getElementById('qc-date').value||agendaKey(new Date());
+  const fallbackDate=agendaDateFromKey(fallbackKey);
+  return{allProjs,fallbackDate,byDate:{}};
+}
+
 function qcAnalyze(){
   const raw=document.getElementById('qc-input').value;
-  if(!raw.trim()){toast('Scrivi o incolla qualcosa prima');return;}
-  const allProjs=[...PD,...ld('customProjs',[])];
-  const tally={};
-  const errorLines=[];
-  let totalCount=0;
-
-  // v1 SPEC 07: prima prova il nuovo linguaggio a blocchi (Entità\ncampo: valore\n...)
-  const{blocks,orphanLines}=qcSplitBlocks(raw);
-  const validBlocks=[];
-  blocks.forEach(b=>{
-    totalCount++;
-    if(qcValidateBlock(b)){
-      tally[b.entity]=(tally[b.entity]||0)+1;
-      validBlocks.push(b);
-    } else {
-      errorLines.push({n:b.lineNo,text:b.rawName+' (campi obbligatori mancanti)'});
-    }
-    b.badLines.forEach(bl=>{totalCount++;errorLines.push(bl);});
-  });
-
-  // Righe orfane (fuori da qualunque blocco) -> vecchio parser a riga singola, per retrocompatibilità
-  orphanLines.forEach(ol=>{
-    totalCount++;
-    const res=qcClassifyLine(ol.text,allProjs);
-    if(res.ok&&res.cat){
-      tally[res.cat]=(tally[res.cat]||0)+1;
-    } else {
-      errorLines.push(ol);
-    }
-  });
-
-  _qcPendingBlocks=validBlocks;
-  _qcPendingLines=orphanLines.map(o=>o.text).filter(text=>{
-    const res=qcClassifyLine(text,allProjs);
-    return res.ok&&res.cat;
-  });
-  qcRenderAnalysis(tally,errorLines,totalCount);
-}
-function qcRenderAnalysis(tally,errorLines,totalLines){
+  if(!raw.trim()){toast('Incolla del testo YAML prima di analizzare');return;}
+  const rawDocs=raw.split(/^---\s*$/m).map(d=>d.trim()).filter(Boolean);
+  if(!rawDocs.length){toast('Nessun documento YAML trovato');return;}
+  const ctx=qcBuildCtx();
+  _qcPreviewItems=rawDocs.map(doc=>qcBuildPreviewItem(doc,ctx));
   document.getElementById('qc-step-input').style.display='none';
+  document.getElementById('qc-step-result').style.display='block';
+  qcRenderPreview();
+}
+
+function qcRenderPreview(){
   const el=document.getElementById('qc-step-result');
-  el.style.display='block';
-  const recognizedCount=totalLines-errorLines.length;
-  let h=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:12px">Analisi completata</div>`;
-  h+=`<div class="card" style="margin-bottom:12px">`;
-  const catKeys=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]);
-  if(!catKeys.length){
-    h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessun elemento riconosciuto.</div>`;
-  }
-  catKeys.forEach(cat=>{
-    h+=`<div class="row"><span style="flex:1;font-size:13px;color:var(--text)">${QC_CAT_LABELS[cat]||QC_ENTITY_LABELS[cat]||cat}</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${tally[cat]}</span></div>`;
-  });
-  h+=`</div>`;
-  if(errorLines.length){
-    h+=`<div style="font-family:var(--sans);font-weight:600;font-size:12px;color:var(--red);margin-bottom:6px">⚠ ${errorLines.length} riga${errorLines.length===1?'':'e'} non compres${errorLines.length===1?'a':'e'}</div>`;
-    h+=`<div class="card" style="margin-bottom:12px;max-height:160px;overflow-y:auto">`;
-    errorLines.slice(0,20).forEach(e=>{
-      h+=`<div class="row"><span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost);width:44px;flex-shrink:0">riga ${e.n}</span><span style="font-size:12px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.text)}</span></div>`;
-    });
-    if(errorLines.length>20)h+=`<div style="padding:8px 14px;font-size:11px;color:var(--text-ghost)">…e altre ${errorLines.length-20} righe</div>`;
+  const validCount=_qcPreviewItems.filter(i=>i.valid).length;
+  const errorCount=_qcPreviewItems.length-validCount;
+  let h=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px">Anteprima — area temporanea</div>
+    <div style="font-size:11px;color:var(--text-ghost);margin-bottom:12px">Niente è stato salvato. Correggi o elimina gli elementi in errore prima di importare.</div>`;
+
+  _qcPreviewItems.forEach(item=>{
+    const def=item.type?ENTITY_REGISTRY[item.type]:null;
+    const label=def?def.label+(item.azione?' · '+item.azione.toUpperCase():''):(item.type||'sconosciuto');
+    h+=`<div class="card" style="margin-bottom:8px;border-color:${item.valid?'var(--border)':'var(--red)'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:${item.valid?'var(--surface2)':'var(--red-glow)'}">
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${item.valid?'var(--text-dim)':'var(--red)'}">${item.valid?'✓':'⚠'} ${esc(label.toUpperCase())}</span>
+        <div style="display:flex;gap:6px">
+          <button onclick="qcToggleEdit('${item.id}')" style="font-family:var(--mono);font-size:9px;color:var(--text-faint);background:none;border:1px solid var(--border-hover);border-radius:5px;padding:3px 8px;cursor:pointer">MODIFICA</button>
+          <button onclick="qcDeleteItem('${item.id}')" style="font-family:var(--mono);font-size:9px;color:var(--red);background:none;border:1px solid var(--border-hover);border-radius:5px;padding:3px 8px;cursor:pointer">ELIMINA</button>
+        </div>
+      </div>`;
+    if(item.valid){
+      h+=`<div style="padding:8px 12px">`;
+      Object.entries(item.previewFields).forEach(([k,v])=>{
+        h+=`<div style="display:flex;gap:8px;font-size:12px;padding:3px 0"><span style="color:var(--text-ghost);min-width:80px">${esc(k)}</span><span style="color:var(--text)">${esc(String(v))}</span></div>`;
+      });
+      h+=`</div>`;
+    } else {
+      h+=`<div style="padding:8px 12px">`;
+      item.errors.forEach(e=>{h+=`<div style="font-size:11px;color:var(--red);padding:2px 0">• ${esc(e)}</div>`;});
+      h+=`</div>`;
+    }
+    h+=`<div id="edit-${item.id}" style="display:none;padding:0 12px 12px 12px">
+      <textarea id="edit-ta-${item.id}" rows="6" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;color:var(--text);font-family:var(--mono);resize:vertical">${esc(item.rawYaml)}</textarea>
+      <button onclick="qcRevalidateItem('${item.id}')" style="margin-top:6px;font-family:var(--sans);font-size:10px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer">RIVALIDA</button>
+    </div>`;
     h+=`</div>`;
-    h+=`<div style="font-size:11px;color:var(--text-ghost);margin-bottom:12px">Le righe non riconosciute verranno ignorate — il resto verrà importato normalmente.</div>`;
-  } else {
-    h+=`<div style="font-size:12px;color:var(--green);margin-bottom:12px">✓ Nessun errore rilevato — ${recognizedCount} element${recognizedCount===1?'o':'i'} pront${recognizedCount===1?'o':'i'} per l'importazione.</div>`;
-  }
-  h+=`<div style="display:flex;gap:8px">
-    <button onclick="qcBackToInput()" style="flex:1;font-family:var(--sans);font-weight:600;font-size:12px;padding:10px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">MODIFICA</button>
-    <button onclick="qcConfirmImport()" style="flex:2;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer" ${recognizedCount===0?'disabled style="opacity:.4"':''}>CONFERMA IMPORTAZIONE (${recognizedCount})</button>
+  });
+
+  h+=`<div style="display:flex;gap:8px;margin-top:8px">
+    <button onclick="qcBackToInput()" style="flex:1;font-family:var(--sans);font-weight:600;font-size:12px;padding:10px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">INDIETRO</button>
+    <button onclick="qcImportAll()" ${errorCount>0||validCount===0?'disabled style="opacity:.4;cursor:not-allowed"':''} style="flex:2;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">
+      ${errorCount>0?`CORREGGI ${errorCount} ERRORI PRIMA`:`IMPORTA (${validCount})`}
+    </button>
   </div>`;
   el.innerHTML=h;
+}
+
+function qcToggleEdit(id){
+  const el=document.getElementById('edit-'+id);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+function qcDeleteItem(id){
+  _qcPreviewItems=_qcPreviewItems.filter(i=>i.id!==id);
+  if(!_qcPreviewItems.length){qcBackToInput();return;}
+  qcRenderPreview();
+}
+function qcRevalidateItem(id){
+  const ta=document.getElementById('edit-ta-'+id);
+  if(!ta)return;
+  const newRaw=ta.value;
+  const ctx=qcBuildCtx();
+  const idx=_qcPreviewItems.findIndex(i=>i.id===id);
+  if(idx<0)return;
+  const rebuilt=qcBuildPreviewItem(newRaw,ctx);
+  rebuilt.id=id; // mantiene lo stesso id
+  _qcPreviewItems[idx]=rebuilt;
+  qcRenderPreview();
+  toast(rebuilt.valid?'✓ Elemento valido':'⚠ Ancora in errore');
 }
 function qcBackToInput(){
   document.getElementById('qc-step-input').style.display='block';
@@ -8322,70 +7739,50 @@ function qcBackToInput(){
 }
 
 // ══════════════════════════════════════════════════════════
-// SPEC 05: importazione reale, a lotti, con barra di avanzamento visibile
+// STADIO 5 — IMPORT ENGINE
+// Atomico: se anche un solo elemento è in errore, nessuna scrittura avviene.
+// Solo quando tutti gli elementi sono validi il database viene aggiornato.
 // ══════════════════════════════════════════════════════════
-function qcCommitBlock(block,ctx){
-  const def=QC_ENTITIES[block.entity];
-  if(!def)return false;
-  return def.commit(block.fields,ctx);
-}
-function qcConfirmImport(){
-  const blocks=_qcPendingBlocks;
-  const lines=_qcPendingLines;
-  const totalWork=blocks.length+lines.length;
-  if(!totalWork)return;
-  const el=document.getElementById('qc-step-result');
-  el.innerHTML=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);margin-bottom:14px">Importazione in corso…</div>
-    <div style="background:var(--surface3);border-radius:99px;height:8px;overflow:hidden;margin-bottom:8px">
-      <div id="qc-progress-fill" style="height:8px;width:0%;background:var(--green);border-radius:99px;transition:width .15s ease"></div>
-    </div>
-    <div id="qc-progress-label" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-align:center">0%</div>`;
-  const BATCH=15;
-  let idx=0;
-  const results={added:0,recurs:0,allenamento_added:0,alimentazione_added:0,spese_added:0,blocks_created:0,ignored:0};
-  const byDate={};
-  const allProjs=[...PD,...ld('customProjs',[])];
-  const fallbackKey=document.getElementById('qc-date').value||agendaKey(new Date());
-  const fallbackDate=agendaDateFromKey(fallbackKey);
-  const ctx={allProjs,fallbackDate,byDate};
-  function processBatch(){
-    const end=Math.min(idx+BATCH,totalWork);
-    for(;idx<end;idx++){
-      let ok;
-      if(idx<blocks.length){
-        ok=qcCommitBlock(blocks[idx],ctx);
-        if(ok)results.blocks_created++;
-      } else {
-        ok=qcCommitLine(lines[idx-blocks.length],allProjs,fallbackDate,byDate,results);
-      }
-      if(!ok)results.ignored++;
+function qcImportAll(){
+  const errorCount=_qcPreviewItems.filter(i=>!i.valid).length;
+  if(errorCount>0){toast('Correggi o elimina gli elementi in errore prima di importare');return;}
+  if(!_qcPreviewItems.length)return;
+
+  const ctx=qcBuildCtx();
+  const counts={};
+  let created=0;
+  _qcPreviewItems.forEach(item=>{
+    try{
+      const azioneDef=ENTITY_REGISTRY[item.type].azioni[item.azione];
+      const ok=azioneDef.commit(item.internal,ctx);
+      if(ok){created++;counts[item.type]=(counts[item.type]||0)+1;}
+    }catch(e){
+      console.error('Errore durante il commit di',item.type,item.azione,':',e);
     }
-    const pct=Math.round(idx/totalWork*100);
-    const fillEl=document.getElementById('qc-progress-fill');
-    const lblEl=document.getElementById('qc-progress-label');
-    if(fillEl)fillEl.style.width=pct+'%';
-    if(lblEl)lblEl.textContent=pct+'%';
-    if(idx<totalWork){
-      setTimeout(processBatch,10);
-    } else {
-      Object.values(byDate).forEach(({date,tasks})=>{
-        const existing=getAgendaDay(date);
-        setAgendaDay(date,[...existing,...tasks]);
-      });
-      qcRenderFinalResults(results,totalWork);
-    }
-  }
-  processBatch();
+  });
+  // scrive in un colpo solo le task raggruppate per giorno (evita N scritture separate sullo stesso array)
+  Object.values(ctx.byDate).forEach(({date,tasks})=>{
+    const existing=getAgendaDay(date);
+    setAgendaDay(date,[...existing,...tasks]);
+  });
+
+  qcRenderImportResult(created,counts);
 }
-function qcRenderFinalResults(results,totalLines){
-  const created=results.added+results.recurs+results.allenamento_added+results.alimentazione_added+results.spese_added+results.blocks_created;
+
+function qcRenderImportResult(created,counts){
   const el=document.getElementById('qc-step-result');
-  el.innerHTML=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--green);margin-bottom:12px">✓ Importazione completata</div>
+  let h=`<div style="font-family:var(--sans);font-weight:700;font-size:14px;color:var(--green);margin-bottom:12px">✓ Importazione completata</div>
     <div class="card" style="margin-bottom:14px">
-      <div class="row"><span style="flex:1;font-size:13px;color:var(--text)">Elementi creati</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${created}</span></div>
-      ${results.ignored?`<div class="row"><span style="flex:1;font-size:13px;color:var(--text)">Righe ignorate</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">${results.ignored}</span></div>`:''}
-    </div>
+      <div class="row"><span style="flex:1;font-size:13px;color:var(--text)">Elementi creati</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${created}</span></div>`;
+  Object.entries(counts).forEach(([type,n])=>{
+    const label=ENTITY_REGISTRY[type]?ENTITY_REGISTRY[type].label:type;
+    h+=`<div class="row"><span style="flex:1;font-size:12px;color:var(--text-faint)">${esc(label)}</span><span style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">${n}</span></div>`;
+  });
+  h+=`</div>
     <button onclick="closeQC()" style="width:100%;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--green);color:var(--on-accent);cursor:pointer">CHIUDI</button>`;
+  el.innerHTML=h;
+  _qcPreviewItems=[];
+
   const agendaTab=document.getElementById('tab-agenda');
   if(agendaTab&&agendaTab.style.display!=='none')renderAgenda();
   renderHome();renderTopbar();
@@ -8393,305 +7790,37 @@ function qcRenderFinalResults(results,totalLines){
   toast('✓ Importazione completata — '+created+' element'+(created===1?'o':'i'));
 }
 
-function qcCommitLine(line,allProjs,fallbackDate,byDate,results){
-    // v1: priorità inline "!alta"/"!media"/"!bassa" — spogliata prima di ogni altro parsing
-    const _priRes=qcStripPriorita(line);
-    const _qcPri=_priRes.pri;
-    line=_priRes.clean;
-    // Prova obiettivo settimanale
-    if(isQCObiettivoSett(line)){
-      const parsed=qcParseObiettivo(line);
-      if(parsed.text&&parsed.projId){
-        const wg=ld('weekGoals_'+parsed.projId,[]);
-        if(!wg.includes(parsed.text)){wg.push(parsed.text);sv('weekGoals_'+parsed.projId,wg);}
-        results.added++;return true;
-      }
-    }
-    // Prova obiettivo progetto
-    if(isQCObiettivo(line)&&!isQCObiettivoSett(line)){
-      const parsed=qcParseObiettivo(line);
-      if(parsed.text&&parsed.projId){
-        const goals=ld('goals_'+parsed.projId,[]);
-        if(!goals.includes(parsed.text)){goals.push(parsed.text);sv('goals_'+parsed.projId,goals);}
-        results.added++;return true;
-      }
-    }
-    // Prova peso corporeo
-    if(isQCPeso(line)){
-      const parsedPeso=qcParsePeso(line);
-      if(parsedPeso){
-        let pesoDate=new Date();
-        if(parsedPeso.dayIdx!==null&&parsedPeso.dayIdx!==undefined){
-          const todayIdxNow=allWeekdayIdx(new Date());
-          const diff=(parsedPeso.dayIdx-todayIdxNow+7)%7;
-          pesoDate=new Date();pesoDate.setDate(pesoDate.getDate()+diff);
-        }
-        const storia=ld('alim_pesoStoria',[]);
-        storia.push({dataKey:pesoDate.toDateString(),data:pesoDate.toLocaleDateString('it-IT'),peso:parsedPeso.peso});
-        sv('alim_pesoStoria',storia);
-        results.added++;return true;
-      }
-    }
-    // Prova carte eBay
-    if(isQCCarta(line)){
-      const parsedCarta=qcParseCarta(line);
-      if(parsedCarta){
-        const inv=ld('carteInv',[]);
-        if(parsedCarta.azione==='vendi'){
-          const idx3=inv.findIndex(c=>allNormName(c.nome).includes(allNormName(parsedCarta.nome))||allNormName(parsedCarta.nome).includes(allNormName(c.nome)));
-          if(idx3>=0){inv[idx3].stato='Venduta';inv[idx3].vendita=parsedCarta.prezzo;}
-        } else {
-          inv.unshift({nome:parsedCarta.nome,serie:'Pokémon',lingua:'ITA',acquisto:parsedCarta.prezzo||0,ebay:parsedCarta.prezzo||0,vendita:0,stato:'In Stock'});
-        }
-        sv('carteInv',inv);
-        results.added++;return true;
-      }
-    }
-    // Prova finanze (entrata/uscita)
-    if(isQCFinanza(line)){
-      const parsedFin=qcParseFinanza(line);
-      if(parsedFin){
-        const assets=ld('assets',[]);
-        const assetIdx=assets.findIndex(a=>a.l.toLowerCase()===parsedFin.asset.toLowerCase());
-        if(assetIdx>=0){
-          assets[assetIdx].v+=parsedFin.tipo==='entrata'?parsedFin.importo:-parsedFin.importo;
-          sv('assets',assets);
-          const log=ld('txLog',[]);
-          log.unshift({tipo:parsedFin.tipo,desc:parsedFin.desc,importo:parsedFin.importo,asset:parsedFin.asset,data:new Date().toLocaleDateString('it-IT'),ts:Date.now()});
-          sv('txLog',log);
-        }
-        results.added++;return true;
-      }
-    }
-    // Prova abitudine
-    if(isQCAbitudine(line)){
-      const parsedHab=qcParseAbitudine(line);
-      if(parsedHab){
-        const habits=ld('habits',[]);
-        const habIdx=habits.findIndex(h=>allNormName(h).includes(allNormName(parsedHab.nome))||allNormName(parsedHab.nome).includes(allNormName(h)));
-        if(habIdx>=0){
-          const dots=ld('habitDots',[]);
-          if(!dots[habIdx])dots[habIdx]=Array(7).fill(false);
-          dots[habIdx][parsedHab.dayIdx]=true;
-          sv('habitDots',dots);
-        }
-        results.added++;return true;
-      }
-    }
-    // Prova stretching
-    if(isQCStretching(line)){
-      const parsedStr=qcParseStretching(line);
-      if(parsedStr){
-        const schedeStr=strGetSchede();
-        const schedaStr=schedeStr[parsedStr.dayIdx];
-        if(parsedStr.fattoOnly){
-          // Segna tutte le routine della scheda del giorno come completate
-          const todayKeyStr=new Date().toDateString();
-          const chOggi=ld('str_checksOggi',{});
-          if(!chOggi[todayKeyStr])chOggi[todayKeyStr]={};
-          schedaStr.esercizi.forEach((_,idx2)=>{chOggi[todayKeyStr][parsedStr.dayIdx+'_'+idx2]=true;});
-          sv('str_checksOggi',chOggi);
-        } else {
-          const{id:catIdStr}=strFindOrCreateCatEsercizio(parsedStr.nome);
-          let esIdxStr=schedaStr.esercizi.findIndex(e=>e.catId===catIdStr);
-          if(esIdxStr<0){
-            schedaStr.esercizi.push({catId:catIdStr,durata:parsedStr.durata});
-          } else if(parsedStr.durata){
-            schedaStr.esercizi[esIdxStr].durata=parsedStr.durata;
-          }
-          sv('str_schede',schedeStr);
-        }
-        results.added++;return true;
-      }
-    }
-    // Prova assegnazione bulk scheda giorno
-    if(isQCSchedaGiorno(line)){
-      const parsedSched=qcParseSchedaGiorno(line);
-      if(parsedSched){
-        const cat=allGetCatalogo();
-        const schede=allGetSchede();
-        const scheda=schede[parsedSched.dayIdx];
-        let assegnati=0;
-        parsedSched.esercizi.forEach(nomeEs=>{
-          const ex=cat.find(e=>allNormName(e.nome)===allNormName(nomeEs)||allNormName(e.nome).includes(allNormName(nomeEs))||allNormName(nomeEs).includes(allNormName(e.nome)));
-          if(!ex)return true;
-          if(scheda.esercizi.some(e=>e.catId===ex.id))return true; // già presente
-          const lastHist=ex.storia[ex.storia.length-1];
-          scheda.esercizi.push({
-            catId:ex.id,
-            peso:lastHist?lastHist.peso:0,
-            reps:lastHist?lastHist.reps:0,
-            serie:lastHist?lastHist.serie:3
-          });
-          assegnati++;
-        });
-        sv('all_schede',schede);
-        added+=assegnati;
-        return true;
-      }
-    }
-    // Prova copia giorno
-    if(isQCCopiaGiorno(line)){
-      const parsedCopia=qcParseCopiaGiorno(line);
-      if(parsedCopia){
-        const schede=allGetSchede();
-        schede[parsedCopia.toDayIdx].esercizi=schede[parsedCopia.fromDayIdx].esercizi.map(e=>({...e}));
-        sv('all_schede',schede);
-        results.added++;return true;
-      }
-    }
-    // Prova catalogo esercizio bulk (formato con pipe |)
-    if(isQCCatalogoEsercizio(line)){
-      const parsedCat=qcParseCatalogoEsercizio(line);
-      if(parsedCat){
-        const cat=allGetCatalogo();
-        let ex=cat.find(e=>allNormName(e.nome)===allNormName(parsedCat.nome));
-        if(!ex){
-          ex={id:'ex_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:parsedCat.nome,storia:[],gruppiMuscolari:[],recupero:'',noteEsercizio:''};
-          cat.push(ex);
-        }
-        if(parsedCat.gruppi.length)ex.gruppiMuscolari=parsedCat.gruppi;
-        if(parsedCat.recupero)ex.recupero=parsedCat.recupero;
-        if(parsedCat.note)ex.noteEsercizio=parsedCat.note;
-        sv('all_catalogo',cat);
-        results.added++;return true;
-      }
-    }
-    // Prova assegnazione ricetta
-    if(isQCRicetta(line)){
-      const parsed=qcParseRicetta(line);
-      if(parsed){
-        const schede=alimGetSchede();
-        const pasto=schede[parsed.dayIdx].pasti[parsed.slotIdx];
-        pasto.ricettaId=parsed.ricettaId;
-        pasto.porzioni=parsed.porzioni;
-        pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0;
-        sv('alim_schede',schede);
-        ricIncrementUsage(parsed.ricettaId);
-        alimentazione_results.added++;
-        return true;
-      }
-    }
-    // Prova pasti giornata intera
-    if(isQCPastiGiorno(line)){
-      const parsed=qcParsePastiGiorno(line);
-      if(parsed){
-        const schede=alimGetSchede();
-        parsed.pasti.forEach(({slotIdx,cibo})=>{schede[parsed.dayIdx].pasti[slotIdx].testo=cibo;});
-        sv('alim_schede',schede);
-        alimentazione_added+=parsed.pasti.length;
-        return true;
-      }
-    }
-    // Prova scheda stretching intera
-    if(isQCSchedaStretch(line)){
-      const parsed=qcParseSchedaStretch(line);
-      if(parsed){
-        const schedeStr=strGetSchede();
-        const schedaStr=schedeStr[parsed.dayIdx];
-        let assegnatiStr=0;
-        parsed.esercizi.forEach(nomeEs=>{
-          const{id:catIdStr}=strFindOrCreateCatEsercizio(nomeEs);
-          if(schedaStr.esercizi.some(e=>e.catId===catIdStr))return true; // già presente
-          schedaStr.esercizi.push({catId:catIdStr,durata:0});
-          assegnatiStr++;
-        });
-        sv('str_schede',schedeStr);
-        added+=assegnatiStr;
-        return true;
-      }
-    }
-    // Prova spesa pianificata
-    if(isQCSpesa(line)){
-      const parsed=qcParseSpesa(line,allProjs);
-      if(parsed){
-        const key=parsed.projId?'spese_'+parsed.projId:'speseGen';
-        const list=ld(key,[]);
-        list.push({nome:parsed.desc,v:parsed.importo,data:parsed.dataStr,paid:false});
-        sv(key,list);
-        spese_results.added++;
-        return true;
-      }
-    }
-    // Prova task multiple sullo stesso progetto
-    if(isQCMultiTask(line)){
-      const parsed=qcParseMultiTask(line,allProjs);
-      if(parsed){
-        const d=fallbackDate;
-        const key=agendaKey(d);
-        if(!byDate[key]){byDate[key]={date:d,tasks:[]};}
-        parsed.tasks.forEach(t=>{
-          byDate[key].tasks.push({text:t,projId:parsed.projId,done:false,ts:Date.now()+Math.random(),type:'day',pri:_qcPri||'none'});
-        });
-        added+=parsed.tasks.length;
-        return true;
-      }
-    }
-    // Prova allenamento
-    if(isQCAllenamento(line)){
-      const parsed=qcParseAllenamento(line);
-      if(parsed){
-        const schede=allGetSchede();
-        const scheda=schede[parsed.dayIdx];
-        // Cerca o crea esercizio nel catalogo
-        const{id:catId}=allFindOrCreateCatEsercizio(parsed.nome);
-        // Cerca esercizio nella scheda
-        let esIdx=scheda.esercizi.findIndex(e=>e.catId===catId);
-        if(esIdx<0){
-          scheda.esercizi.push({catId,peso:parsed.pesoRelativo?parsed.peso:parsed.peso,reps:parsed.reps,serie:parsed.serie});
-          esIdx=scheda.esercizi.length-1;
-        } else {
-          if(parsed.peso){
-            scheda.esercizi[esIdx].peso=parsed.pesoRelativo?Math.max(0,(scheda.esercizi[esIdx].peso||0)+parsed.peso):parsed.peso;
-          }
-          if(parsed.reps)scheda.esercizi[esIdx].reps=parsed.reps;
-          if(parsed.serie)scheda.esercizi[esIdx].serie=parsed.serie;
-        }
-        sv('all_schede',schede);
-        // Se è oggi, registra anche nello storico
-        const todayIdxNow=allWeekdayIdx(new Date());
-        if(parsed.dayIdx===todayIdxNow&&(parsed.peso||parsed.reps||parsed.serie)){
-          const cat=allGetCatalogo();
-          const ex=cat.find(e=>e.id===catId);
-          if(ex){
-            const todayKey=new Date().toDateString();
-            ex.storia=ex.storia||[];
-            const existing=ex.storia.findIndex(s=>s.dataKey===todayKey);
-            const entry={dataKey:todayKey,data:new Date().toLocaleDateString('it-IT'),peso:parsed.peso,reps:parsed.reps,serie:parsed.serie};
-            if(existing>=0)ex.storia[existing]=entry;else ex.storia.push(entry);
-            sv('all_catalogo',cat);
-          }
-        }
-        allenamento_results.added++;
-        return true;
-      }
-    }
-    // Prova alimentazione
-    if(isQCAlimentazione(line)){
-      const parsed=qcParseAlimentazione(line);
-      if(parsed){
-        const schede=alimGetSchede();
-        schede[parsed.dayIdx].pasti[parsed.slotIdx].testo=parsed.cibo;
-        sv('alim_schede',schede);
-        alimentazione_results.added++;
-        return true;
-      }
-    }
-    const{text,projId,isRecur,targetDate}=parseQCLine(line,allProjs);
-    if(!text)return false;
-    if(isRecur&&projId){
-      // aggiunge alle task ricorrenti del progetto
-      const arr=ld('recur_'+projId,[]);
-      if(!arr.includes(text)){arr.push(text);sv('recur_'+projId,arr);}
-      results.recurs++;
-    } else {
-      const d=targetDate||fallbackDate;
-      const key=agendaKey(d); // v1 FIX timezone
-      if(!byDate[key]){byDate[key]={date:d,tasks:[]};}
-      byDate[key].tasks.push({text,projId,done:false,ts:Date.now()+Math.random(),type:'day',pri:_qcPri||'none'});
-      results.added++;
-    }
-    return true;
+// ══════════════════════════════════════════════════════════
+// Overlay open/close
+// ══════════════════════════════════════════════════════════
+function openQC(){
+  const overlay=document.getElementById('qc-overlay');
+  overlay.style.display='flex';overlay.style.opacity='';
+  overlay.classList.add('qa-overlay-anim');
+  const panel=overlay.querySelector(':scope > div');
+  if(panel)panel.classList.add('qa-panel-anim');
+  const sel=document.getElementById('qc-date');
+  sel.innerHTML='';
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let i=0;i<8;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const key=agendaKey(d);
+    const opt=document.createElement('option');
+    opt.value=key;opt.textContent=(i===0?'oggi — ':'')+d.toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+    sel.appendChild(opt);
+  }
+  const inp=document.getElementById('qc-input');
+  inp.value='';
+  document.getElementById('qc-step-input').style.display='block';
+  document.getElementById('qc-step-result').style.display='none';
+  document.getElementById('qc-step-result').innerHTML='';
+  _qcPreviewItems=[];
+  setTimeout(()=>inp.focus(),50);
+}
+function closeQC(){
+  const overlay=document.getElementById('qc-overlay');
+  overlay.style.transition='opacity .15s ease';overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='';overlay.style.transition='';},150);
 }
 
 document.addEventListener('keydown',e=>{
