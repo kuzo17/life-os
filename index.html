@@ -994,8 +994,8 @@ function initData(){
     {nome:'PFL 013 Mega Charizard Ex',serie:'Pokémon',lingua:'ITA',acquisto:0,ebay:0,vendita:17,stato:'Venduta'},
     {nome:'Mystery Pack One Piece',serie:'One Piece',lingua:'—',acquisto:0,ebay:0,vendita:15,stato:'Venduta'}
   ]);
-  sv('habits',['Lettura / studio','Deep work','Acqua & alimentazione','Sonno regolare']);
-  sv('habitDots',[0,1,2,3,4].map(()=>Array(7).fill(false)));
+  sv('habits',['Lettura / studio','Deep work','Acqua & alimentazione','Sonno regolare'].map((nome,i)=>({id:'hab_seed_'+i,nome,tipo:'checkbox',target:null,icon:'',dataCreazione:null})));
+  sv('habits_v2_migrated',true);
   sv('finIn',[{l:'Paghetta famiglia',v:200},{l:'Lavoro negozio STOSA',v:400},{l:'Variabili',v:0}]);
   sv('finOut',[{l:'Spese personali',v:0},{l:'Strumenti & software',v:0},{l:'RunPod / compute',v:0}]);
   sv('assets',[{l:'Liquidità',v:0,special:'liquidity'},{l:'Risparmi',v:750,special:'savings'},{l:'Carte eBay (val. mercato)',v:0},{l:'Vinted (potenziale)',v:0},{l:'Conto Risparmio',v:0},{l:'Crypto Portfolio',v:0}]);
@@ -6111,7 +6111,8 @@ function renderTodayFocus(){
   const todayKey=new Date().toDateString();
   const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
   const agendaKey_today=agendaKey(today); // v1 FIX: usava toISOString (UTC) duplicando il vecchio bug timezone
-  const _habits=ld('habits',[]),_habDots=ld('habitDots',[]);
+  const _habits=ld('habits',[]),_habitLog=ld('habitLog',{});
+  const _todayKeyStr=dayKey(today);
   const _todayDow2=(new Date().getDay()+6)%7;
 
   // Calcola totali task
@@ -6386,15 +6387,28 @@ function renderTodayFocus(){
     h+='</div>'; // fine 2col body
 
     // ── ABITUDINI pill grid ──
-    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">';
-    _habits.forEach(function(hb,hi){
-      const done=(_habDots[hi]||[])[_todayDow2]||false;
-      const streak=calcHabStreak(hi);
-      h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:8px">
-        <div class="hd${done?' on':''}" onclick="tDotToday(${hi},${_todayDow2})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
-        <span style="font-size:11px;color:${done?'var(--text-dim)':'var(--text)'};${done?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" ondblclick="qaRenameHabitInline(${hi})" title="Doppio clic per rinominare">${esc(hb)}</span>
-          ${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':''}
-        <span onclick="qaDeleteHabitInline(${hi})" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:12px;padding:0 2px" title="Elimina">×</span>
+    h+='<div class="slbl" style="margin-top:4px">Abitudini</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">';
+    _habits.forEach(function(hb){
+      const log=(_habitLog[hb.id])||{};
+      const count=log[_todayKeyStr]||0;
+      const isCounter=hb.tipo==='max'||hb.tipo==='min';
+      const ok=habitSuccess(hb,count);
+      const overLimit=hb.tipo==='max'&&count>hb.target;
+      const streak=calcHabStreak(hb);
+      let borderColor=isCounter?(overLimit?'var(--red)':ok&&count>0?'var(--green)':'var(--border)'):(ok?'var(--green)':'var(--border)');
+      h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${borderColor};border-radius:8px">`;
+      if(isCounter){
+        h+=`<span onclick="qaAdjustHabitCount('${hb.id}',-1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">−</span>
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:11px;color:${overLimit?'var(--red)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${overLimit?'var(--red)':'var(--text-faint)'};flex-shrink:0">${count}${hb.tipo==='max'?'/'+hb.target:''}${hb.tipo==='min'?'/'+hb.target:''}</span>
+          <span onclick="qaAdjustHabitCount('${hb.id}',1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">+</span>`;
+      } else {
+        h+=`<div class="hd${ok?' on':''}" onclick="qaToggleHabitToday('${hb.id}')" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:11px;color:${ok?'var(--text-dim)':'var(--text)'};${ok?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>`;
+      }
+      h+=`${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'</span>':''}
+        <span onclick="qaDeleteHabitInline('${hb.id}')" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:12px;padding:0 2px" title="Elimina">×</span>
       </div>`;
     });
     h+=`<button onclick="qaAddHabitInline()" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:transparent;border:1px dashed var(--border-hover);border-radius:8px;color:var(--text-faint);font-size:11px;font-family:var(--sans);cursor:pointer">+ Nuova</button>`;
@@ -6418,50 +6432,161 @@ function renderTodayFocus(){
 }
 
 function setOggiSort(mode){sv('oggi_sort',mode);renderTodayFocus();}
-function calcHabStreak(hi){
-  const dots=ld('habitDots',[])[hi]||[];
-  const todayDow=(new Date().getDay()+6)%7;
+function habitSuccess(habit,count){
+  if(count===undefined||count===null)count=0;
+  if(habit.tipo==='max')return count<=habit.target;   // "al massimo N" — nessun log = 0 = entro il limite
+  if(habit.tipo==='min')return count>=habit.target;    // "almeno N" — nessun log = 0 = non raggiunto
+  return count>0;                                       // checkbox
+}
+function calcHabStreak(habit){
+  const log=(ld('habitLog',{})[habit.id])||{};
+  const created=habit.dataCreazione?new Date(habit.dataCreazione+'T00:00:00'):null;
   let streak=0;
-  for(let d=todayDow;d>=0;d--){
-    if(dots[d])streak++;
+  const d=new Date();d.setHours(0,0,0,0);
+  for(let i=0;i<3650;i++){
+    if(created&&d<created)break;
+    const count=log[dayKey(d)];
+    if(habitSuccess(habit,count))streak++;
     else break;
+    d.setDate(d.getDate()-1);
   }
   return streak;
 }
-function tDotToday(hi,di){
-  const d=ld('habitDots',[]);
-  if(!d[hi])d[hi]=Array(7).fill(false);
-  d[hi][di]=!d[hi][di];
-  sv('habitDots',d);
+function qaToggleHabitToday(habitId){
+  const log=ld('habitLog',{});
+  if(!log[habitId])log[habitId]={};
+  const key=dayKey(new Date());
+  log[habitId][key]=log[habitId][key]?0:1;
+  sv('habitLog',log);
   renderTodayFocus();updateTodayBadge();
 }
-function qaAddHabitInline(){
-  modal('prompt','Nome nuova abitudine:',nome=>{
-    if(!nome||!nome.trim())return;
+function qaAdjustHabitCount(habitId,delta){
+  const log=ld('habitLog',{});
+  if(!log[habitId])log[habitId]={};
+  const key=dayKey(new Date());
+  const cur=log[habitId][key]||0;
+  log[habitId][key]=Math.max(0,cur+delta);
+  sv('habitLog',log);
+  renderTodayFocus();updateTodayBadge();
+}
+// ── modulo ricco per creare/modificare un'abitudine (nome + tipo + target) ──
+function qaHabitFormModal(existingHabit){
+  const ov=document.createElement('div');
+  ov.className='qa-overlay-anim';
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const box=document.createElement('div');
+  box.className='qa-panel-anim';
+  box.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:320px;width:100%;font-family:var(--sans);display:flex;flex-direction:column;gap:10px';
+  const isEdit=!!existingHabit;
+  const tipo0=existingHabit?existingHabit.tipo:'checkbox';
+  box.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--text)">${isEdit?'Modifica abitudine':'Nuova abitudine'}</div>
+    <input id="_hf-nome" placeholder="Nome (es. Sigarette)" value="${existingHabit?esc(existingHabit.nome):''}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
+    <input id="_hf-icon" placeholder="Emoji (opzionale, es. 🚬)" value="${existingHabit?esc(existingHabit.icon||''):''}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
+    <div style="display:flex;gap:6px">
+      <button id="_hf-t-checkbox" style="flex:1;font-family:var(--mono);font-size:10px;padding:7px 4px;border-radius:6px;border:1px solid var(--border-hover);cursor:pointer">SI/NO</button>
+      <button id="_hf-t-min" style="flex:1;font-family:var(--mono);font-size:10px;padding:7px 4px;border-radius:6px;border:1px solid var(--border-hover);cursor:pointer">ALMENO</button>
+      <button id="_hf-t-max" style="flex:1;font-family:var(--mono);font-size:10px;padding:7px 4px;border-radius:6px;border:1px solid var(--border-hover);cursor:pointer">AL MASSIMO</button>
+    </div>
+    <div id="_hf-target-wrap" style="display:none">
+      <input id="_hf-target" type="number" min="0" placeholder="Numero (es. 3, 20, 50)" value="${existingHabit&&existingHabit.target!=null?existingHabit.target:''}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end">
+      <button id="_hf-cancel" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+      <button id="_hf-save" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">SALVA</button>
+    </div>`;
+  document.body.appendChild(ov);ov.appendChild(box);
+  let tipoSel=tipo0;
+  const btns={checkbox:box.querySelector('#_hf-t-checkbox'),min:box.querySelector('#_hf-t-min'),max:box.querySelector('#_hf-t-max')};
+  const targetWrap=box.querySelector('#_hf-target-wrap');
+  function paintTipo(){
+    Object.entries(btns).forEach(([k,b])=>{
+      b.style.background=k===tipoSel?'var(--blue)':'transparent';
+      b.style.color=k===tipoSel?'#fff':'var(--text-faint)';
+    });
+    targetWrap.style.display=tipoSel==='checkbox'?'none':'block';
+  }
+  Object.entries(btns).forEach(([k,b])=>b.onclick=()=>{tipoSel=k;paintTipo();});
+  paintTipo();
+  const closeAnim=()=>{ov.style.transition='opacity .15s ease';ov.style.opacity='0';setTimeout(()=>ov.remove(),150);};
+  box.querySelector('#_hf-cancel').onclick=closeAnim;
+  box.querySelector('#_hf-save').onclick=()=>{
+    const nome=box.querySelector('#_hf-nome').value.trim();
+    if(!nome){toast('Il nome è obbligatorio');return;}
+    const targetRaw=box.querySelector('#_hf-target').value;
+    const target=tipoSel==='checkbox'?null:(parseFloat(targetRaw)||0);
+    if(tipoSel!=='checkbox'&&(!targetRaw||target<=0)){toast('Inserisci un numero valido');return;}
+    const icon=box.querySelector('#_hf-icon').value.trim();
     const habits=ld('habits',[]);
-    if(habits.some(h=>allNormName(h)===allNormName(nome.trim()))){toast('Esiste già un\'abitudine con questo nome');return;}
-    habits.push(nome.trim());sv('habits',habits);
+    if(isEdit){
+      const idx=habits.findIndex(h=>h.id===existingHabit.id);
+      if(idx>=0){habits[idx].nome=nome;habits[idx].tipo=tipoSel;habits[idx].target=target;habits[idx].icon=icon;sv('habits',habits);}
+    } else {
+      if(habits.some(h=>allNormName(h.nome)===allNormName(nome))){toast('Esiste già un\'abitudine con questo nome');return;}
+      habits.push({id:'hab_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),nome,tipo:tipoSel,target,icon,dataCreazione:dayKey(new Date())});
+      sv('habits',habits);
+    }
+    closeAnim();
     renderTodayFocus();updateTodayBadge();
-    toast('✓ Abitudine aggiunta');
-  });
+    toast(isEdit?'✓ Modificata':'✓ Abitudine aggiunta');
+  };
 }
-function qaRenameHabitInline(hi){
+function qaAddHabitInline(){qaHabitFormModal(null);}
+function qaEditHabitInline(habitId){
   const habits=ld('habits',[]);
-  modal('prompt','Rinomina abitudine (era: '+esc(habits[hi])+'):',nuovo=>{
-    if(!nuovo||!nuovo.trim()||nuovo.trim()===habits[hi])return;
-    habits[hi]=nuovo.trim();sv('habits',habits);
-    renderTodayFocus();
-    toast('✓ Rinominata');
-  });
+  const habit=habits.find(h=>h.id===habitId);
+  if(habit)qaHabitFormModal(habit);
 }
-function qaDeleteHabitInline(hi){
+function qaDeleteHabitInline(habitId){
   const habits=ld('habits',[]);
-  modal('confirm','Eliminare "'+esc(habits[hi])+'"? Anche lo storico di questa abitudine andrà perso.',()=>{
-    habits.splice(hi,1);sv('habits',habits);
-    const dots=ld('habitDots',[]);dots.splice(hi,1);sv('habitDots',dots);
+  const habit=habits.find(h=>h.id===habitId);
+  if(!habit)return;
+  modal('confirm','Eliminare "'+esc(habit.nome)+'"? Anche lo storico di questa abitudine andrà perso.',()=>{
+    sv('habits',habits.filter(h=>h.id!==habitId));
+    const log=ld('habitLog',{});delete log[habitId];sv('habitLog',log);
     renderTodayFocus();updateTodayBadge();
     toast('✓ Eliminata');
   });
+}
+// ── storico dell'abitudine (ultimi 30 giorni) ──
+function qaOpenHabitDetail(habitId){
+  const habits=ld('habits',[]);
+  const habit=habits.find(h=>h.id===habitId);
+  if(!habit)return;
+  const log=(ld('habitLog',{})[habitId])||{};
+  const ov=document.createElement('div');
+  ov.className='qa-overlay-anim';
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const box=document.createElement('div');
+  box.className='qa-panel-anim';
+  box.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:360px;width:100%;max-height:78vh;overflow-y:auto;font-family:var(--sans);display:flex;flex-direction:column;gap:10px';
+  const tipoLabel=habit.tipo==='max'?'al massimo '+habit.target:habit.tipo==='min'?'almeno '+habit.target:'sì/no';
+  const streak=calcHabStreak(habit);
+  let rows='';
+  const d=new Date();d.setHours(0,0,0,0);
+  for(let i=0;i<30;i++){
+    const key=dayKey(d);
+    const count=log[key]||0;
+    const hasEntry=log.hasOwnProperty(key);
+    const ok=habitSuccess(habit,count);
+    rows+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border-soft)">
+      <span style="font-size:11px;color:var(--text-faint)">${d.toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'})}</span>
+      <span style="font-size:11px;font-family:var(--mono);color:${!hasEntry?'var(--text-ghost)':ok?'var(--green)':'var(--red)'}">${habit.tipo==='checkbox'?(hasEntry&&count>0?'✓ fatto':'—'):count+(habit.target!=null?'/'+habit.target:'')}</span>
+    </div>`;
+    d.setDate(d.getDate()-1);
+  }
+  box.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">${esc(habit.icon)} ${esc(habit.nome)}</div>
+      <button id="_hd-close" style="background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-faint)">Tipo: ${tipoLabel}${streak>1?' · 🔥 '+streak+' giorni di fila':''}</div>
+    <button id="_hd-edit" style="align-self:flex-start;font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">✎ MODIFICA</button>
+    <div style="margin-top:4px">${rows}</div>`;
+  document.body.appendChild(ov);ov.appendChild(box);
+  const closeAnim=()=>{ov.style.transition='opacity .15s ease';ov.style.opacity='0';setTimeout(()=>ov.remove(),150);};
+  box.querySelector('#_hd-close').onclick=closeAnim;
+  box.querySelector('#_hd-edit').onclick=()=>{closeAnim();qaEditHabitInline(habitId);};
 }
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
@@ -6586,6 +6711,34 @@ function migrateData(){
       const dots=ld('habitDots',[]);dots.splice(idx,1);sv('habitDots',dots);
     }
     sv('all_habitMigrated',true);
+  }
+  // v2: abitudini da array di stringhe + settimana che si sovrascrive, a oggetti strutturati
+  // (nome/tipo/target) con storico persistente su date reali (habitLog). Idempotente.
+  if(!ld('habits_v2_migrated',false)){
+    const oldHabits=ld('habits',[]);
+    const alreadyObjects=oldHabits.length>0&&typeof oldHabits[0]==='object';
+    if(!alreadyObjects){
+      const oldDots=ld('habitDots',[]);
+      const today=new Date();today.setHours(0,0,0,0);
+      const todayDow=(today.getDay()+6)%7; // 0=lunedì
+      const monday=new Date(today);monday.setDate(today.getDate()-todayDow);
+      const habitLog={};
+      const newHabits=oldHabits.map((nome,hi)=>{
+        const id='hab_'+Date.now()+'_'+hi+'_'+Math.random().toString(36).slice(2,6);
+        habitLog[id]={};
+        const weekDots=oldDots[hi]||[];
+        for(let d=0;d<7;d++){
+          if(weekDots[d]){
+            const dDate=new Date(monday);dDate.setDate(monday.getDate()+d);
+            if(dDate<=today)habitLog[id][dayKey(dDate)]=1;
+          }
+        }
+        return{id,nome,tipo:'checkbox',target:null,icon:'',dataCreazione:null};
+      });
+      sv('habits',newHabits);
+      sv('habitLog',habitLog);
+    }
+    sv('habits_v2_migrated',true);
   }
 }
 function bootApp(){
@@ -6956,12 +7109,12 @@ const ENTITY_REGISTRY={
     label:'Obiettivo',defaultAzione:'crea',
     azioni:{
       crea:{
-        schema:{required:['titolo','progetto','tipo'],optional:[],numeric:[],values:{tipo:['generale','settimanale']}},
+        schema:{required:['titolo','progetto','periodo'],optional:[],numeric:[],values:{periodo:['generale','settimanale']}},
         validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
         toInternal(obj,ctx){
           const proj=qcMatchProject(obj.progetto,ctx.allProjs);
-          const isSettimanale=String(obj.tipo).trim().toLowerCase()==='settimanale';
-          return{titolo:obj.titolo,projId:proj?proj.id:null,isSettimanale,preview:{Titolo:obj.titolo,Progetto:proj?proj.tag:'—',Tipo:obj.tipo}};
+          const isSettimanale=String(obj.periodo).trim().toLowerCase()==='settimanale';
+          return{titolo:obj.titolo,projId:proj?proj.id:null,isSettimanale,preview:{Titolo:obj.titolo,Progetto:proj?proj.tag:'—',Periodo:obj.periodo}};
         },
         commit(internal){
           if(!internal.projId)return false;
@@ -6972,11 +7125,11 @@ const ENTITY_REGISTRY={
         }
       },
       elimina:{
-        schema:{required:['titolo','progetto','tipo'],optional:[],numeric:[],values:{tipo:['generale','settimanale']}},
+        schema:{required:['titolo','progetto','periodo'],optional:[],numeric:[],values:{periodo:['generale','settimanale']}},
         validateRefs(obj,ctx){const e=[];if(obj.progetto&&!qcMatchProject(obj.progetto,ctx.allProjs))e.push(`Progetto non trovato: "${obj.progetto}"`);return e;},
         toInternal(obj,ctx){
           const proj=qcMatchProject(obj.progetto,ctx.allProjs);
-          const isSettimanale=String(obj.tipo).trim().toLowerCase()==='settimanale';
+          const isSettimanale=String(obj.periodo).trim().toLowerCase()==='settimanale';
           return{titolo:obj.titolo,projId:proj?proj.id:null,isSettimanale,preview:{Azione:'Elimina',Titolo:obj.titolo,Progetto:proj?proj.tag:'—'}};
         },
         commit(internal){
@@ -7372,39 +7525,46 @@ const ENTITY_REGISTRY={
     label:'Abitudine',defaultAzione:'segna',
     azioni:{
       segna:{
-        schema:{required:['titolo','stato'],optional:['data'],numeric:[]},
+        schema:{required:['titolo'],optional:['stato','valore','data'],numeric:['valore']},
         validateRefs(obj){
           const e=[];
+          if(!obj.stato&&obj.valore===undefined)e.push('Serve almeno "stato" (per abitudini sì/no) o "valore" (per abitudini a contatore)');
           if(obj.titolo){
             const habits=ld('habits',[]);
-            if(!habits.some(h=>allNormName(h).includes(allNormName(obj.titolo))||allNormName(obj.titolo).includes(allNormName(h))))e.push(`Abitudine non trovata: "${obj.titolo}"`);
+            if(!habits.some(h=>allNormName(h.nome).includes(allNormName(obj.titolo))||allNormName(obj.titolo).includes(allNormName(h.nome))))e.push(`Abitudine non trovata: "${obj.titolo}"`);
           }
           return e;
         },
         toInternal(obj){
           const d=qcParseDateField(obj.data)||new Date();
-          const done=/^(fatt[oa]|s[iì]|true)/i.test(String(obj.stato).trim());
-          return{nome:obj.titolo,done,data:d,preview:{Titolo:obj.titolo,Stato:done?'fatto':'non fatto',Data:d.toLocaleDateString('it-IT')}};
+          const done=obj.stato?/^(fatt[oa]|s[iì]|true)/i.test(String(obj.stato).trim()):null;
+          const valore=obj.valore!==undefined?qcNum(obj.valore):null;
+          return{nome:obj.titolo,done,valore,data:d,preview:{Titolo:obj.titolo,Valore:valore!==null?valore:(done?'fatto':'non fatto'),Data:d.toLocaleDateString('it-IT')}};
         },
         commit(internal){
           const habits=ld('habits',[]);
-          const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h)));
-          if(idx<0)return false;
-          const dayIdx=(internal.data.getDay()+6)%7;
-          const dots=ld('habitDots',[]);
-          if(!dots[idx])dots[idx]=Array(7).fill(false);
-          dots[idx][dayIdx]=internal.done;
-          sv('habitDots',dots);
+          const habit=habits.find(h=>allNormName(h.nome).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h.nome)));
+          if(!habit)return false;
+          const log=ld('habitLog',{});
+          if(!log[habit.id])log[habit.id]={};
+          const key=dayKey(internal.data);
+          log[habit.id][key]=internal.valore!==null?internal.valore:(internal.done?1:0);
+          sv('habitLog',log);
           return true;
         }
       },
       crea:{
-        schema:{required:['titolo'],optional:[],numeric:[]},
-        toInternal(obj){return{nome:obj.titolo,preview:{Titolo:obj.titolo}};},
+        schema:{required:['titolo'],optional:['natura','target','icona'],numeric:['target'],values:{natura:['checkbox','massimo','minimo']}},
+        toInternal(obj){
+          const tipoMap={checkbox:'checkbox',massimo:'max',minimo:'min'};
+          const tipo=tipoMap[String(obj.natura||'checkbox').toLowerCase()]||'checkbox';
+          return{nome:obj.titolo,tipo,target:tipo==='checkbox'?null:qcNum(obj.target),icon:obj.icona||'',preview:{Titolo:obj.titolo,Natura:obj.natura||'checkbox',Target:obj.target||'—'}};
+        },
         commit(internal){
           const habits=ld('habits',[]);
-          if(habits.some(h=>allNormName(h)===allNormName(internal.nome)))return false;
-          habits.push(internal.nome);sv('habits',habits);
+          if(habits.some(h=>allNormName(h.nome)===allNormName(internal.nome)))return false;
+          habits.push({id:'hab_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),nome:internal.nome,tipo:internal.tipo,target:internal.target,icon:internal.icon,dataCreazione:dayKey(new Date())});
+          sv('habits',habits);
           return true;
         }
       },
@@ -7413,10 +7573,11 @@ const ENTITY_REGISTRY={
         toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
         commit(internal){
           const habits=ld('habits',[]);
-          const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h)));
+          const idx=habits.findIndex(h=>allNormName(h.nome).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h.nome)));
           if(idx<0)return false;
+          const habitId=habits[idx].id;
           habits.splice(idx,1);sv('habits',habits);
-          const dots=ld('habitDots',[]);dots.splice(idx,1);sv('habitDots',dots);
+          const log=ld('habitLog',{});delete log[habitId];sv('habitLog',log);
           return true;
         }
       }
