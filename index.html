@@ -274,6 +274,8 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .drag-handle:hover{color:var(--text-faint);}
 .row.dragging{opacity:.4;background:var(--surface3);}
 .row.drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
+.habit-row.dragging{opacity:.4;background:var(--surface3);}
+.habit-row.drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
 .xb{font-size:14px;color:var(--text-ghost);background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;transition:color .15s;}
 .row:hover .xb,.row:hover .drag-handle{color:var(--text-faint);}
 .arow{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--border-soft);}
@@ -6372,10 +6374,10 @@ function renderTodayFocus(){
     h+='</div>'; // fine col dx
     h+='</div>'; // fine 2col body
 
-    // ── ABITUDINI pill grid ──
+    // ── ABITUDINI lista (colonna singola, drag&drop per riordinare) ──
     h+='<div class="slbl" style="margin-top:4px">Abitudini</div>';
-    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">';
-    _habits.forEach(function(hb){
+    h+='<div id="habits-list" style="display:flex;flex-direction:column;gap:6px">';
+    _habits.forEach(function(hb,hbIdx){
       const log=(_habitLog[hb.id])||{};
       const count=log[_todayKeyStr]||0;
       const isCounter=hb.tipo==='max'||hb.tipo==='min';
@@ -6383,18 +6385,19 @@ function renderTodayFocus(){
       const overLimit=hb.tipo==='max'&&count>hb.target;
       const streak=calcHabStreak(hb);
       let borderColor=isCounter?(overLimit?'var(--red)':ok&&count>0?'var(--green)':'var(--border)'):(ok?'var(--green)':'var(--border)');
-      h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${borderColor};border-radius:8px">`;
+      h+=`<div class="habit-row" draggable="true" ondragstart="habitDragStart(event,${hbIdx})" ondragover="habitDragOver(event)" ondragleave="habitDragLeave(event)" ondrop="habitDrop(event,${hbIdx})" ondragend="habitDragEnd(event)" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface2);border:1px solid ${borderColor};border-radius:8px">
+        <span class="drag-handle">⠿</span>`;
       if(isCounter){
-        h+=`<span onclick="qaAdjustHabitCount('${hb.id}',-1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">−</span>
-          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:12px;font-weight:600;color:${overLimit?'var(--red)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>
-          <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${overLimit?'var(--red)':'var(--text-faint)'};flex-shrink:0">${count}${hb.tipo==='max'?'/'+hb.target:''}${hb.tipo==='min'?'/'+hb.target:''}</span>
-          <span onclick="qaAdjustHabitCount('${hb.id}',1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">+</span>`;
+        h+=`<span onclick="qaAdjustHabitCount('${hb.id}',-1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:15px;padding:2px 6px;font-family:var(--mono)">−</span>
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:13px;font-weight:600;color:${overLimit?'var(--red)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;cursor:pointer">${esc(hb.nome)}</span>
+          <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${overLimit?'var(--red)':'var(--text-faint)'};flex-shrink:0;white-space:nowrap">${count}${hb.target!=null?'/'+hb.target:''}</span>
+          <span onclick="qaAdjustHabitCount('${hb.id}',1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:15px;padding:2px 6px;font-family:var(--mono)">+</span>`;
       } else {
-        h+=`<div class="hd${ok?' on':''}" onclick="qaToggleHabitToday('${hb.id}')" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
-          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:12px;font-weight:600;color:${ok?'var(--text-dim)':'var(--text)'};${ok?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>`;
+        h+=`<div class="hd${ok?' on':''}" onclick="qaToggleHabitToday('${hb.id}')" style="margin:0;flex-shrink:0;width:16px;height:16px;border-radius:4px;cursor:pointer"></div>
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:13px;font-weight:600;color:${ok?'var(--text-dim)':'var(--text)'};${ok?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;cursor:pointer">${esc(hb.nome)}</span>`;
       }
-      h+=`${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'</span>':''}
-        <span onclick="qaDeleteHabitInline('${hb.id}')" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:12px;padding:0 2px" title="Elimina">×</span>
+      h+=`${streak>1?'<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0">🔥'+streak+'</span>':''}
+        <span onclick="qaDeleteHabitInline('${hb.id}')" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px" title="Elimina">×</span>
       </div>`;
     });
     h+=`<button onclick="qaAddHabitInline()" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:transparent;border:1px dashed var(--border-hover);border-radius:8px;color:var(--text-faint);font-size:11px;font-family:var(--sans);cursor:pointer">+ Nuova</button>`;
@@ -6437,6 +6440,21 @@ function calcHabStreak(habit){
     d.setDate(d.getDate()-1);
   }
   return streak;
+}
+let _habitDragIdx=null;
+function habitDragStart(e,i){_habitDragIdx=i;e.currentTarget.classList.add('dragging');}
+function habitDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function habitDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function habitDragEnd(e){e.currentTarget.classList.remove('dragging');}
+function habitDrop(e,toIdx){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_habitDragIdx===null||_habitDragIdx===toIdx){_habitDragIdx=null;return;}
+  const habits=ld('habits',[]);
+  const[item]=habits.splice(_habitDragIdx,1);
+  habits.splice(toIdx,0,item);
+  sv('habits',habits);
+  _habitDragIdx=null;
+  renderTodayFocus();
 }
 function qaToggleHabitToday(habitId){
   const log=ld('habitLog',{});
