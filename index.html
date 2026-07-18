@@ -6218,7 +6218,7 @@ function renderTodayFocus(){
       allProjs.forEach(p=>{
         const items=grouped[p.id];
         if(!items||!items.length)return;
-        items.sort((a,b)=>{const order={high:0,medium:1,none:2};if(a.done!==b.done)return a.done?1:-1;return order[a.pri]-order[b.pri];});
+        items.sort((a,b)=>{const order={high:0,medium:1,none:2};return order[a.pri]-order[b.pri];});
         const doneN=items.filter(t=>t.done).length;
         h+=`<div style="background:${p.color};padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;cursor:pointer" onclick="openProj('${p.id}')">
           <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.04em">${esc(p.tag)}</span>
@@ -6237,24 +6237,16 @@ function renderTodayFocus(){
       const order={high:0,medium:1,none:2};
       const sorted=flatTasks.slice().sort((a,b)=>order[a.pri]-order[b.pri]);
       [['high','🔴 ALTA'],['medium','🟡 MEDIA'],['none','○ NORMALE']].forEach(([pri,label])=>{
-        const items=sorted.filter(t=>t.pri===pri&&!t.done);
+        const items=sorted.filter(t=>t.pri===pri);
         if(!items.length)return;
         h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
           <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">${label}</span>
         </div>`;
         items.forEach(t=>{h+=_oggiRow(t);});
       });
-      const doneItems=sorted.filter(t=>t.done);
-      if(doneItems.length){
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">FATTE</span>
-        </div>`;
-        doneItems.forEach(t=>{h+=_oggiRow(t);});
-      }
     } else if(_oggiSort==='orario'){
-      const withTime=flatTasks.filter(t=>t.time&&!t.done).sort((a,b)=>a.time.localeCompare(b.time));
-      const withoutTime=flatTasks.filter(t=>!t.time&&!t.done);
-      const doneItems=flatTasks.filter(t=>t.done);
+      const withTime=flatTasks.filter(t=>t.time).sort((a,b)=>a.time.localeCompare(b.time));
+      const withoutTime=flatTasks.filter(t=>!t.time);
       if(withTime.length){
         h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
           <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">CON ORARIO</span>
@@ -6266,12 +6258,6 @@ function renderTodayFocus(){
           <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">SENZA ORARIO</span>
         </div>`;
         withoutTime.forEach(t=>{h+=_oggiRow(t);});
-      }
-      if(doneItems.length){
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">FATTE</span>
-        </div>`;
-        doneItems.forEach(t=>{h+=_oggiRow(t);});
       }
     }
   
@@ -6400,12 +6386,12 @@ function renderTodayFocus(){
       h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${borderColor};border-radius:8px">`;
       if(isCounter){
         h+=`<span onclick="qaAdjustHabitCount('${hb.id}',-1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">−</span>
-          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:11px;color:${overLimit?'var(--red)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:12px;font-weight:600;color:${overLimit?'var(--red)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>
           <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${overLimit?'var(--red)':'var(--text-faint)'};flex-shrink:0">${count}${hb.tipo==='max'?'/'+hb.target:''}${hb.tipo==='min'?'/'+hb.target:''}</span>
           <span onclick="qaAdjustHabitCount('${hb.id}',1)" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:13px;padding:0 3px;font-family:var(--mono)">+</span>`;
       } else {
         h+=`<div class="hd${ok?' on':''}" onclick="qaToggleHabitToday('${hb.id}')" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
-          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:11px;color:${ok?'var(--text-dim)':'var(--text)'};${ok?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>`;
+          <span onclick="qaOpenHabitDetail('${hb.id}')" style="font-size:12px;font-weight:600;color:${ok?'var(--text-dim)':'var(--text)'};${ok?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer">${esc(hb.icon)} ${esc(hb.nome)}</span>`;
       }
       h+=`${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'</span>':''}
         <span onclick="qaDeleteHabitInline('${hb.id}')" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:12px;padding:0 2px" title="Elimina">×</span>
@@ -6482,7 +6468,6 @@ function qaHabitFormModal(existingHabit){
   box.innerHTML=`
     <div style="font-size:13px;font-weight:700;color:var(--text)">${isEdit?'Modifica abitudine':'Nuova abitudine'}</div>
     <input id="_hf-nome" placeholder="Nome (es. Sigarette)" value="${existingHabit?esc(existingHabit.nome):''}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
-    <input id="_hf-icon" placeholder="Emoji (opzionale, es. 🚬)" value="${existingHabit?esc(existingHabit.icon||''):''}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
     <div style="display:flex;gap:6px">
       <button id="_hf-t-checkbox" style="flex:1;font-family:var(--mono);font-size:10px;padding:7px 4px;border-radius:6px;border:1px solid var(--border-hover);cursor:pointer">SI/NO</button>
       <button id="_hf-t-min" style="flex:1;font-family:var(--mono);font-size:10px;padding:7px 4px;border-radius:6px;border:1px solid var(--border-hover);cursor:pointer">ALMENO</button>
@@ -6516,14 +6501,13 @@ function qaHabitFormModal(existingHabit){
     const targetRaw=box.querySelector('#_hf-target').value;
     const target=tipoSel==='checkbox'?null:(parseFloat(targetRaw)||0);
     if(tipoSel!=='checkbox'&&(!targetRaw||target<=0)){toast('Inserisci un numero valido');return;}
-    const icon=box.querySelector('#_hf-icon').value.trim();
     const habits=ld('habits',[]);
     if(isEdit){
       const idx=habits.findIndex(h=>h.id===existingHabit.id);
-      if(idx>=0){habits[idx].nome=nome;habits[idx].tipo=tipoSel;habits[idx].target=target;habits[idx].icon=icon;sv('habits',habits);}
+      if(idx>=0){habits[idx].nome=nome;habits[idx].tipo=tipoSel;habits[idx].target=target;sv('habits',habits);}
     } else {
       if(habits.some(h=>allNormName(h.nome)===allNormName(nome))){toast('Esiste già un\'abitudine con questo nome');return;}
-      habits.push({id:'hab_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),nome,tipo:tipoSel,target,icon,dataCreazione:dayKey(new Date())});
+      habits.push({id:'hab_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),nome,tipo:tipoSel,target,icon:'',dataCreazione:dayKey(new Date())});
       sv('habits',habits);
     }
     closeAnim();
@@ -7554,11 +7538,11 @@ const ENTITY_REGISTRY={
         }
       },
       crea:{
-        schema:{required:['titolo'],optional:['natura','target','icona'],numeric:['target'],values:{natura:['checkbox','massimo','minimo']}},
+        schema:{required:['titolo'],optional:['natura','target'],numeric:['target'],values:{natura:['checkbox','massimo','minimo']}},
         toInternal(obj){
           const tipoMap={checkbox:'checkbox',massimo:'max',minimo:'min'};
           const tipo=tipoMap[String(obj.natura||'checkbox').toLowerCase()]||'checkbox';
-          return{nome:obj.titolo,tipo,target:tipo==='checkbox'?null:qcNum(obj.target),icon:obj.icona||'',preview:{Titolo:obj.titolo,Natura:obj.natura||'checkbox',Target:obj.target||'—'}};
+          return{nome:obj.titolo,tipo,target:tipo==='checkbox'?null:qcNum(obj.target),icon:'',preview:{Titolo:obj.titolo,Natura:obj.natura||'checkbox',Target:obj.target||'—'}};
         },
         commit(internal){
           const habits=ld('habits',[]);
