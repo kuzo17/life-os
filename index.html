@@ -452,6 +452,7 @@ textarea::placeholder{color:var(--text-ghost);}
   .row:hover{padding-left:14px;}
 }
 @media(max-width:768px){
+  .ag-badge-sec{display:none!important;}
   body{
     padding:1rem;
     padding-top:calc(1rem + env(safe-area-inset-top, 0px));
@@ -1861,9 +1862,9 @@ function renderAgenda(){
           ${!isProjTask&&!isRecur?`<select onchange="setAgendaTaskTime('${key}',${realIdx},this.value)" style="background:transparent;border:none;color:var(--text-dim);font-family:var(--mono);font-size:12px;font-weight:700;padding:0;width:58px;flex-shrink:0;cursor:pointer">${timeSelectOptions(t.time||'')}</select>`:(t.time?`<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:'')}
           ${showProjTagInline&&proj?`<span style="width:6px;height:6px;border-radius:50%;background:${proj.color};flex-shrink:0;display:inline-block;box-shadow:0 0 6px ${proj.color}88"></span>`:''}
           <input class="rt" value="${esc(t.text)}" ${isProjTask||realIdx<0?'readonly':`onchange="edAgendaTask('${key}',${realIdx},this.value)"`} style="color:${isPast&&!t.done?'var(--red)':''};min-width:60px">
-          ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
-          ${showProjTagInline&&proj?`<span style="font-family:var(--mono);font-size:9px;color:${proj.color};margin-right:4px;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(proj.tag)}">${esc(proj.tag)}</span>`:''}
-          ${!proj?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-right:4px;flex-shrink:0">ALTRO</span>`:''}
+          ${streak>1?`<span class="ag-badge-sec" style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
+          ${showProjTagInline&&proj?`<span class="ag-badge-sec" style="font-family:var(--mono);font-size:9px;color:${proj.color};margin-right:4px;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(proj.tag)}">${esc(proj.tag)}</span>`:''}
+          ${!proj?`<span class="ag-badge-sec" style="font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-right:4px;flex-shrink:0">ALTRO</span>`:''}
           ${!isProjTask?`<button class="xb" onclick="delAgendaTask('${key}',${realIdx})" style="flex-shrink:0">×</button>`:''}
         </div>`;
       });
@@ -6141,12 +6142,13 @@ function renderTodayFocus(){
     if(_overdueTasks.length){
       h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:10px;padding:10px 14px;margin-bottom:12px">
         <div style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--red);letter-spacing:.06em;margin-bottom:6px">⚠ IN RITARDO DA IERI (${_overdueTasks.length})</div>`;
-      _overdueTasks.forEach((t,i)=>{
+      _overdueTasks.forEach((t)=>{
         const _yKey=agendaKey(_yesterday);
+        const _realI=getAgendaDay(_yesterday).findIndex(x=>x.ts===t.ts); // v1 FIX: indice reale, non quello dell'array filtrato
         h+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-          <div class="hd" onclick="ckAgendaFocus('${_yKey}',${i});renderTodayFocus()" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer;border-color:var(--red)"></div>
+          <div class="hd" onclick="ckAgendaFocus('${_yKey}',${_realI});renderTodayFocus()" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer;border-color:var(--red)"></div>
           <span style="font-size:12px;color:var(--text);flex:1">${esc(t.text)}</span>
-          <button onclick="moveTaskToToday('${_yKey}',${i})" style="font-family:var(--mono);font-size:9px;color:var(--red);background:none;border:1px solid var(--red);border-radius:4px;padding:2px 6px;cursor:pointer">→ OGGI</button>
+          <button onclick="moveTaskToToday('${_yKey}',${_realI})" style="font-family:var(--mono);font-size:9px;color:var(--red);background:none;border:1px solid var(--red);border-radius:4px;padding:2px 6px;cursor:pointer">→ OGGI</button>
         </div>`;
       });
       h+=`</div>`;
@@ -6384,19 +6386,19 @@ function renderTodayFocus(){
     h+='</div>'; // fine 2col body
 
     // ── ABITUDINI pill grid ──
-    if(_habits.length){
-      h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">';
-      _habits.forEach(function(hb,hi){
-        const done=(_habDots[hi]||[])[_todayDow2]||false;
-        const streak=calcHabStreak(hi);
-        h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:8px">
-          <div class="hd${done?' on':''}" onclick="tDotToday(${hi},${_todayDow2})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
-          <span style="font-size:11px;color:${done?'var(--text-dim)':'var(--text)'};${done?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(hb)}</span>
-            ${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':''}
-        </div>`;
-      });
-      h+='</div>';
-    }
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">';
+    _habits.forEach(function(hb,hi){
+      const done=(_habDots[hi]||[])[_todayDow2]||false;
+      const streak=calcHabStreak(hi);
+      h+=`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface2);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:8px">
+        <div class="hd${done?' on':''}" onclick="tDotToday(${hi},${_todayDow2})" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>
+        <span style="font-size:11px;color:${done?'var(--text-dim)':'var(--text)'};${done?'text-decoration:line-through':''}overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" ondblclick="qaRenameHabitInline(${hi})" title="Doppio clic per rinominare">${esc(hb)}</span>
+          ${streak>1?'<span style="font-family:var(--mono);font-size:8px;color:var(--yellow);flex-shrink:0">🔥'+streak+'w</span>':''}
+        <span onclick="qaDeleteHabitInline(${hi})" style="flex-shrink:0;color:var(--text-ghost);cursor:pointer;font-size:12px;padding:0 2px" title="Elimina">×</span>
+      </div>`;
+    });
+    h+=`<button onclick="qaAddHabitInline()" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:transparent;border:1px dashed var(--border-hover);border-radius:8px;color:var(--text-faint);font-size:11px;font-family:var(--sans);cursor:pointer">+ Nuova</button>`;
+    h+='</div>';
   
     h+='</div>';
     el.innerHTML=h; // v1 FIX: era duplicato (assegnato due volte)
@@ -6432,6 +6434,34 @@ function tDotToday(hi,di){
   d[hi][di]=!d[hi][di];
   sv('habitDots',d);
   renderTodayFocus();updateTodayBadge();
+}
+function qaAddHabitInline(){
+  modal('prompt','Nome nuova abitudine:',nome=>{
+    if(!nome||!nome.trim())return;
+    const habits=ld('habits',[]);
+    if(habits.some(h=>allNormName(h)===allNormName(nome.trim()))){toast('Esiste già un\'abitudine con questo nome');return;}
+    habits.push(nome.trim());sv('habits',habits);
+    renderTodayFocus();updateTodayBadge();
+    toast('✓ Abitudine aggiunta');
+  });
+}
+function qaRenameHabitInline(hi){
+  const habits=ld('habits',[]);
+  modal('prompt','Rinomina abitudine (era: '+esc(habits[hi])+'):',nuovo=>{
+    if(!nuovo||!nuovo.trim()||nuovo.trim()===habits[hi])return;
+    habits[hi]=nuovo.trim();sv('habits',habits);
+    renderTodayFocus();
+    toast('✓ Rinominata');
+  });
+}
+function qaDeleteHabitInline(hi){
+  const habits=ld('habits',[]);
+  modal('confirm','Eliminare "'+esc(habits[hi])+'"? Anche lo storico di questa abitudine andrà perso.',()=>{
+    habits.splice(hi,1);sv('habits',habits);
+    const dots=ld('habitDots',[]);dots.splice(hi,1);sv('habitDots',dots);
+    renderTodayFocus();updateTodayBadge();
+    toast('✓ Eliminata');
+  });
 }
 function ckRecurFocus(i,id){
   const todayKey=new Date().toDateString();
@@ -7367,6 +7397,28 @@ const ENTITY_REGISTRY={
           sv('habitDots',dots);
           return true;
         }
+      },
+      crea:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Titolo:obj.titolo}};},
+        commit(internal){
+          const habits=ld('habits',[]);
+          if(habits.some(h=>allNormName(h)===allNormName(internal.nome)))return false;
+          habits.push(internal.nome);sv('habits',habits);
+          return true;
+        }
+      },
+      elimina:{
+        schema:{required:['titolo'],optional:[],numeric:[]},
+        toInternal(obj){return{nome:obj.titolo,preview:{Azione:'Elimina',Titolo:obj.titolo}};},
+        commit(internal){
+          const habits=ld('habits',[]);
+          const idx=habits.findIndex(h=>allNormName(h).includes(allNormName(internal.nome))||allNormName(internal.nome).includes(allNormName(h)));
+          if(idx<0)return false;
+          habits.splice(idx,1);sv('habits',habits);
+          const dots=ld('habitDots',[]);dots.splice(idx,1);sv('habitDots',dots);
+          return true;
+        }
       }
     }
   },
@@ -7469,19 +7521,30 @@ function qaFieldInputType(entityType,field,schema){
   if(field==='data')return'text-date';
   return'text';
 }
-function qaRenderForm(entityType){
+function qaRenderForm(entityType,azioneNome){
   _qaState.step='form';_qaState.entity=entityType;
   const label=QA_ENTITY_LABELS[entityType]||entityType;
   let h=qaHeader(label,`qaRenderEntities('${_qaState.category}')`);
-  h+=`<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px" id="qa-form-fields">`;
 
+  if(!QA_SPECIAL[entityType]){
+    const entityDef=ENTITY_REGISTRY[entityType];
+    if(!azioneNome)azioneNome=entityDef.defaultAzione;
+    const azioniKeys=Object.keys(entityDef.azioni);
+    if(azioniKeys.length>1){
+      h+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+        ${azioniKeys.map(a=>`<button onclick="qaRenderForm('${entityType}','${a}')" style="font-family:var(--sans);font-weight:600;font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid ${a===azioneNome?'var(--blue)':'var(--border)'};background:${a===azioneNome?'var(--blue)':'var(--surface2)'};color:${a===azioneNome?'#fff':'var(--text-faint)'};cursor:pointer;text-transform:uppercase">${esc(a)}</button>`).join('')}
+      </div>`;
+    }
+  }
+
+  h+=`<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px" id="qa-form-fields">`;
   if(QA_SPECIAL[entityType]){
     QA_SPECIAL[entityType].fields.forEach(f=>{
       h+=qaFieldHTML(f.name,f.label,f.required,'textarea',null);
     });
   } else {
     const entityDef=ENTITY_REGISTRY[entityType];
-    const azioneDef=entityDef.azioni[entityDef.defaultAzione];
+    const azioneDef=entityDef.azioni[azioneNome];
     const schema=azioneDef.schema;
     schema.required.forEach(field=>{
       const type=qaFieldInputType(entityType,field,schema);
@@ -7494,7 +7557,7 @@ function qaRenderForm(entityType){
   }
   h+='</div>';
   h+=`<div id="qa-form-error" style="font-size:11px;color:var(--red);display:none"></div>`;
-  h+=`<button onclick="qaSubmitForm('${entityType}')" style="margin-top:8px;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer">+ AGGIUNGI</button>`;
+  h+=`<button onclick="qaSubmitForm('${entityType}','${azioneNome||''}')" style="margin-top:8px;font-family:var(--sans);font-weight:700;font-size:12px;padding:10px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer">+ AGGIUNGI</button>`;
   document.getElementById('qa-panel').innerHTML=h;
   const firstInput=document.querySelector('#qa-form-fields input,#qa-form-fields select,#qa-form-fields textarea');
   if(firstInput)setTimeout(()=>firstInput.focus(),50);
@@ -7547,7 +7610,7 @@ function qaCollectFormValues(entityType){
   return obj;
 }
 
-function qaSubmitForm(entityType){
+function qaSubmitForm(entityType,azioneNomeParam){
   const errEl=document.getElementById('qa-form-error');
   errEl.style.display='none';
   const obj=qaCollectFormValues(entityType);
@@ -7560,7 +7623,7 @@ function qaSubmitForm(entityType){
   }
 
   const entityDef=ENTITY_REGISTRY[entityType];
-  const azioneNome=entityDef.defaultAzione;
+  const azioneNome=azioneNomeParam||entityDef.defaultAzione;
   const azioneDef=entityDef.azioni[azioneNome];
   const validation=validateAgainstSchema(obj,azioneDef.schema);
   if(!validation.valid){
