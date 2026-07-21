@@ -2142,9 +2142,10 @@ function doSearch(q){
       const catLabel=RIC_CATEGORIE.find(([k])=>k===r.categoria)?.[1]||'';
       const matchNome=r.nome.toLowerCase().includes(ql);
       const matchCat=catLabel.toLowerCase().includes(ql);
-      const matchIng=r.ingredienti.some(i=>i.nome&&i.nome.toLowerCase().includes(ql));
+      const matchIng=r.ingredienti.some(i=>{const a=alimIngredienteById(i.ingredienteId);return a&&a.nome.toLowerCase().includes(ql);});
       if(matchNome||matchCat||matchIng){
-        results.push({type:'RICETTA',proj:catLabel,color:'#fb923c',text:r.nome+(matchIng&&!matchNome?' ('+r.ingredienti.find(i=>i.nome.toLowerCase().includes(ql)).nome+')':''),id:'alimentazione',_ricettaId:r.id});
+        const _ingTrovato=matchIng&&!matchNome?r.ingredienti.map(i=>alimIngredienteById(i.ingredienteId)).find(a=>a&&a.nome.toLowerCase().includes(ql)):null;
+        results.push({type:'RICETTA',proj:catLabel,color:'#fb923c',text:r.nome+(_ingTrovato?' ('+_ingTrovato.nome+')':''),id:'alimentazione',_ricettaId:r.id});
       }
     });
   }
@@ -4808,6 +4809,85 @@ function alimGetSchede(){
 // RICETTE — libreria centrale, i piani alimentari referenziano le ricette
 // (FitOS Food Library Spec v1.0)
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// DATABASE INGREDIENTI — unica fonte di verità nutrizionale.
+// Ogni alimento salva SOLO nome + grammatura di riferimento + macro
+// A QUELLA grammatura (non per 100g fisso, come richiesto dalla spec —
+// qui il seed usa 100g come riferimento comodo, ma il valore è comunque
+// "macro a quella grammatura", scalabile a qualunque altro peso).
+// ══════════════════════════════════════════════════════════
+const FOOD_DB_SEED=[
+  ['Pasta',100,358,12.5,71,1.5],['Riso',100,332,6.7,74,0.6],['Pane',100,265,9,49,3.2],
+  ['Petto di pollo',100,165,31,0,3.6],['Vitello',100,109,21,0,2.5],['Hamburger',100,250,26,0,15],
+  ['Bistecca di maiale',100,143,21,0,6],['Spigola',100,97,18,0,2.5],['Pesce spada',100,121,20,0,4],
+  ['Orata',100,96,18,0,2],['Salmone affumicato',100,117,18,0,4.5],['Guanciale',100,664,8.5,0,69],
+  ['Parmigiano',100,392,33,3.2,29],['Pecorino',100,387,25,0.5,32],['Burro',100,717,0.9,0.1,81],
+  ['Olio EVO',100,884,0,0,100],['Yogurt',100,66,3.5,4.7,3.6],['Yogurt greco',100,97,9,4,5],
+  ['Banana',100,89,1.1,23,0.3],['Mela',100,52,0.3,14,0.2],['Fragole',100,33,0.7,8,0.3],
+  ['Miele',100,304,0.3,82,0],['Mandorle',100,579,21,22,50],['Noci',100,654,15,14,65],
+  ['Anacardi',100,553,18,30.3,44],['Passata',100,27,1.3,5.3,0.2],['Lenticchie',100,353,25,60,1.1],
+  ['Fagioli',100,333,24,60,0.8],['Patate',100,77,2,17,0.1],['Uova',100,155,13,1.1,11]
+];
+function alimGetIngredienti(){
+  let raw=ld('alimenti',null);
+  if(!Array.isArray(raw)){
+    raw=FOOD_DB_SEED.map(([nome,g,kcal,prot,carb,grassi],i)=>({id:'ing_seed_'+i,nome,grammatura:g,kcal,prot,carb,grassi}));
+    sv('alimenti',raw);
+  }
+  return raw;
+}
+function alimIngredienteById(id){return alimGetIngredienti().find(i=>i.id===id);}
+function alimFindIngredienteByName(nome){
+  const n=allNormName(nome);
+  return alimGetIngredienti().find(i=>allNormName(i.nome)===n);
+}
+function alimIngredienteCreate(nome,grammatura,kcal,prot,carb,grassi){
+  const list=alimGetIngredienti();
+  const ing={id:'ing_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:nome.trim(),grammatura:grammatura||100,kcal:kcal||0,prot:prot||0,carb:carb||0,grassi:grassi||0};
+  list.push(ing);sv('alimenti',list);
+  return ing;
+}
+function alimIngredienteUpdate(id,field,val){
+  const list=alimGetIngredienti();
+  const ing=list.find(i=>i.id===id);
+  if(!ing)return;
+  ing[field]=val;
+  sv('alimenti',list);
+  ricRecalcAllUsing(id); // v1: se cambia un ingrediente, ricalcola tutte le ricette che lo usano
+}
+function alimIngredienteDelete(id){
+  sv('alimenti',alimGetIngredienti().filter(i=>i.id!==id));
+  // le ricette che lo usavano restano con un riferimento pendente: si ricalcolano ignorando quell'ingrediente (contributo 0)
+  ricGetAll().forEach(r=>{if(r.ingredienti.some(ri=>ri.ingredienteId===id))ricRecalcMacro(r.id);});
+}
+// ── calcolo macro: ingrediente a una data grammatura ──
+function alimCalcIngredienteMacro(ingredienteId,grammiUsati){
+  const ing=alimIngredienteById(ingredienteId);
+  if(!ing||!ing.grammatura)return{kcal:0,prot:0,carb:0,grassi:0};
+  const ratio=grammiUsati/ing.grammatura;
+  return{kcal:ing.kcal*ratio,prot:ing.prot*ratio,carb:ing.carb*ratio,grassi:ing.grassi*ratio};
+}
+// ── calcolo macro: intera ricetta, sempre somma dei suoi ingredienti ──
+function ricCalcMacro(ricettaIngredienti){
+  return (ricettaIngredienti||[]).reduce((tot,ri)=>{
+    const m=alimCalcIngredienteMacro(ri.ingredienteId,ri.grammi||0);
+    return{kcal:tot.kcal+m.kcal,prot:tot.prot+m.prot,carb:tot.carb+m.carb,grassi:tot.grassi+m.grassi};
+  },{kcal:0,prot:0,carb:0,grassi:0});
+}
+// ── ricalcola e riscrive le macro cache di UNA ricetta (chiamata dopo ogni modifica ingredienti) ──
+function ricRecalcMacro(ricettaId){
+  const list=ricGetAll();
+  const r=list.find(x=>x.id===ricettaId);
+  if(!r)return;
+  const m=ricCalcMacro(r.ingredienti);
+  r.kcal=Math.round(m.kcal);r.prot=Math.round(m.prot*10)/10;r.carb=Math.round(m.carb*10)/10;r.grassi=Math.round(m.grassi*10)/10;
+  ricSave(list);
+}
+// ── ricalcola tutte le ricette che usano un certo ingrediente (dopo modifica dell'ingrediente stesso) ──
+function ricRecalcAllUsing(ingredienteId){
+  ricGetAll().forEach(r=>{if(r.ingredienti.some(ri=>ri.ingredienteId===ingredienteId))ricRecalcMacro(r.id);});
+}
+
 const RIC_CATEGORIE=[['colazioni','🍳 Colazioni'],['spuntini','🥪 Spuntini'],['pranzi','🍝 Pranzi'],['cene','🍖 Cene'],['extra','🍕 Pasti Extra']];
 function ricGetAll(){
   const raw=ld('ricette',null);
@@ -4849,9 +4929,18 @@ function ricDelete(id){
   sv('alim_schede',schede);
 }
 function ricToggleFav(id){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r){r.preferita=!r.preferita;ricSave(list);}}
-function ricAddIngrediente(id,nome,g){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r){r.ingredienti.push({nome,g:g||0});ricSave(list);}}
-function ricEdIngrediente(id,idx,field,val){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r&&r.ingredienti[idx]){r.ingredienti[idx][field]=val;ricSave(list);}}
-function ricDelIngrediente(id,idx){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r){r.ingredienti.splice(idx,1);ricSave(list);}}
+function ricAddIngrediente(id,ingredienteId,grammi){
+  const list=ricGetAll();const r=list.find(x=>x.id===id);
+  if(r){r.ingredienti.push({ingredienteId,grammi:grammi||0});ricSave(list);ricRecalcMacro(id);}
+}
+function ricEdIngrediente(id,idx,field,val){
+  const list=ricGetAll();const r=list.find(x=>x.id===id);
+  if(r&&r.ingredienti[idx]){r.ingredienti[idx][field]=val;ricSave(list);ricRecalcMacro(id);}
+}
+function ricDelIngrediente(id,idx){
+  const list=ricGetAll();const r=list.find(x=>x.id===id);
+  if(r){r.ingredienti.splice(idx,1);ricSave(list);ricRecalcMacro(id);}
+}
 function ricIncrementUsage(id){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r){r.usageCount=(r.usageCount||0)+1;ricSave(list);}}
 
 // ── pasto helpers — astraggono testo libero (legacy) vs riferimento a ricetta ──
@@ -4863,6 +4952,24 @@ function pastoNome(p){
     return '(ricetta eliminata)';
   }
   return p.testo||'';
+}
+function alimGetTargets(){
+  return ld('alim_targets',{kcal:2600,prot:160,carb:300,grassi:80});
+}
+function alimSetTarget(field,val){
+  const t=alimGetTargets();t[field]=val;sv('alim_targets',t);
+  renderTodayFocus();
+}
+function alimCalcConsumatoOggi(){
+  const today=new Date();
+  const dIdx=allWeekdayIdx(today);
+  const scheda=alimGetSchede()[dIdx];
+  const check=ld('alim_checksOggi',{})[today.toDateString()]||{};
+  return scheda.pasti.reduce((tot,pasto,i)=>{
+    if(!check[dIdx+'_'+i])return tot;
+    const m=pastoMacro(pasto);
+    return{kcal:tot.kcal+m.kcal,prot:tot.prot+m.p,carb:tot.carb+m.c,grassi:tot.grassi+m.f};
+  },{kcal:0,prot:0,carb:0,grassi:0});
 }
 function pastoMacro(p){
   if(p.ricettaId){
@@ -4924,7 +5031,7 @@ function renderRicPickerList(q){
   const el=document.getElementById('ric-picker-list');if(!el)return;
   const ql=q.trim().toLowerCase();
   let list=ricGetAll();
-  if(ql)list=list.filter(r=>r.nome.toLowerCase().includes(ql)||RIC_CATEGORIE.some(([k,l])=>k===r.categoria&&l.toLowerCase().includes(ql))||r.ingredienti.some(i=>i.nome.toLowerCase().includes(ql)));
+  if(ql)list=list.filter(r=>r.nome.toLowerCase().includes(ql)||RIC_CATEGORIE.some(([k,l])=>k===r.categoria&&l.toLowerCase().includes(ql))||r.ingredienti.some(i=>{const a=alimIngredienteById(i.ingredienteId);return a&&a.nome.toLowerCase().includes(ql);}));
   list=list.slice().sort((a,b)=>(b.preferita-a.preferita)||a.nome.localeCompare(b.nome));
   if(!list.length){el.innerHTML='<div style="padding:16px;text-align:center;font-size:12px;color:var(--text-ghost)">Nessuna ricetta trovata.<br>Creane una dal ricettario.</div>';return;}
   el.innerHTML=list.map(r=>`<div onclick="pickRicetta('${r.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--border-soft);cursor:pointer">
@@ -4959,7 +5066,7 @@ function buildRicettario(p){
   });
   if(q.trim()){
     const ql=q.toLowerCase();
-    list=list.filter(r=>r.nome.toLowerCase().includes(ql)||r.ingredienti.some(i=>i.nome.toLowerCase().includes(ql))||RIC_CATEGORIE.some(([k,l])=>k===r.categoria&&l.toLowerCase().includes(ql)));
+    list=list.filter(r=>r.nome.toLowerCase().includes(ql)||r.ingredienti.some(i=>{const a=alimIngredienteById(i.ingredienteId);return a&&a.nome.toLowerCase().includes(ql);})||RIC_CATEGORIE.some(([k,l])=>k===r.categoria&&l.toLowerCase().includes(ql)));
   }
   let h=`<button class="back" onclick="closeRicettaLibreria()">← ALIMENTAZIONE</button>`;
   h+=`<div class="dh"><div class="dn" style="color:${p.color}">📖 Ricettario</div></div>`;
@@ -5029,23 +5136,35 @@ function buildRicettaDetail(p,id){
     </select>
   </div>`;
   h+=`<div class="isg" style="margin-bottom:4px">
-    <div class="ist"><div class="istl">Calorie</div><input type="number" value="${r.kcal||0}" onchange="ricUpdate('${r.id}','kcal',parseFloat(this.value)||0)" style="background:transparent;border:none;color:${p.color};width:100%;font-family:var(--mono);font-size:16px;font-weight:700;outline:none"></div>
-    <div class="ist"><div class="istl">Proteine</div><input type="number" value="${r.prot||0}" onchange="ricUpdate('${r.id}','prot',parseFloat(this.value)||0)" style="background:transparent;border:none;color:var(--text);width:100%;font-family:var(--mono);font-size:16px;font-weight:700;outline:none"></div>
-    <div class="ist"><div class="istl">Carbo</div><input type="number" value="${r.carb||0}" onchange="ricUpdate('${r.id}','carb',parseFloat(this.value)||0)" style="background:transparent;border:none;color:var(--text);width:100%;font-family:var(--mono);font-size:16px;font-weight:700;outline:none"></div>
-    <div class="ist"><div class="istl">Grassi</div><input type="number" value="${r.grassi||0}" onchange="ricUpdate('${r.id}','grassi',parseFloat(this.value)||0)" style="background:transparent;border:none;color:var(--text);width:100%;font-family:var(--mono);font-size:16px;font-weight:700;outline:none"></div>
+    <div class="ist"><div class="istl">Calorie</div><div style="color:${p.color};font-family:var(--mono);font-size:16px;font-weight:700">${r.kcal||0}</div></div>
+    <div class="ist"><div class="istl">Proteine</div><div style="color:var(--text);font-family:var(--mono);font-size:16px;font-weight:700">${r.prot||0}</div></div>
+    <div class="ist"><div class="istl">Carbo</div><div style="color:var(--text);font-family:var(--mono);font-size:16px;font-weight:700">${r.carb||0}</div></div>
+    <div class="ist"><div class="istl">Grassi</div><div style="color:var(--text);font-family:var(--mono);font-size:16px;font-weight:700">${r.grassi||0}</div></div>
   </div>
-  <div style="font-size:10px;color:var(--text-ghost);margin-bottom:12px">valori per 1 porzione</div>`;
+  <div style="font-size:10px;color:var(--text-ghost);margin-bottom:12px">calcolate automaticamente dagli ingredienti — 1 porzione</div>`;
   h+=`<div class="slbl">Descrizione</div><textarea rows="2" placeholder="Breve descrizione del piatto…" onblur="ricUpdate('${r.id}','descrizione',this.value)">${esc(r.descrizione||'')}</textarea>`;
   h+=`<div class="slbl">Ingredienti <span style="font-size:9px;color:var(--text-ghost)">1 porzione</span></div><div class="card">`;
   if(!r.ingredienti.length)h+=`<div style="padding:12px 14px;font-size:12px;color:var(--text-ghost)">Nessun ingrediente ancora.</div>`;
+  const _dbIngr=alimGetIngredienti().slice().sort((a,b)=>a.nome.localeCompare(b.nome));
   r.ingredienti.forEach((ing,i)=>{
+    const alimento=alimIngredienteById(ing.ingredienteId);
     h+=`<div class="row">
-      <input class="rt" value="${esc(ing.nome)}" onchange="ricEdIngrediente('${r.id}',${i},'nome',this.value)">
-      <input class="sv" value="${ing.g||0}g" style="width:60px" onchange="ricEdIngrediente('${r.id}',${i},'g',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
+      <select class="rt" onchange="ricEdIngrediente('${r.id}',${i},'ingredienteId',this.value)">
+        ${_dbIngr.map(a=>`<option value="${a.id}"${a.id===ing.ingredienteId?' selected':''}>${esc(a.nome)}</option>`).join('')}
+      </select>
+      <input class="sv" value="${ing.grammi||0}g" style="width:60px" onchange="ricEdIngrediente('${r.id}',${i},'grammi',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
       <button class="xb" onclick="ricDelIngrediente('${r.id}',${i})">×</button>
     </div>`;
   });
-  h+=`<div class="arow"><input class="ain" id="ric-ing-nome-${r.id}" placeholder="+ ingrediente…" onkeydown="if(event.key==='Enter')addRicIngredienteFromInputs('${r.id}')"><input class="ain" id="ric-ing-g-${r.id}" placeholder="g" style="width:55px" onkeydown="if(event.key==='Enter')addRicIngredienteFromInputs('${r.id}')"><button class="abtn" onclick="addRicIngredienteFromInputs('${r.id}')">+ ADD</button></div></div>`;
+  h+=`<div class="arow">
+    <select class="ain" id="ric-ing-sel-${r.id}" style="flex:1">
+      <option value="">+ scegli alimento…</option>
+      ${_dbIngr.map(a=>`<option value="${a.id}">${esc(a.nome)}</option>`).join('')}
+      <option value="__nuovo__">+ Nuovo alimento…</option>
+    </select>
+    <input class="ain" id="ric-ing-g-${r.id}" placeholder="g" style="width:55px" onkeydown="if(event.key==='Enter')addRicIngredienteFromInputs('${r.id}')">
+    <button class="abtn" onclick="addRicIngredienteFromInputs('${r.id}')">+ ADD</button>
+  </div></div>`;
   h+=`<div class="slbl">Preparazione</div><textarea rows="5" placeholder="Passaggi, consigli, note…" onblur="ricUpdate('${r.id}','preparazione',this.value)">${esc(r.preparazione||'')}</textarea>`;
   h+=`<div class="slbl">Sostituzioni <span style="font-size:9px;color:var(--text-ghost)">opzionale</span></div><textarea rows="3" placeholder="es. pasta → riso, pollo → tofu…" onblur="ricUpdate('${r.id}','sostituzioni',this.value)">${esc(r.sostituzioni||'')}</textarea>`;
   const usedIn=alimGetSchede().reduce((n,s)=>n+s.pasti.filter(x=>x.ricettaId===r.id).length,0);
@@ -5054,12 +5173,63 @@ function buildRicettaDetail(p,id){
   return h;
 }
 function addRicIngredienteFromInputs(id){
-  const nomeInp=document.getElementById('ric-ing-nome-'+id);
+  const sel=document.getElementById('ric-ing-sel-'+id);
   const gInp=document.getElementById('ric-ing-g-'+id);
-  const nome=nomeInp?.value.trim();if(!nome)return;
+  const scelto=sel?.value;
   const g=parseFloat(gInp?.value)||0;
-  ricAddIngrediente(id,nome,g);
+  if(!scelto)return;
+  if(scelto==='__nuovo__'){
+    qaNewIngredienteModal(nuovoIng=>{
+      ricAddIngrediente(id,nuovoIng.id,g);
+      openProj('alimentazione');
+    });
+    return;
+  }
+  ricAddIngrediente(id,scelto,g);
   openProj('alimentazione');
+}
+// ── modulo rapido per creare un nuovo alimento nel database condiviso ──
+function qaNewIngredienteModal(onCreated){
+  const ov=document.createElement('div');
+  ov.className='qa-overlay-anim';
+  ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
+  const box=document.createElement('div');
+  box.className='qa-panel-anim';
+  box.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:320px;width:100%;font-family:var(--sans);display:flex;flex-direction:column;gap:10px';
+  box.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--text)">Nuovo alimento</div>
+    <input id="_ni-nome" placeholder="Nome (es. Tonno)" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none">
+    <div style="font-size:10px;color:var(--text-ghost)">Macro riferite a questa grammatura:</div>
+    <div style="display:flex;gap:6px">
+      <input id="_ni-g" type="number" placeholder="g" value="100" style="width:70px;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+      <input id="_ni-kcal" type="number" placeholder="kcal" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+    </div>
+    <div style="display:flex;gap:6px">
+      <input id="_ni-prot" type="number" placeholder="Proteine g" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+      <input id="_ni-carb" type="number" placeholder="Carbo g" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+      <input id="_ni-grassi" type="number" placeholder="Grassi g" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end">
+      <button id="_ni-cancel" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
+      <button id="_ni-save" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">CREA</button>
+    </div>`;
+  document.body.appendChild(ov);ov.appendChild(box);
+  const closeAnim=()=>{ov.style.transition='opacity .15s ease';ov.style.opacity='0';setTimeout(()=>ov.remove(),150);};
+  box.querySelector('#_ni-cancel').onclick=closeAnim;
+  box.querySelector('#_ni-save').onclick=()=>{
+    const nome=box.querySelector('#_ni-nome').value.trim();
+    if(!nome){toast('Il nome è obbligatorio');return;}
+    if(alimFindIngredienteByName(nome)){toast('Esiste già un alimento con questo nome');return;}
+    const g=parseFloat(box.querySelector('#_ni-g').value)||100;
+    const kcal=parseFloat(box.querySelector('#_ni-kcal').value)||0;
+    const prot=parseFloat(box.querySelector('#_ni-prot').value)||0;
+    const carb=parseFloat(box.querySelector('#_ni-carb').value)||0;
+    const grassi=parseFloat(box.querySelector('#_ni-grassi').value)||0;
+    const nuovo=alimIngredienteCreate(nome,g,kcal,prot,carb,grassi);
+    closeAnim();
+    toast('✓ Alimento creato');
+    if(onCreated)onCreated(nuovo);
+  };
 }
 function deleteRicettaConfirm(id){
   modal('confirm','Eliminare questa ricetta? I pasti che la usano torneranno a testo libero.',()=>{
@@ -6133,7 +6303,7 @@ function renderTodayFocus(){
     const _summaryColor=totalOpen===0&&totalTot>0?'var(--green)':totalOpen>0?'var(--red)':'var(--text-ghost)';
     h+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:0 2px">
       <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:${_summaryColor}">${totalDone}/${totalTot}</span>
-      <span style="font-size:11px;color:var(--text-faint)">task oggi</span>
+      <span style="font-size:12px;color:var(--text-faint)">task oggi</span>
       <div style="display:flex;gap:3px;align-items:center;margin-left:4px">
         ${Array.from({length:Math.min(totalTot,16)},(_,i)=>`<div style="width:5px;height:5px;border-radius:50%;background:${i<totalDone?'var(--green)':'var(--border-hover)'}"></div>`).join('')}
       </div>
@@ -6143,15 +6313,15 @@ function renderTodayFocus(){
     const _yesterday=new Date(today);_yesterday.setDate(today.getDate()-1);
     const _overdueTasks=getAgendaDay(_yesterday).filter(t=>!t.done);
     if(_overdueTasks.length){
-      h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:10px;padding:10px 14px;margin-bottom:12px">
-        <div style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--red);letter-spacing:.06em;margin-bottom:6px">⚠ IN RITARDO DA IERI (${_overdueTasks.length})</div>`;
+      h+=`<div style="background:var(--red-glow);border:1px solid var(--red);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-family:var(--mono);font-size:10.5px;font-weight:800;color:var(--red);letter-spacing:.06em;margin-bottom:8px">⚠ IN RITARDO DA IERI (${_overdueTasks.length})</div>`;
       _overdueTasks.forEach((t)=>{
         const _yKey=agendaKey(_yesterday);
         const _realI=getAgendaDay(_yesterday).findIndex(x=>x.ts===t.ts); // v1 FIX: indice reale, non quello dell'array filtrato
-        h+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-          <div class="hd" onclick="ckAgendaFocus('${_yKey}',${_realI});renderTodayFocus()" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer;border-color:var(--red)"></div>
-          <span style="font-size:12px;color:var(--text);flex:1">${esc(t.text)}</span>
-          <button onclick="moveTaskToToday('${_yKey}',${_realI})" style="font-family:var(--mono);font-size:9px;color:var(--red);background:none;border:1px solid var(--red);border-radius:4px;padding:2px 6px;cursor:pointer">→ OGGI</button>
+        h+=`<div style="display:flex;align-items:center;gap:9px;padding:5px 0">
+          <div class="hd" onclick="ckAgendaFocus('${_yKey}',${_realI});renderTodayFocus()" style="margin:0;flex-shrink:0;width:15px;height:15px;border-radius:4px;cursor:pointer;border-color:var(--red)"></div>
+          <span style="font-size:13px;font-weight:500;color:var(--text);flex:1">${esc(t.text)}</span>
+          <button onclick="moveTaskToToday('${_yKey}',${_realI})" style="font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--red);background:none;border:1px solid var(--red);border-radius:4px;padding:3px 7px;cursor:pointer">→ OGGI</button>
         </div>`;
       });
       h+=`</div>`;
@@ -6160,10 +6330,10 @@ function renderTodayFocus(){
     // ── BODY 2 COLONNE ──
     const _oggiSortSel=ld('oggi_sort','progetto');
     h+=`<div style="display:flex;gap:6px;margin-bottom:10px">
-      <button onclick="setOggiSort('progetto')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='progetto'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='progetto'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='progetto'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PROGETTO</button>
-      <button onclick="setOggiSort('priorita')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='priorita'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='priorita'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='priorita'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PRIORITÀ</button>
-      <button onclick="setOggiSort('orario')" style="flex:1;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='orario'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='orario'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='orario'?'var(--bg)':'var(--text-faint)'};cursor:pointer">ORARIO</button>
-      <button onclick="toggleAgendaSelectMode();renderTodayFocus()" style="flex-shrink:0;font-family:var(--sans);font-size:10px;font-weight:700;padding:7px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;white-space:nowrap">${_agendaSelectMode?'✕':'☑'}</button>
+      <button onclick="setOggiSort('progetto')" style="flex:1;font-family:var(--sans);font-size:10.5px;font-weight:700;padding:8px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='progetto'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='progetto'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='progetto'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PROGETTO</button>
+      <button onclick="setOggiSort('priorita')" style="flex:1;font-family:var(--sans);font-size:10.5px;font-weight:700;padding:8px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='priorita'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='priorita'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='priorita'?'var(--bg)':'var(--text-faint)'};cursor:pointer">PRIORITÀ</button>
+      <button onclick="setOggiSort('orario')" style="flex:1;font-family:var(--sans);font-size:10.5px;font-weight:700;padding:8px 4px;border-radius:8px;border:1px solid ${_oggiSortSel==='orario'?'var(--text)':'var(--border)'};background:${_oggiSortSel==='orario'?'var(--text)':'var(--surface2)'};color:${_oggiSortSel==='orario'?'var(--bg)':'var(--text-faint)'};cursor:pointer">ORARIO</button>
+      <button onclick="toggleAgendaSelectMode();renderTodayFocus()" style="flex-shrink:0;font-family:var(--sans);font-size:10.5px;font-weight:700;padding:8px 10px;border-radius:8px;border:1px solid ${_agendaSelectMode?'var(--text)':'var(--border)'};background:${_agendaSelectMode?'var(--text)':'var(--surface2)'};color:${_agendaSelectMode?'var(--bg)':'var(--text-faint)'};cursor:pointer;white-space:nowrap">${_agendaSelectMode?'✕':'☑'}</button>
     </div>`;
     h+='<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px">';
   
@@ -6203,14 +6373,14 @@ function renderTodayFocus(){
       const _selKeyId=agendaKey_today+'|'+t._ai;
       const _isSelected=_canSelect&&_agendaSelection.has(_selKeyId);
       const streak=t._type==='recur'?calcRecurTaskStreak(t.projId,t._i):0;
-      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface);border-left:3px solid ${priColor}">
-        ${_agendaSelectMode&&_canSelect?`<input type="checkbox" ${_isSelected?'checked':''} onchange="toggleAgendaSelect('${agendaKey_today}',${t._ai});renderTodayFocus()" style="margin:0;flex-shrink:0;width:15px;height:15px;cursor:pointer">`:`<div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;cursor:pointer"></div>`}
-        ${_oggiSort!=='progetto'?`<span style="width:6px;height:6px;border-radius:50%;background:${t.projColor};flex-shrink:0;display:inline-block" title="${esc(t.projTag)}"></span>`:''}
-        <span style="font-size:12px;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.text)}</span>
-        ${t.time?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:''}
-        ${streak>1?`<span style="font-family:var(--mono);font-size:9px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
-        <span onclick="${priFn}" style="font-size:11px;color:${priColor==='transparent'?'var(--text-ghost)':priColor};cursor:pointer;flex-shrink:0;padding:2px 4px">${t.pri==='high'?'🔴':t.pri==='medium'?'🟡':'○'}</span>
-        <span style="font-family:var(--mono);font-size:8px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
+      return `<div style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border-soft);cursor:pointer;background:var(--surface);border-left:3px solid ${priColor}">
+        ${_agendaSelectMode&&_canSelect?`<input type="checkbox" ${_isSelected?'checked':''} onchange="toggleAgendaSelect('${agendaKey_today}',${t._ai});renderTodayFocus()" style="margin:0;flex-shrink:0;width:16px;height:16px;cursor:pointer">`:`<div class="hd${t.done?' on':''}" onclick="${fn}" style="margin:0;flex-shrink:0;width:15px;height:15px;border-radius:4px;cursor:pointer"></div>`}
+        ${_oggiSort!=='progetto'?`<span style="width:7px;height:7px;border-radius:50%;background:${t.projColor};flex-shrink:0;display:inline-block" title="${esc(t.projTag)}"></span>`:''}
+        <span style="font-size:13.5px;font-weight:500;color:${t.done?'var(--text-ghost)':'var(--text)'};${t.done?'text-decoration:line-through':''};flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.text)}</span>
+        ${t.time?`<span style="font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--text-dim);flex-shrink:0">${t.time}</span>`:''}
+        ${streak>1?`<span style="font-family:var(--mono);font-size:9.5px;color:var(--yellow);flex-shrink:0" title="${streak} giorni di fila">🔥${streak}</span>`:''}
+        <span onclick="${priFn}" style="font-size:12px;color:${priColor==='transparent'?'var(--text-ghost)':priColor};cursor:pointer;flex-shrink:0;padding:2px 4px">${t.pri==='high'?'🔴':t.pri==='medium'?'🟡':'○'}</span>
+        <span style="font-family:var(--mono);font-size:8.5px;color:var(--text-ghost);flex-shrink:0">${t._type==='recur'?'R':'G'}</span>
       </div>`;
     };
 
@@ -6222,16 +6392,16 @@ function renderTodayFocus(){
         if(!items||!items.length)return;
         items.sort((a,b)=>{const order={high:0,medium:1,none:2};return order[a.pri]-order[b.pri];});
         const doneN=items.filter(t=>t.done).length;
-        h+=`<div style="background:${p.color};padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;cursor:pointer" onclick="openProj('${p.id}')">
-          <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.04em">${esc(p.tag)}</span>
-          <span style="font-size:10px;color:rgba(255,255,255,.6);font-weight:600">${doneN}/${items.length} →</span>
+        h+=`<div style="background:${p.color};padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;cursor:pointer" onclick="openProj('${p.id}')">
+          <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,.9);letter-spacing:.04em">${esc(p.tag)}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700">${doneN}/${items.length} →</span>
         </div>`;
         items.forEach(t=>{h+=_oggiRow(t);});
       });
       const altroItems=grouped['__altro__']||[];
       if(altroItems.length){
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">ALTRO</span>
+        h+=`<div style="background:var(--surface2);padding:8px 12px 6px;border-top:1px solid var(--border-soft)">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--text-faint);letter-spacing:.07em">ALTRO</span>
         </div>`;
         altroItems.forEach(t=>{h+=_oggiRow(t);});
       }
@@ -6241,8 +6411,8 @@ function renderTodayFocus(){
       [['high','🔴 ALTA'],['medium','🟡 MEDIA'],['none','○ NORMALE']].forEach(([pri,label])=>{
         const items=sorted.filter(t=>t.pri===pri);
         if(!items.length)return;
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">${label}</span>
+        h+=`<div style="background:var(--surface2);padding:8px 12px 6px;border-top:1px solid var(--border-soft)">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--text-faint);letter-spacing:.07em">${label}</span>
         </div>`;
         items.forEach(t=>{h+=_oggiRow(t);});
       });
@@ -6250,14 +6420,14 @@ function renderTodayFocus(){
       const withTime=flatTasks.filter(t=>t.time).sort((a,b)=>a.time.localeCompare(b.time));
       const withoutTime=flatTasks.filter(t=>!t.time);
       if(withTime.length){
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">CON ORARIO</span>
+        h+=`<div style="background:var(--surface2);padding:8px 12px 6px;border-top:1px solid var(--border-soft)">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--text-faint);letter-spacing:.07em">CON ORARIO</span>
         </div>`;
         withTime.forEach(t=>{h+=_oggiRow(t);});
       }
       if(withoutTime.length){
-        h+=`<div style="background:var(--surface2);padding:6px 12px 4px;border-top:1px solid var(--border-soft)">
-          <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.08em">SENZA ORARIO</span>
+        h+=`<div style="background:var(--surface2);padding:8px 12px 6px;border-top:1px solid var(--border-soft)">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--text-faint);letter-spacing:.07em">SENZA ORARIO</span>
         </div>`;
         withoutTime.forEach(t=>{h+=_oggiRow(t);});
       }
@@ -6272,16 +6442,16 @@ function renderTodayFocus(){
     h+='<div style="display:flex;flex-direction:column;gap:10px">';
 
     // v1 SPEC FINANZE: Registra Movimento compatto
-    h+=`<div style="background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--sh-card);padding:10px 12px">
-      <div style="font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-faint);letter-spacing:.06em;margin-bottom:8px">REGISTRA MOVIMENTO</div>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <select id="reg-tipo-oggi" onchange="updateMovementFormOggi()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;color:var(--text);outline:none;flex-shrink:0"><option value="entrata">ENTRATA</option><option value="uscita">USCITA</option></select>
-        <input id="reg-desc-oggi" placeholder="Descrizione…" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;flex:1;min-width:0">
+    h+=`<div style="background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--sh-card);padding:12px 14px">
+      <div style="font-family:var(--mono);font-size:10px;font-weight:800;color:var(--text-faint);letter-spacing:.06em;margin-bottom:10px">REGISTRA MOVIMENTO</div>
+      <div style="display:flex;gap:7px;margin-bottom:7px">
+        <select id="reg-tipo-oggi" onchange="updateMovementFormOggi()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:7px;font-size:12px;color:var(--text);outline:none;flex-shrink:0"><option value="entrata">ENTRATA</option><option value="uscita">USCITA</option></select>
+        <input id="reg-desc-oggi" placeholder="Descrizione…" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;color:var(--text);outline:none;flex:1;min-width:0">
       </div>
-      <div style="display:flex;gap:6px">
-        <input id="reg-imp-oggi" placeholder="€" inputmode="decimal" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;width:70px">
-        <select id="reg-asset-oggi" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;color:var(--text);outline:none;flex:1;min-width:0"></select>
-        <button id="reg-submit-oggi" onclick="registraMovimentoOggi()" style="font-family:var(--sans);font-weight:700;font-size:10px;padding:6px 10px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;flex-shrink:0">+ ADD</button>
+      <div style="display:flex;gap:7px">
+        <input id="reg-imp-oggi" placeholder="€" inputmode="decimal" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:13px;color:var(--text);outline:none;width:72px">
+        <select id="reg-asset-oggi" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:7px;font-size:12px;color:var(--text);outline:none;flex:1;min-width:0"></select>
+        <button id="reg-submit-oggi" onclick="registraMovimentoOggi()" style="font-family:var(--sans);font-weight:700;font-size:11px;padding:7px 11px;border-radius:6px;border:1px solid var(--green);background:transparent;color:var(--green);cursor:pointer;flex-shrink:0">+ ADD</button>
       </div>
     </div>`;
 
@@ -6295,22 +6465,41 @@ function renderTodayFocus(){
       const pastiConTesto=schedaA.pasti.filter(p=>pastoHasContent(p));
       const alimDone=pastiConTesto.filter((_,i)=>chAlim[dIdxA+'_'+schedaA.pasti.indexOf(pastiConTesto[i])]).length;
       h+=`<div style="background:${alimColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
-      h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.06em">ALIMENTAZIONE</span>
-        <span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600">${alimDone}/${pastiConTesto.length}</span>
+      h+=`<div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:rgba(255,255,255,.85);letter-spacing:.07em">ALIMENTAZIONE</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.7);font-weight:700">${alimDone}/${pastiConTesto.length}</span>
       </div>`;
       if(!pastiConTesto.length){
-        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.5)">✓ Nessun pasto da completare</div>';
+        h+='<div style="padding:14px 16px;font-size:12px;color:rgba(255,255,255,.55)">✓ Nessun pasto da completare</div>';
       } else {
         pastiConTesto.forEach(pasto=>{
           const realIdx=schedaA.pasti.indexOf(pasto);
           const isChecked=!!chAlim[dIdxA+'_'+realIdx];
-          h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer" onclick="alimToggleCheck(${dIdxA},${realIdx})">
-            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
-            <span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0;width:55px">${pasto.slot}</span>
-            <span style="font-size:12px;color:${isChecked?'rgba(255,255,255,.3)':'rgba(255,255,255,.85)'};${isChecked?'text-decoration:line-through':''}flex:1">${esc(pastoNome(pasto))}</span>
+          h+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.12);cursor:pointer" onclick="alimToggleCheck(${dIdxA},${realIdx})">
+            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:16px;height:16px;border-radius:4px;pointer-events:none"></div>
+            <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:rgba(255,255,255,.65);flex-shrink:0;width:62px;text-transform:uppercase">${pasto.slot}</span>
+            <span style="font-size:14px;font-weight:600;color:${isChecked?'rgba(255,255,255,.4)':'rgba(255,255,255,.95)'};${isChecked?'text-decoration:line-through':''}flex:1;line-height:1.3">${esc(pastoNome(pasto))}</span>
           </div>`;
         });
+        // ── progress nutrizionale giornaliero (SPEC punto 6) ──
+        const cons=alimCalcConsumatoOggi();
+        const targ=alimGetTargets();
+        const barre=[['Calorie',cons.kcal,targ.kcal,'kcal',0],['Proteine',cons.prot,targ.prot,'g',1],['Carboidrati',cons.carb,targ.carb,'g',1],['Grassi',cons.grassi,targ.grassi,'g',1]];
+        h+=`<div style="padding:14px 16px;background:rgba(0,0,0,.12)">`;
+        barre.forEach(([label,val,tgt,unit,dec])=>{
+          const pct=tgt>0?Math.min(100,Math.round(val/tgt*100)):0;
+          const over=val>tgt;
+          h+=`<div style="margin-bottom:9px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+              <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600">${label}</span>
+              <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${over?'#fff':'rgba(255,255,255,.9)'}">${Math.round(val*Math.pow(10,dec))/Math.pow(10,dec)} / ${tgt} ${unit}</span>
+            </div>
+            <div style="background:rgba(255,255,255,.15);border-radius:99px;height:5px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:${over?'#fff':'rgba(255,255,255,.8)'};border-radius:99px"></div>
+            </div>
+          </div>`;
+        });
+        h+=`</div>`;
       }
       h+='</div>';
     }
@@ -6324,19 +6513,19 @@ function renderTodayFocus(){
       const allColor=ld('proj_color_allenamento','#ef4444');
       const allDone=scheda.esercizi.filter((_,i)=>chAll[dIdx+'_'+i]).length;
       h+=`<div style="background:${allColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
-      h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:.06em">ALLENAMENTO — ${scheda.nome.toUpperCase()}</span>
-        <span style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600">${allDone}/${scheda.esercizi.length}</span>
+      h+=`<div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:rgba(255,255,255,.65);letter-spacing:.06em">ALLENAMENTO — ${scheda.nome.toUpperCase()}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.55);font-weight:700">${allDone}/${scheda.esercizi.length}</span>
       </div>`;
       if(!scheda.esercizi.length){
-        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.3)">✓ Giornata di riposo</div>';
+        h+='<div style="padding:14px 16px;font-size:12px;color:rgba(255,255,255,.4)">✓ Giornata di riposo</div>';
       } else {
         scheda.esercizi.forEach((es,i)=>{
           const isChecked=!!chAll[dIdx+'_'+i];
-          h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer" onclick="allToggleCheck(${dIdx},${i})">
-            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
-            <span style="font-size:12px;color:${isChecked?'rgba(255,255,255,.25)':'rgba(255,255,255,.7)'};${isChecked?'text-decoration:line-through':''}flex:1">${allEsercizioNome(es.catId)}</span>
-            ${es.peso||es.reps||es.serie?`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${es.serie||'?'}×${es.reps||'?'} ${es.peso||'?'}kg</span>`:''}
+          h+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer" onclick="allToggleCheck(${dIdx},${i})">
+            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:16px;height:16px;border-radius:4px;pointer-events:none"></div>
+            <span style="font-size:14px;font-weight:600;color:${isChecked?'rgba(255,255,255,.35)':'rgba(255,255,255,.85)'};${isChecked?'text-decoration:line-through':''}flex:1">${allEsercizioNome(es.catId)}</span>
+            ${es.peso||es.reps||es.serie?`<span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6);flex-shrink:0">${es.serie||'?'}×${es.reps||'?'} ${es.peso||'?'}kg</span>`:''}
           </div>`;
         });
       }
@@ -6352,19 +6541,19 @@ function renderTodayFocus(){
       const strColor=ld('proj_color_stretching','#a855f7');
       const strDoneN=schedaStr.esercizi.filter((_,i)=>chStr[dIdxStr+'_'+i]).length;
       h+=`<div style="background:${strColor};border-radius:12px;overflow:hidden;box-shadow:var(--sh-card)">`;
-      h+=`<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-family:var(--mono);font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.06em">STRETCHING — ${schedaStr.nome.toUpperCase()}</span>
-        <span style="font-size:9px;color:rgba(255,255,255,.5);font-weight:600">${strDoneN}/${schedaStr.esercizi.length}</span>
+      h+=`<div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-size:10px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.06em">STRETCHING — ${schedaStr.nome.toUpperCase()}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.65);font-weight:700">${strDoneN}/${schedaStr.esercizi.length}</span>
       </div>`;
       if(!schedaStr.esercizi.length){
-        h+='<div style="padding:12px;font-size:11px;color:rgba(255,255,255,.4)">Riposo</div>';
+        h+='<div style="padding:14px 16px;font-size:12px;color:rgba(255,255,255,.5)">Riposo</div>';
       } else {
         schedaStr.esercizi.forEach((es,i)=>{
           const isChecked=!!chStr[dIdxStr+'_'+i];
-          h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer" onclick="strToggleCheck(${dIdxStr},${i})">
-            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:13px;height:13px;border-radius:3px;pointer-events:none"></div>
-            <span style="font-size:12px;color:${isChecked?'rgba(255,255,255,.35)':'rgba(255,255,255,.85)'};${isChecked?'text-decoration:line-through':''}flex:1">${strEsercizioNome(es.catId)}</span>
-            ${es.durata?`<span style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.6);flex-shrink:0">${es.durata}min</span>`:''}
+          h+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.12);cursor:pointer" onclick="strToggleCheck(${dIdxStr},${i})">
+            <div class="hd${isChecked?' on':''}" style="margin:0;flex-shrink:0;width:16px;height:16px;border-radius:4px;pointer-events:none"></div>
+            <span style="font-size:14px;font-weight:600;color:${isChecked?'rgba(255,255,255,.4)':'rgba(255,255,255,.9)'};${isChecked?'text-decoration:line-through':''}flex:1">${strEsercizioNome(es.catId)}</span>
+            ${es.durata?`<span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.7);flex-shrink:0">${es.durata}min</span>`:''}
           </div>`;
         });
       }
@@ -6741,6 +6930,28 @@ function migrateData(){
       sv('habitLog',habitLog);
     }
     sv('habits_v2_migrated',true);
+  }
+  // v1: ricette da ingredienti liberi (nome+grammi) a riferimenti al database condiviso (ingredienteId+grammi)
+  if(!ld('nutrition_v2_migrated',false)){
+    alimGetIngredienti(); // garantisce che il database ingredienti sia seminato prima di migrare
+    const ricette=ricGetAll();
+    let modificate=false;
+    ricette.forEach(r=>{
+      if(!r.ingredienti||!r.ingredienti.length)return;
+      const giaMigrata=r.ingredienti.every(ri=>ri.ingredienteId!==undefined);
+      if(giaMigrata)return;
+      r.ingredienti=r.ingredienti.map(vecchio=>{
+        if(vecchio.ingredienteId!==undefined)return vecchio; // già nel nuovo formato
+        const nome=vecchio.nome||'Ingrediente sconosciuto';
+        let ing=alimFindIngredienteByName(nome);
+        if(!ing)ing=alimIngredienteCreate(nome,vecchio.g||100,0,0,0,0); // sconosciuto: creato con macro a 0, modificabile dall'utente
+        return{ingredienteId:ing.id,grammi:vecchio.g||0};
+      });
+      modificate=true;
+    });
+    if(modificate)ricSave(ricette);
+    ricGetAll().forEach(r=>ricRecalcMacro(r.id)); // ricalcola tutte le macro col nuovo sistema
+    sv('nutrition_v2_migrated',true);
   }
 }
 function bootApp(){
