@@ -4993,6 +4993,16 @@ function alimCalcConsumatoOggi(){
     return{kcal:tot.kcal+m.kcal,prot:tot.prot+m.p,carb:tot.carb+m.c,grassi:tot.grassi+m.f};
   },{kcal:0,prot:0,carb:0,grassi:0});
 }
+function alimCalcPianificatoOggi(){
+  const today=new Date();
+  const dIdx=allWeekdayIdx(today);
+  const scheda=alimGetSchede()[dIdx];
+  return scheda.pasti.reduce((tot,pasto)=>{
+    if(!pastoHasContent(pasto))return tot;
+    const m=pastoMacro(pasto);
+    return{kcal:tot.kcal+m.kcal,prot:tot.prot+m.p,carb:tot.carb+m.c,grassi:tot.grassi+m.f};
+  },{kcal:0,prot:0,carb:0,grassi:0});
+}
 function pastoMacro(p){
   if(p.ricettaId){
     const r=ricById(p.ricettaId);
@@ -5171,11 +5181,11 @@ function buildRicettaDetail(p,id){
   r.ingredienti.forEach((ing,i)=>{
     const alimento=alimIngredienteById(ing.ingredienteId);
     h+=`<div class="row">
-      <select class="rt" onchange="ricEdIngrediente('${r.id}',${i},'ingredienteId',this.value)">
+      <select class="rt" onchange="ricEdIngrediente('${r.id}',${i},'ingredienteId',this.value);openProj('alimentazione')">
         ${_dbIngr.map(a=>`<option value="${a.id}"${a.id===ing.ingredienteId?' selected':''}>${esc(a.nome)}</option>`).join('')}
       </select>
-      <input class="sv" value="${ing.grammi||0}g" style="width:60px" onchange="ricEdIngrediente('${r.id}',${i},'grammi',parseFloat(this.value.replace(/[^0-9.]/g,''))||0)">
-      <button class="xb" onclick="ricDelIngrediente('${r.id}',${i})">×</button>
+      <input class="sv" value="${ing.grammi||0}g" style="width:60px" onchange="ricEdIngrediente('${r.id}',${i},'grammi',parseFloat(this.value.replace(/[^0-9.]/g,''))||0);openProj('alimentazione')">
+      <button class="xb" onclick="ricDelIngrediente('${r.id}',${i});openProj('alimentazione')">×</button>
     </div>`;
   });
   h+=`<div class="arow">
@@ -5278,10 +5288,47 @@ function deleteRicettaConfirm(id){
   });
 }
 
+function openIngredientiDatabase(){sv('alim_view',{mode:'ingredienti'});openProj('alimentazione');}
+function closeIngredientiDatabase(){sv('alim_view',{mode:'giorni'});openProj('alimentazione');}
+function buildIngredientiDatabase(p){
+  const list=alimGetIngredienti().slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  let h=`<button class="back" onclick="closeIngredientiDatabase()">← ALIMENTAZIONE</button>`;
+  h+=`<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px">Database Alimenti</div>`;
+  h+=`<div style="font-size:11px;color:var(--text-ghost);margin-bottom:14px">Modificare le macro qui aggiorna automaticamente tutte le ricette che usano quell'alimento.</div>`;
+  h+=`<div class="card">`;
+  h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-ghost);letter-spacing:.05em;border-bottom:1px solid var(--border)">
+    <span style="flex:1">NOME</span><span style="width:55px;text-align:right">g rif.</span><span style="width:50px;text-align:right">kcal</span><span style="width:45px;text-align:right">P</span><span style="width:45px;text-align:right">C</span><span style="width:45px;text-align:right">F</span><span style="width:16px"></span>
+  </div>`;
+  list.forEach(ing=>{
+    h+=`<div class="row">
+      <input class="rt" value="${esc(ing.nome)}" onchange="alimIngredienteUpdate('${ing.id}','nome',this.value);openProj('alimentazione')">
+      <input class="sv" value="${ing.grammatura}" style="width:55px" onchange="alimIngredienteUpdate('${ing.id}','grammatura',parseFloat(this.value)||100);openProj('alimentazione')">
+      <input class="sv" value="${ing.kcal}" style="width:50px" onchange="alimIngredienteUpdate('${ing.id}','kcal',parseFloat(this.value)||0);openProj('alimentazione')">
+      <input class="sv" value="${ing.prot}" style="width:45px" onchange="alimIngredienteUpdate('${ing.id}','prot',parseFloat(this.value)||0);openProj('alimentazione')">
+      <input class="sv" value="${ing.carb}" style="width:45px" onchange="alimIngredienteUpdate('${ing.id}','carb',parseFloat(this.value)||0);openProj('alimentazione')">
+      <input class="sv" value="${ing.grassi}" style="width:45px" onchange="alimIngredienteUpdate('${ing.id}','grassi',parseFloat(this.value)||0);openProj('alimentazione')">
+      <button class="xb" onclick="deleteIngredienteConfirm('${ing.id}')">×</button>
+    </div>`;
+  });
+  h+=`<div class="arow"><button class="abtn" onclick="qaNewIngredienteModal(()=>{openProj('alimentazione')})">+ NUOVO ALIMENTO</button></div>`;
+  h+=`</div>`;
+  return h;
+}
+function deleteIngredienteConfirm(id){
+  const ing=alimIngredienteById(id);
+  const usedIn=ricGetAll().filter(r=>r.ingredienti.some(ri=>ri.ingredienteId===id));
+  const avviso=usedIn.length?` Usato in ${usedIn.length} ricett${usedIn.length===1?'a':'e'} (${usedIn.map(r=>r.nome).join(', ')}) — quelle ricette perderanno il contributo di questo alimento.`:'';
+  modal('confirm',`Eliminare "${ing.nome}" dal database?${avviso}`,()=>{
+    alimIngredienteDelete(id);
+    openProj('alimentazione');
+    toast('✓ Alimento eliminato');
+  });
+}
 function buildAlimentazione(p){
   const view=ld('alim_view',{mode:'giorni'});
   if(view.mode==='ricette')return buildRicettario(p);
   if(view.mode==='ricetta'&&view.ricettaId)return buildRicettaDetail(p,view.ricettaId);
+  if(view.mode==='ingredienti')return buildIngredientiDatabase(p);
   return buildAlimentazioneGiorni(p);
 }
 function buildAlimentazioneGiorni(p){
@@ -5295,7 +5342,8 @@ function buildAlimentazioneGiorni(p){
   const fitosSettings=ld('fitos_settings',{targetCalories:0,targetProtein:0,targetCarbs:0,targetFat:0});
 
   let h='';
-  h+=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+  h+=`<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
+    <button onclick="openIngredientiDatabase()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:7px 14px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">🧪 ALIMENTI</button>
     <button onclick="openRicettaLibreria()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:7px 14px;border-radius:8px;border:1px solid ${p.color};background:transparent;color:${p.color};cursor:pointer">📖 RICETTARIO</button>
   </div>`;
   // ── Totale macro CONSUMATI oggi (solo pasti spuntati) ──
@@ -6521,7 +6569,7 @@ function renderTodayFocus(){
         });
         // ── progress nutrizionale giornaliero (SPEC punto 6) ──
         const cons=alimCalcConsumatoOggi();
-        const targ=alimGetTargets();
+        const targ=alimCalcPianificatoOggi();
         const barre=[['Calorie',cons.kcal,targ.kcal,'kcal',0],['Proteine',cons.prot,targ.prot,'g',1],['Carboidrati',cons.carb,targ.carb,'g',1],['Grassi',cons.grassi,targ.grassi,'g',1]];
         h+=`<div style="padding:14px 16px;background:rgba(0,0,0,.12)">`;
         barre.forEach(([label,val,tgt,unit,dec])=>{
