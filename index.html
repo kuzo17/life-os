@@ -4837,9 +4837,31 @@ function alimGetIngredienti(){
   return raw;
 }
 function alimIngredienteById(id){return alimGetIngredienti().find(i=>i.id===id);}
-function alimFindIngredienteByName(nome){
+function alimFindIngredienteByName(nome,escludiId){
   const n=allNormName(nome);
-  return alimGetIngredienti().find(i=>allNormName(i.nome)===n);
+  const db=alimGetIngredienti().filter(i=>i.id!==escludiId);
+  let match=db.find(i=>allNormName(i.nome)===n);
+  if(match)return match;
+  match=db.find(i=>n.includes(allNormName(i.nome))||allNormName(i.nome).includes(n));
+  if(match)return match;
+  const paroleCercate=n.split(/\s+/).filter(w=>w.length>=4);
+  if(paroleCercate.length){
+    match=db.find(i=>{
+      const paroleDB=allNormName(i.nome).split(/\s+/).filter(w=>w.length>=4);
+      return paroleDB.some(pw=>paroleCercate.includes(pw));
+    });
+  }
+  return match||null;
+}
+// ── separa "Nome: 140 g" (o varianti simili) in nome pulito + grammi, per dati vecchi salvati come testo unico ──
+function parseIngredienteTesto(text){
+  if(!text)return{nome:'Ingrediente sconosciuto',grammi:null};
+  let s=String(text).trim();
+  let m=s.match(/^(.+?):\s*(\d+(?:[.,]\d+)?)\s*g\.?$/i);
+  if(m)return{nome:m[1].trim(),grammi:parseFloat(m[2].replace(',','.'))};
+  m=s.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*g\.?$/i);
+  if(m)return{nome:m[1].trim(),grammi:parseFloat(m[2].replace(',','.'))};
+  return{nome:s.replace(/:\s*$/,'').trim(),grammi:null};
 }
 function alimIngredienteCreate(nome,grammatura,kcal,prot,carb,grassi){
   const list=alimGetIngredienti();
@@ -5167,10 +5189,26 @@ function buildRicettaDetail(p,id){
   </div></div>`;
   h+=`<div class="slbl">Preparazione</div><textarea rows="5" placeholder="Passaggi, consigli, note…" onblur="ricUpdate('${r.id}','preparazione',this.value)">${esc(r.preparazione||'')}</textarea>`;
   h+=`<div class="slbl">Sostituzioni <span style="font-size:9px;color:var(--text-ghost)">opzionale</span></div><textarea rows="3" placeholder="es. pasta → riso, pollo → tofu…" onblur="ricUpdate('${r.id}','sostituzioni',this.value)">${esc(r.sostituzioni||'')}</textarea>`;
+  h+=`<div class="slbl">Assegna a un giorno</div><div class="card" style="padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <select id="assegna-giorno-${r.id}" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text)">
+      ${ALL_GG.map((g,i)=>`<option value="${i}">${g}</option>`).join('')}
+    </select>
+    <select id="assegna-slot-${r.id}" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text)">
+      ${ALIM_SLOT_NAMES.map((s,i)=>`<option value="${i}">${s}</option>`).join('')}
+    </select>
+    <button class="abtn" onclick="assegnaRicettaAGiorno('${r.id}')">+ ASSEGNA</button>
+  </div>`;
   const usedIn=alimGetSchede().reduce((n,s)=>n+s.pasti.filter(x=>x.ricettaId===r.id).length,0);
   h+=`<div style="font-family:var(--mono);font-size:10px;color:var(--text-ghost);margin:10px 0">In uso in ${usedIn} pasto${usedIn===1?'':'i'} della settimana · assegnata ${r.usageCount||0} volt${r.usageCount===1?'a':'e'} in totale</div>`;
   h+=`<div class="arow" style="border-top:none"><button class="abtn" onclick="deleteRicettaConfirm('${r.id}')" style="color:var(--red)">ELIMINA RICETTA</button></div>`;
   return h;
+}
+function assegnaRicettaAGiorno(ricettaId){
+  const giornoSel=document.getElementById('assegna-giorno-'+ricettaId);
+  const slotSel=document.getElementById('assegna-slot-'+ricettaId);
+  const schedaIdx=parseInt(giornoSel.value);
+  const pastoIdx=parseInt(slotSel.value);
+  alimAssignRicetta(schedaIdx,pastoIdx,ricettaId,1);
 }
 function addRicIngredienteFromInputs(id){
   const sel=document.getElementById('ric-ing-sel-'+id);
@@ -6942,16 +6980,61 @@ function migrateData(){
       if(giaMigrata)return;
       r.ingredienti=r.ingredienti.map(vecchio=>{
         if(vecchio.ingredienteId!==undefined)return vecchio; // già nel nuovo formato
-        const nome=vecchio.nome||'Ingrediente sconosciuto';
+        const testoOriginale=vecchio.nome||'Ingrediente sconosciuto';
+        const parsed=parseIngredienteTesto(testoOriginale); // separa eventuale "Nome: 140 g" combinato
+        const nome=parsed.nome;
+        const grammiUsati=(vecchio.g&&vecchio.g>0)?vecchio.g:(parsed.grammi||0);
         let ing=alimFindIngredienteByName(nome);
-        if(!ing)ing=alimIngredienteCreate(nome,vecchio.g||100,0,0,0,0); // sconosciuto: creato con macro a 0, modificabile dall'utente
-        return{ingredienteId:ing.id,grammi:vecchio.g||0};
+        if(!ing)ing=alimIngredienteCreate(nome,grammiUsati||100,0,0,0,0); // sconosciuto: creato con macro a 0, modificabile dall'utente
+        return{ingredienteId:ing.id,grammi:grammiUsati};
       });
       modificate=true;
     });
     if(modificate)ricSave(ricette);
     ricGetAll().forEach(r=>ricRecalcMacro(r.id)); // ricalcola tutte le macro col nuovo sistema
     sv('nutrition_v2_migrated',true);
+  }
+  // v2: RIPARAZIONE per chi ha già migrato con la versione precedente (nomi rimasti come
+  // "Nome: 140 g" combinati, grammi persi/azzerati, macro a zero). Separa nome pulito e
+  // grammi, ricollega al vero alimento se già esiste, rimuove i record-spazzatura creati dal bug.
+  if(!ld('nutrition_v3_repaired',false)){
+    const db=alimGetIngredienti();
+    const ricette=ricGetAll();
+    const daRimuovere=new Set();
+    db.forEach(ing=>{
+      const parsed=parseIngredienteTesto(ing.nome);
+      if(parsed.grammi===null)return; // nome già pulito, non serve riparare
+      const nomeCorretto=parsed.nome;
+      let target=alimFindIngredienteByName(nomeCorretto,ing.id);
+      if(target){
+        // esiste già un alimento pulito: reindirizza le ricette che usavano quello rotto
+        ricette.forEach(r=>{
+          (r.ingredienti||[]).forEach(ri=>{
+            if(ri.ingredienteId===ing.id){
+              if(!ri.grammi&&parsed.grammi)ri.grammi=parsed.grammi; // recupera grammi persi
+              ri.ingredienteId=target.id;
+            }
+          });
+        });
+        daRimuovere.add(ing.id);
+      } else {
+        // nessun alimento pulito esistente: ripulisce direttamente il nome di questo record
+        ing.nome=nomeCorretto;
+        ricette.forEach(r=>{
+          (r.ingredienti||[]).forEach(ri=>{
+            if(ri.ingredienteId===ing.id&&!ri.grammi&&parsed.grammi)ri.grammi=parsed.grammi;
+          });
+        });
+      }
+    });
+    if(daRimuovere.size){
+      sv('alimenti',db.filter(i=>!daRimuovere.has(i.id)));
+    } else {
+      sv('alimenti',db);
+    }
+    ricSave(ricette);
+    ricGetAll().forEach(r=>ricRecalcMacro(r.id));
+    sv('nutrition_v3_repaired',true);
   }
 }
 function bootApp(){
