@@ -276,6 +276,7 @@ h1{font-family:var(--sans);font-size:21px;font-weight:800;letter-spacing:-.02em;
 .row.drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
 .habit-row.dragging{opacity:.4;background:var(--surface3);}
 .habit-row.drag-over{border-top:2px solid var(--green);box-shadow:0 -1px 7px var(--green-glow);}
+.card.drag-over{outline:2px dashed var(--green);outline-offset:-2px;background:var(--green-glow);}
 .xb{font-size:14px;color:var(--text-ghost);background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;transition:color .15s;}
 .row:hover .xb,.row:hover .drag-handle{color:var(--text-faint);}
 .arow{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--border-soft);}
@@ -2188,11 +2189,11 @@ function focusFirstEmptyPasto(){
   const schede=alimGetSchede();
   const scheda=schede[todayIdx];
   const emptyIdx=scheda.pasti.findIndex(p=>!pastoHasContent(p));
+  openProj('alimentazione');
   setTimeout(()=>{
-    const targetId=emptyIdx>=0?('alim-pasto-'+todayIdx+'-'+emptyIdx):('alim-peso-inp');
-    const inp=document.getElementById(targetId);
-    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
-  },80);
+    if(emptyIdx>=0)openRicettaPicker(todayIdx,emptyIdx);
+    else document.getElementById('alim-peso-inp')?.focus();
+  },150);
 }
 function fitosFabAction(){
   const ctx=document.getElementById('fitos-fab')?.dataset.ctx;
@@ -4910,14 +4911,14 @@ function ricRecalcAllUsing(ingredienteId){
   ricGetAll().forEach(r=>{if(r.ingredienti.some(ri=>ri.ingredienteId===ingredienteId))ricRecalcMacro(r.id);});
 }
 
-const RIC_CATEGORIE=[['colazioni','🍳 Colazioni'],['spuntini','🥪 Spuntini'],['pranzi','🍝 Pranzi'],['cene','🍖 Cene'],['extra','🍕 Pasti Extra']];
+const RIC_CATEGORIE=[['colazione','🍳 Colazione'],['merende','🥪 Merende'],['primi','🍝 Primi'],['secondi','🍖 Secondi'],['altro','🍕 Altro']];
 function ricGetAll(){
   const raw=ld('ricette',null);
   if(!Array.isArray(raw))return[];
   return raw.map(r=>({
     id:r.id,
     nome:typeof r.nome==='string'?r.nome:'Ricetta',
-    categoria:RIC_CATEGORIE.some(([k])=>k===r.categoria)?r.categoria:'pranzi',
+    categoria:RIC_CATEGORIE.some(([k])=>k===r.categoria)?r.categoria:'primi',
     tempoPrep:typeof r.tempoPrep==='number'?r.tempoPrep:0,
     difficolta:['facile','media','difficile'].includes(r.difficolta)?r.difficolta:'facile',
     kcal:typeof r.kcal==='number'?r.kcal:0,
@@ -4936,7 +4937,7 @@ function ricById(id){return ricGetAll().find(r=>r.id===id);}
 function ricSave(list){sv('ricette',list);}
 function ricCreate(nome,categoria){
   const list=ricGetAll();
-  const r={id:'ric_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:(nome||'Nuova ricetta').trim(),categoria:categoria||'pranzi',tempoPrep:0,difficolta:'facile',kcal:0,prot:0,carb:0,grassi:0,ingredienti:[],preparazione:'',sostituzioni:'',preferita:false,usageCount:0};
+  const r={id:'ric_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:(nome||'Nuova ricetta').trim(),categoria:categoria||'primi',tempoPrep:0,difficolta:'facile',kcal:0,prot:0,carb:0,grassi:0,ingredienti:[],preparazione:'',sostituzioni:'',preferita:false,usageCount:0};
   list.push(r);ricSave(list);
   return r;
 }
@@ -5116,8 +5117,8 @@ function buildRicettario(p){
   if(!q.trim()){
     RIC_CATEGORIE.forEach(([catKey,catLabel])=>{
       const inCat=list.filter(r=>r.categoria===catKey);
-      if(!inCat.length)return;
-      h+=`<div class="slbl">${catLabel} <span style="font-size:9px;color:var(--text-ghost)">${inCat.length}</span></div><div class="card">`;
+      h+=`<div class="slbl">${catLabel} <span style="font-size:9px;color:var(--text-ghost)">${inCat.length}</span></div><div class="card" ondragover="ricDragOver(event)" ondragleave="ricDragLeave(event)" ondrop="ricDrop(event,'${catKey}')" style="min-height:${inCat.length?'auto':'40px'}">`;
+      if(!inCat.length)h+=`<div style="padding:10px 14px;font-size:11px;color:var(--text-ghost)">Trascina qui una ricetta per assegnarla a questa categoria.</div>`;
       inCat.forEach(r=>{h+=ricRowHTML(r);});
       h+=`</div>`;
     });
@@ -5130,8 +5131,21 @@ function buildRicettario(p){
   }
   return h;
 }
+function ricDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function ricDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function ricDrop(e,catKey){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  const ricettaId=e.dataTransfer.getData('text/plain');
+  if(!ricettaId)return;
+  const r=ricById(ricettaId);
+  if(!r||r.categoria===catKey)return;
+  ricUpdate(ricettaId,'categoria',catKey);
+  openProj('alimentazione');
+  toast('✓ Spostata in '+RIC_CATEGORIE.find(([k])=>k===catKey)[1]);
+}
 function ricRowHTML(r){
-  return `<div class="row" style="cursor:pointer" onclick="openRicettaDetail('${r.id}')">
+  return `<div class="row" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${r.id}');event.currentTarget.classList.add('dragging')" ondragend="event.currentTarget.classList.remove('dragging')" style="cursor:pointer" onclick="openRicettaDetail('${r.id}')">
+    <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
     <span onclick="event.stopPropagation();ricToggleFav('${r.id}');openProj('alimentazione')" style="cursor:pointer;font-size:14px;flex-shrink:0">${r.preferita?'⭐':'☆'}</span>
     <span class="rt" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.nome)}</span>
     <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint);flex-shrink:0">${r.kcal||0} kcal</span>
@@ -5141,7 +5155,7 @@ function ricRowHTML(r){
 function quickCreateRicetta(){
   const inp=document.getElementById('ric-new-inp');
   const nome=inp?.value.trim();if(!nome)return;
-  const r=ricCreate(nome,'pranzi');
+  const r=ricCreate(nome,'primi');
   if(inp)inp.value='';
   openRicettaDetail(r.id);
 }
@@ -5418,15 +5432,7 @@ function buildAlimentazioneGiorni(p){
       <span style="font-family:var(--mono);font-size:9px;color:var(--green);flex-shrink:0">${macro.kcal}kcal</span>
       <button onclick="alimUnassignRicetta(${selIdx},${i})" title="Scollega ricetta" style="font-size:12px;color:var(--text-ghost);background:none;border:none;cursor:pointer;flex-shrink:0">×</button>`;
     } else {
-      h+=`<input class="rt" id="alim-pasto-${selIdx}-${i}" value="${esc(pasto.testo)}" placeholder="cosa mangiare…" onchange="alimEdPasto(${selIdx},${i},this.value)">
-      <button onclick="openRicettaPicker(${selIdx},${i})" title="Assegna ricetta" style="font-size:13px;background:none;border:none;cursor:pointer;flex-shrink:0">📖</button>
-      <button onclick="alimToggleMacroEdit(${selIdx},${i})" style="font-family:var(--mono);font-size:9px;color:${(pasto.kcal||pasto.p||pasto.c||pasto.f)?'var(--green)':'var(--text-ghost)'};background:none;border:none;cursor:pointer;flex-shrink:0">${(pasto.kcal||pasto.p||pasto.c||pasto.f)?pasto.kcal+'kcal':'+ macro'}</button>
-      ${ld('alim_macroEditOpen_'+selIdx+'_'+i,false)?`<div style="width:100%;display:flex;gap:6px;padding:6px 0 2px 26px">
-        <input type="number" placeholder="kcal" value="${pasto.kcal||''}" onchange="alimEdMacro(${selIdx},${i},'kcal',this.value)" style="width:56px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
-        <input type="number" placeholder="P" value="${pasto.p||''}" onchange="alimEdMacro(${selIdx},${i},'p',this.value)" style="width:44px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
-        <input type="number" placeholder="C" value="${pasto.c||''}" onchange="alimEdMacro(${selIdx},${i},'c',this.value)" style="width:44px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
-        <input type="number" placeholder="F" value="${pasto.f||''}" onchange="alimEdMacro(${selIdx},${i},'f',this.value)" style="width:44px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:10px;color:var(--text);text-align:center;font-family:var(--mono)">
-      </div>`:''}`;
+      h+=`<button onclick="openRicettaPicker(${selIdx},${i})" style="flex:1;text-align:left;font-family:var(--sans);font-size:13px;color:var(--text-ghost);background:none;border:1px dashed var(--border-hover);border-radius:6px;padding:6px 10px;cursor:pointer">+ Aggiungi dal ricettario…</button>`;
     }
     h+=`</div>`;
   });
@@ -7766,7 +7772,7 @@ const ENTITY_REGISTRY={
         commit(internal){
           const list=ricGetAll();
           let ric=list.find(r=>r.nome.toLowerCase()===internal.nome.trim().toLowerCase());
-          if(!ric)ric=ricCreate(internal.nome,'pranzi');
+          if(!ric)ric=ricCreate(internal.nome,'primi');
           ricUpdate(ric.id,'ingredienti',internal.ingredienti);
           if(internal.preparazione)ricUpdate(ric.id,'preparazione',internal.preparazione);
           if(internal.tempoPrep)ricUpdate(ric.id,'tempoPrep',internal.tempoPrep);
