@@ -5509,10 +5509,11 @@ function buildAlimentazioneGiorni(p){
     <button onclick="openIngredientiDatabase()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:7px 14px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">🧪 ALIMENTI</button>
     <button onclick="openRicettaLibreria()" style="font-family:var(--sans);font-weight:600;font-size:11px;padding:7px 14px;border-radius:8px;border:1px solid ${p.color};background:transparent;color:${p.color};cursor:pointer">📖 RICETTARIO</button>
   </div>`;
-  // ── Totale macro CONSUMATI oggi (solo pasti spuntati) ──
-  const _todaySchedaMacro=schede[todayIdx];
-  const _todayChecksNow=ld('alim_checksOggi',{})[todayKey]||{};
-  const _consumedPasti=_todaySchedaMacro.pasti.filter((x,j)=>_todayChecksNow[todayIdx+'_'+j]);
+  // ── Totale macro del giorno SELEZIONATO nelle tab (consumati solo se è il giorno vero di oggi) ──
+  const _isViewingToday=selIdx===todayIdx;
+  const _todaySchedaMacro=schede[selIdx];
+  const _todayChecksNow=_isViewingToday?(ld('alim_checksOggi',{})[todayKey]||{}):{};
+  const _consumedPasti=_isViewingToday?_todaySchedaMacro.pasti.filter((x,j)=>_todayChecksNow[selIdx+'_'+j]):[];
   const _plannedPasti=_todaySchedaMacro.pasti.filter(x=>pastoHasContent(x));
   const _todayTotKcal=_consumedPasti.reduce((s,x)=>s+pastoMacro(x).kcal,0);
   const _todayTotP=_consumedPasti.reduce((s,x)=>s+pastoMacro(x).p,0);
@@ -5525,7 +5526,7 @@ function buildAlimentazioneGiorni(p){
     h+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
         <span style="font-family:var(--mono);font-size:16px;font-weight:800;color:${p.color}">${_todayTotKcal}${fitosSettings.targetCalories?' / '+fitosSettings.targetCalories:(_plannedTotKcal?' / '+_plannedTotKcal:'')} kcal</span>
-        <span style="font-size:9px;color:var(--text-ghost)">consumati oggi</span>
+        <span style="font-size:9px;color:var(--text-ghost)">${_isViewingToday?'consumati oggi':'pianificati · '+esc(_todaySchedaMacro.nome)}</span>
       </div>
       <div style="height:6px;background:var(--border-soft);border-radius:3px;overflow:hidden;margin-bottom:10px">
         <div style="height:100%;width:${_kcalPct}%;background:${p.color};transition:width .4s"></div>
@@ -7483,6 +7484,42 @@ function migrateData(){
       if(ing&&!ing.porzioneDefault)alimIngredienteUpdate(ing.id,'porzioneDefault',porzione);
     });
     sv('nutrition_v9_porzioniDefault_migrated',true);
+  }
+  // v10: audit macro contro le etichette reali dei prodotti confezionati — trovate 2 imprecisioni.
+  // "Cereali Fitness con Cioccolato" aveva le macro di una variante diversa (Fitness originale,
+  // non al cioccolato); "Plumcake Classico" era sottostimato. Corregge SOLO se il valore attuale
+  // coincide ancora con quello impreciso, per non toccare eventuali modifiche manuali dell'utente.
+  if(!ld('nutrition_v10_correzioneEtichette_migrated',false)){
+    [['Cereali Fitness con Cioccolato',372,8.6,73.3,4.8, 401,8.9,68.5,8.3],
+     ['Plumcake Classico',365,6,52,14, 394,6,56,17]
+    ].forEach(([nome,oldK,oldP,oldC,oldG,newK,newP,newC,newG])=>{
+      const ing=alimGetIngredienti().find(a=>allNormName(a.nome)===allNormName(nome));
+      if(ing&&ing.kcal===oldK&&ing.prot===oldP&&ing.carb===oldC&&ing.grassi===oldG){
+        alimIngredienteUpdate(ing.id,'kcal',newK);alimIngredienteUpdate(ing.id,'prot',newP);
+        alimIngredienteUpdate(ing.id,'carb',newC);alimIngredienteUpdate(ing.id,'grassi',newG);
+      }
+    });
+    sv('nutrition_v10_correzioneEtichette_migrated',true);
+  }
+  // v11: la ricetta "Cotoletta Fritta" usava l'ingrediente "Petto di pollo" crudo/griglia senza
+  // tenere conto di panatura e olio di frittura, risultando IDENTICA (330kcal/200g) alla versione
+  // alla griglia — impossibile per un piatto impanato e fritto. Crea l'ingrediente corretto
+  // (valore da fonte nutrizionale: cotoletta di pollo impanata fritta ~297kcal/100g) e ricollega
+  // la ricetta, solo se è ancora nello stato non corretto (rispetta eventuali modifiche manuali).
+  if(!ld('nutrition_v11_cotolettaFritta_migrated',false)){
+    let polloImpanato=alimGetIngredienti().find(a=>allNormName(a.nome)===allNormName('Petto di pollo impanato e fritto'));
+    if(!polloImpanato)polloImpanato=alimIngredienteCreate('Petto di pollo impanato e fritto',100,297,15.6,16.3,18.8,200);
+    const list=ricGetAll();
+    const cotoletta=list.find(r=>r.nome==='Cotoletta Fritta');
+    if(cotoletta&&cotoletta.ingredienti.length===1){
+      const attuale=alimIngredienteById(cotoletta.ingredienti[0].ingredienteId);
+      if(attuale&&attuale.nome==='Petto di pollo'){
+        cotoletta.ingredienti=[{ingredienteId:polloImpanato.id,grammi:cotoletta.ingredienti[0].grammi||200}];
+        ricSave(list);
+        ricRecalcMacro(cotoletta.id);
+      }
+    }
+    sv('nutrition_v11_cotolettaFritta_migrated',true);
   }
 }
 function bootApp(){
