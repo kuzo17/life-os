@@ -4786,14 +4786,15 @@ function allToggleCheck(schedaIdx,i){
 }
 
 // ── ALIMENTAZIONE ────────────────────────────────────────
-// v2: Pranzo e Cena si dividono in Primi/Secondi/Contorno, ogni slot contiene una LISTA di elementi (non più uno solo).
-const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno','Spuntino 2','Cena — Primi','Cena — Secondi','Cena — Contorno'];
+// v3: 5 categorie di pasto sempre visivamente separate (ognuna col suo titolo), Pranzo e Cena si dividono
+// in Primi/Secondi/Contorno/Altro, ogni slot contiene una LISTA di elementi (non più uno solo).
+const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno','Pranzo — Altro','Spuntino 2','Cena — Primi','Cena — Secondi','Cena — Contorno','Cena — Altro'];
 const ALIM_SLOT_GROUPS=[
-  {label:null,slots:['Colazione']},
-  {label:null,slots:['Spuntino 1']},
-  {label:'Pranzo',slots:['Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno']},
-  {label:null,slots:['Spuntino 2']},
-  {label:'Cena',slots:['Cena — Primi','Cena — Secondi','Cena — Contorno']}
+  {label:'Colazione',slots:['Colazione']},
+  {label:'Spuntino 1',slots:['Spuntino 1']},
+  {label:'Pranzo',slots:['Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno','Pranzo — Altro']},
+  {label:'Spuntino 2',slots:['Spuntino 2']},
+  {label:'Cena',slots:['Cena — Primi','Cena — Secondi','Cena — Contorno','Cena — Altro']}
 ];
 function alimSanitizePastoItem(it){
   if(!it||typeof it!=='object')return null;
@@ -4812,25 +4813,35 @@ function alimOldPastoToItem(p){
 }
 function alimGetSchede(){
   const raw=ld('alim_schede',null);
-  const isNewFormat=arr=>Array.isArray(arr)&&arr.length===ALIM_SLOT_NAMES.length&&arr.every(p=>p&&Array.isArray(p.items));
+  // NB: non richiediamo che ogni p.items sia già un array — Firebase RTDB elimina silenziosamente
+  // gli array vuoti al salvataggio, quindi uno slot ancora vuoto torna dal cloud SENZA la chiave items.
+  const isCurrentFormat=arr=>Array.isArray(arr)&&arr.length===ALIM_SLOT_NAMES.length;
+  // estrae la lista items da UN pasto salvato, qualunque sia la sua forma pregressa (lista già pronta,
+  // oppure assegnazione singola vecchio stile con ricettaId/ingredienteId/testo direttamente sul pasto)
+  const itemsForOldSlot=p=>{
+    if(!p)return[];
+    if(Array.isArray(p.items))return p.items.map(alimSanitizePastoItem).filter(Boolean);
+    const single=alimOldPastoToItem(p);
+    return single?[single]:[];
+  };
   const source=(Array.isArray(raw)&&raw.length===7)?raw:ALL_GG.map(g=>({nome:g,pasti:null}));
   return source.map((s,i)=>{
     const nome=(s&&typeof s.nome==='string')?s.nome:ALL_GG[i];
-    if(s&&isNewFormat(s.pasti)){
+    if(s&&isCurrentFormat(s.pasti)){
       return{nome,pasti:s.pasti.map((p,j)=>({slot:(p&&p.slot)||ALIM_SLOT_NAMES[j],items:(Array.isArray(p.items)?p.items:[]).map(alimSanitizePastoItem).filter(Boolean)}))};
     }
-    // formato vecchio (5 slot, un solo elemento per slot) o assente → migra alla nuova struttura a 9 slot con liste
+    // formato non riconosciuto (5 slot pre-liste, 9 slot di una versione precedente, o assente):
+    // ricostruisce PER NOME di slot da qualunque forma precedente esista, senza perdere nulla di riconoscibile.
     const oldPasti=(s&&Array.isArray(s.pasti))?s.pasti:[];
     const byOldSlot={};
     oldPasti.forEach(p=>{if(p&&p.slot)byOldSlot[p.slot]=p;});
-    const pranzoItem=alimOldPastoToItem(byOldSlot['Pranzo']);
-    const cenaItem=alimOldPastoToItem(byOldSlot['Cena']);
+    const pranzoFallback=itemsForOldSlot(byOldSlot['Pranzo']); // nome del tutto originale, pre-Primi/Secondi/Contorno
+    const cenaFallback=itemsForOldSlot(byOldSlot['Cena']);
     const pasti=ALIM_SLOT_NAMES.map(slot=>{
-      if(slot==='Pranzo — Primi')return{slot,items:pranzoItem?[pranzoItem]:[]};
-      if(slot==='Cena — Primi')return{slot,items:cenaItem?[cenaItem]:[]};
-      if(slot==='Pranzo — Secondi'||slot==='Pranzo — Contorno'||slot==='Cena — Secondi'||slot==='Cena — Contorno')return{slot,items:[]};
-      const oldItem=alimOldPastoToItem(byOldSlot[slot]);
-      return{slot,items:oldItem?[oldItem]:[]};
+      if(byOldSlot[slot])return{slot,items:itemsForOldSlot(byOldSlot[slot])};
+      if(slot==='Pranzo — Primi')return{slot,items:pranzoFallback};
+      if(slot==='Cena — Primi')return{slot,items:cenaFallback};
+      return{slot,items:[]};
     });
     return{nome,pasti};
   });
@@ -5547,13 +5558,15 @@ function buildAlimentazioneGiorni(p){
       const i=_slotIdxByName[slotName];
       if(i===undefined)return;
       const pasto=scheda.pasti[i];
-      const displayLabel=group.label?slotName.slice(group.label.length+3):slotName; // rimuove "Pranzo — "/"Cena — "
+      // etichetta interna solo per i sotto-slot (Primi/Secondi/…) — nei gruppi a slot singolo il titolo
+      // del gruppo qui sopra la ripeterebbe inutilmente, quindi la si omette.
+      const displayLabel=group.slots.length>1?slotName.slice(group.label.length+3):null;
       const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
       const macro=pastoMacro(pasto);
       h+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;${isChecked?'opacity:.55':''}">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:${pasto.items.length?'6px':'0'}">
           ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);flex:1">${esc(displayLabel)}</span>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);flex:1">${displayLabel?esc(displayLabel):''}</span>
           ${pasto.items.length?`<span style="font-family:var(--mono);font-size:9px;color:var(--green)">${macro.kcal}kcal</span>`:''}
         </div>`;
       pasto.items.forEach((it,itemIdx)=>{
@@ -7294,6 +7307,29 @@ function migrateData(){
     });
     if(changed)sv('alim_checksOggi',checks);
     sv('nutrition_v5_slots9_migrated',true);
+  }
+  // v6: Pranzo e Cena guadagnano un quarto sotto-slot "Altro" (9 slot totali → 11). Stesso discorso della
+  // v5: alimGetSchede() migra da sola la struttura dati, qui rimappiamo solo le spunte "fatto oggi" già
+  // salvate, i cui indici si spostano per via dei 2 nuovi slot inseriti in mezzo alla numerazione.
+  if(!ld('nutrition_v6_slots11_migrated',false)){
+    const OLD_TO_NEW_PASTO_IDX_V2={0:0,1:1,2:2,3:3,4:4,5:6,6:7,7:8,8:9}; // +Pranzo—Altro dopo l'indice 4, +Cena—Altro dopo il 9
+    const checks=ld('alim_checksOggi',{});
+    let changed=false;
+    Object.keys(checks).forEach(dateKey=>{
+      const dayChecks=checks[dateKey]||{};
+      const remapped={};
+      Object.keys(dayChecks).forEach(k=>{
+        const m=k.match(/^(\d+)_(\d+)$/);
+        if(!m){remapped[k]=dayChecks[k];return;}
+        const schedaIdx=m[1],oldPastoIdx=parseInt(m[2],10);
+        const newPastoIdx=OLD_TO_NEW_PASTO_IDX_V2.hasOwnProperty(oldPastoIdx)?OLD_TO_NEW_PASTO_IDX_V2[oldPastoIdx]:oldPastoIdx;
+        remapped[schedaIdx+'_'+newPastoIdx]=dayChecks[k];
+        if(newPastoIdx!==oldPastoIdx)changed=true;
+      });
+      checks[dateKey]=remapped;
+    });
+    if(changed)sv('alim_checksOggi',checks);
+    sv('nutrition_v6_slots11_migrated',true);
   }
 }
 function bootApp(){
