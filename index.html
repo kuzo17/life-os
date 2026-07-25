@@ -5069,11 +5069,22 @@ function pastoMacro(p){
 }
 
 // ── aggiunge una ricetta O un alimento singolo alla LISTA di un pasto (non sovrascrive: si accumula) ──
+// verifica che il salvataggio sia REALMENTE arrivato su disco prima di dichiarare successo
+// (localStorage può fallire silenziosamente se pieno o in modalità privata — meglio dirlo che mentire con un toast)
+function alimVerifyItemSaved(schedaIdx,pastoIdx,matchFn){
+  const raw=ld('alim_schede',null);
+  const pasto=raw&&raw[schedaIdx]&&raw[schedaIdx].pasti&&raw[schedaIdx].pasti[pastoIdx];
+  return !!(pasto&&Array.isArray(pasto.items)&&pasto.items.some(matchFn));
+}
 function alimAddRicettaToPasto(schedaIdx,pastoIdx,ricettaId,porzioni){
   const schede=alimGetSchede();
   const pasto=schede[schedaIdx].pasti[pastoIdx];
   pasto.items.push({tipo:'ricetta',ricettaId,porzioni:porzioni||1});
   sv('alim_schede',schede);
+  if(!alimVerifyItemSaved(schedaIdx,pastoIdx,it=>it.tipo==='ricetta'&&it.ricettaId===ricettaId)){
+    toast('⚠ SALVATAGGIO FALLITO — spazio storage pieno o modalità privata?');
+    return;
+  }
   ricIncrementUsage(ricettaId);
   openProj('alimentazione');toast('RICETTA AGGIUNTA');
 }
@@ -5082,6 +5093,10 @@ function alimAddIngredienteToPasto(schedaIdx,pastoIdx,ingredienteId,grammi){
   const pasto=schede[schedaIdx].pasti[pastoIdx];
   pasto.items.push({tipo:'ingrediente',ingredienteId,grammi:grammi||100});
   sv('alim_schede',schede);
+  if(!alimVerifyItemSaved(schedaIdx,pastoIdx,it=>it.tipo==='ingrediente'&&it.ingredienteId===ingredienteId)){
+    toast('⚠ SALVATAGGIO FALLITO — spazio storage pieno o modalità privata?');
+    return;
+  }
   openProj('alimentazione');toast('ALIMENTO AGGIUNTO');
 }
 function alimRemovePastoItem(schedaIdx,pastoIdx,itemIdx){
@@ -6493,13 +6508,25 @@ window._refreshAll=function(changedKeys){
     if(Date.now()-_lastSyncToast>5000){_lastSyncToast=Date.now();toast('↕ sync');}
   },400);
 };
+// Firebase RTDB vieta '.','#','$','/','[',']' nelle chiavi — nomi liberi (es. asset patrimonio con un punto,
+// tipo "Carte eBay (val. mercato)") usati come chiave oggetto altrove nell'app altrimenti mandano in crash il write.
+function fbSanitizeKeys(obj){
+  if(Array.isArray(obj))return obj.map(fbSanitizeKeys);
+  if(obj&&typeof obj==='object'){
+    const out={};
+    Object.keys(obj).forEach(k=>{out[k.replace(/[.#$/\[\]]/g,'_')]=fbSanitizeKeys(obj[k]);});
+    return out;
+  }
+  return obj;
+}
 function autoWeeklyBackup(){
   if(!window._fbReady)return;
   const last=ld('lastWeeklyBackup','');const wk=getWeekKey();
   if(last===wk)return;
   const data={};
   Object.keys(localStorage).forEach(k=>{if(k.startsWith('g_')){try{data[k.slice(2)]=JSON.parse(localStorage.getItem(k));}catch(e){}}});
-  window._fbWrite('backups/'+wk,data);sv('lastWeeklyBackup',wk);
+  try{window._fbWrite('backups/'+wk,fbSanitizeKeys(data));}catch(e){console.warn('Backup settimanale fallito:',e);}
+  sv('lastWeeklyBackup',wk);
   console.log('Backup settimanale: '+wk);
 }
 // ── TAB OGGI ─────────────────────────────────────────────
