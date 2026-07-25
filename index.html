@@ -5523,11 +5523,11 @@ function buildAlimentazioneGiorni(p){
     <input value="${esc(scheda.nome)}" onchange="alimRenameScheda(${selIdx},this.value)" style="background:transparent;border:none;color:var(--text);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;outline:none;border-bottom:1px dashed var(--border)">
     ${isSelToday?`<span style="font-size:9px;color:${allDone?'var(--green)':'var(--text-faint)'}">${doneCount}/${_pastiPianOggi.length} oggi${allDone?' ✓':''}</span>`:''}
   </div>
-  <div class="card" id="alim-pasti">`;
+  <div id="alim-pasti" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">`;
 
   const _slotIdxByName={};scheda.pasti.forEach((pp,ii)=>{_slotIdxByName[pp.slot]=ii;});
   ALIM_SLOT_GROUPS.forEach(group=>{
-    if(group.label)h+=`<div style="padding:8px 14px 2px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--text-ghost);text-transform:uppercase">${esc(group.label)}</div>`;
+    if(group.label)h+=`<div style="grid-column:1/-1;padding:10px 2px 0;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-ghost);text-transform:uppercase">${esc(group.label)}</div>`;
     group.slots.forEach(slotName=>{
       const i=_slotIdxByName[slotName];
       if(i===undefined)return;
@@ -5535,13 +5535,12 @@ function buildAlimentazioneGiorni(p){
       const displayLabel=group.label?slotName.slice(group.label.length+3):slotName; // rimuove "Pranzo — "/"Cena — "
       const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
       const macro=pastoMacro(pasto);
-      h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:flex-start">
-        ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin-top:2px;flex-shrink:0"></div>`:''}
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:${pasto.items.length?'4px':'0'}">
-            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${esc(displayLabel)}</span>
-            ${pasto.items.length?`<span style="font-family:var(--mono);font-size:9px;color:var(--green)">${macro.kcal}kcal</span>`:''}
-          </div>`;
+      h+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;${isChecked?'opacity:.55':''}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:${pasto.items.length?'6px':'0'}">
+          ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);flex:1">${esc(displayLabel)}</span>
+          ${pasto.items.length?`<span style="font-family:var(--mono);font-size:9px;color:var(--green)">${macro.kcal}kcal</span>`:''}
+        </div>`;
       pasto.items.forEach((it,itemIdx)=>{
         const itMacro=pastoItemMacro(it);
         h+=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;flex-wrap:wrap">`;
@@ -5567,8 +5566,7 @@ function buildAlimentazioneGiorni(p){
           <button onclick="alimRemovePastoItem(${selIdx},${i},${itemIdx})" title="Rimuovi" style="font-size:12px;color:var(--text-ghost);background:none;border:none;cursor:pointer;flex-shrink:0">×</button>
         </div>`;
       });
-      h+=`<button onclick="openRicettaPicker(${selIdx},${i})" style="text-align:left;font-family:var(--sans);font-size:12px;color:var(--text-ghost);background:none;border:1px dashed var(--border-hover);border-radius:6px;padding:5px 10px;cursor:pointer;margin-top:4px">+ Aggiungi…</button>
-        </div>
+      h+=`<button onclick="openRicettaPicker(${selIdx},${i})" style="width:100%;text-align:left;font-family:var(--sans);font-size:12px;color:var(--text-ghost);background:none;border:1px dashed var(--border-hover);border-radius:6px;padding:5px 10px;cursor:pointer;margin-top:4px">+ Aggiungi…</button>
       </div>`;
     });
   });
