@@ -4913,9 +4913,9 @@ function parseIngredienteTesto(text){
   if(m)return{nome:m[1].trim(),grammi:parseFloat(m[2].replace(',','.'))};
   return{nome:s.replace(/:\s*$/,'').trim(),grammi:null};
 }
-function alimIngredienteCreate(nome,grammatura,kcal,prot,carb,grassi){
+function alimIngredienteCreate(nome,grammatura,kcal,prot,carb,grassi,porzioneDefault){
   const list=alimGetIngredienti();
-  const ing={id:'ing_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:nome.trim(),grammatura:grammatura||100,kcal:kcal||0,prot:prot||0,carb:carb||0,grassi:grassi||0};
+  const ing={id:'ing_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),nome:nome.trim(),grammatura:grammatura||100,kcal:kcal||0,prot:prot||0,carb:carb||0,grassi:grassi||0,porzioneDefault:porzioneDefault||null};
   list.push(ing);sv('alimenti',list);
   return ing;
 }
@@ -5194,7 +5194,8 @@ function pickIngrediente(ingredienteId){
   const ctx=window._ricPickerCtx;if(!ctx)return;
   const ing=alimIngredienteById(ingredienteId);
   closeRicettaPicker();
-  alimAddIngredienteToPasto(ctx.schedaIdx,ctx.pastoIdx,ingredienteId,(ing&&ing.grammatura)||100);
+  // v1: usa la porzione predefinita (es. 1 pz confezione) se impostata, altrimenti la grammatura di riferimento
+  alimAddIngredienteToPasto(ctx.schedaIdx,ctx.pastoIdx,ingredienteId,(ing&&(ing.porzioneDefault||ing.grammatura))||100);
 }
 function renderRicPickerList(q){
   const el=document.getElementById('ric-picker-list');if(!el)return;
@@ -5339,7 +5340,7 @@ function buildRicettaDetail(p,id){
     </div>`;
   });
   h+=`<div class="arow">
-    <select class="ain" id="ric-ing-sel-${r.id}" style="flex:1">
+    <select class="ain" id="ric-ing-sel-${r.id}" style="flex:1" onchange="ricIngPickPrefill('${r.id}',this.value)">
       <option value="">+ scegli alimento…</option>
       ${_dbIngr.map(a=>`<option value="${a.id}">${esc(a.nome)}</option>`).join('')}
       <option value="__nuovo__">+ Nuovo alimento…</option>
@@ -5369,6 +5370,14 @@ function assegnaRicettaAGiorno(ricettaId){
   const schedaIdx=parseInt(giornoSel.value);
   const pastoIdx=parseInt(slotSel.value);
   alimAddRicettaToPasto(schedaIdx,pastoIdx,ricettaId,1);
+}
+// v1: quando si sceglie un alimento dal menu, precompila i grammi con la sua porzione
+// predefinita (es. 1 Kinder Pinguì = 30g) se impostata, senza sovrascrivere un valore già digitato
+function ricIngPickPrefill(recipeId,ingredienteId){
+  if(!ingredienteId||ingredienteId==='__nuovo__')return;
+  const ing=alimIngredienteById(ingredienteId);
+  const gInp=document.getElementById('ric-ing-g-'+recipeId);
+  if(ing&&gInp&&!gInp.value)gInp.value=ing.porzioneDefault||'';
 }
 function addRicIngredienteFromInputs(id){
   const sel=document.getElementById('ric-ing-sel-'+id);
@@ -5407,6 +5416,8 @@ function qaNewIngredienteModal(onCreated){
       <input id="_ni-carb" type="number" placeholder="Carbo g" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
       <input id="_ni-grassi" type="number" placeholder="Grassi g" style="flex:1;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
     </div>
+    <div style="font-size:10px;color:var(--text-ghost)">Porzione predefinita <span style="color:var(--text-ghost)">(opzionale — es. 1 pz confezione, per non dover reinserire i grammi ogni volta)</span>:</div>
+    <input id="_ni-porzione" type="number" placeholder="g (es. 30)" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px;font-size:13px;color:var(--text)">
     <div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end">
       <button id="_ni-cancel" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button>
       <button id="_ni-save" style="font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">CREA</button>
@@ -5423,7 +5434,8 @@ function qaNewIngredienteModal(onCreated){
     const prot=parseFloat(box.querySelector('#_ni-prot').value)||0;
     const carb=parseFloat(box.querySelector('#_ni-carb').value)||0;
     const grassi=parseFloat(box.querySelector('#_ni-grassi').value)||0;
-    const nuovo=alimIngredienteCreate(nome,g,kcal,prot,carb,grassi);
+    const porzioneDefault=parseFloat(box.querySelector('#_ni-porzione').value)||null;
+    const nuovo=alimIngredienteCreate(nome,g,kcal,prot,carb,grassi,porzioneDefault);
     closeAnim();
     toast('✓ Alimento creato');
     if(onCreated)onCreated(nuovo);
@@ -5447,12 +5459,13 @@ function buildIngredientiDatabase(p){
   h+=`<div style="font-size:11px;color:var(--text-ghost);margin-bottom:14px">Modificare le macro qui aggiorna automaticamente tutte le ricette che usano quell'alimento.</div>`;
   h+=`<div class="card">`;
   h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;font-family:var(--mono);font-size:9px;font-weight:800;color:var(--text-ghost);letter-spacing:.05em;border-bottom:1px solid var(--border)">
-    <span style="flex:1">NOME</span><span style="width:55px;text-align:right">g rif.</span><span style="width:50px;text-align:right">kcal</span><span style="width:45px;text-align:right">P</span><span style="width:45px;text-align:right">C</span><span style="width:45px;text-align:right">F</span><span style="width:16px"></span>
+    <span style="flex:1">NOME</span><span style="width:55px;text-align:right">g rif.</span><span style="width:50px;text-align:right" title="Porzione predefinita (es. 1 confezione), usata per precompilare i grammi quando aggiungi questo alimento">porz.</span><span style="width:50px;text-align:right">kcal</span><span style="width:45px;text-align:right">P</span><span style="width:45px;text-align:right">C</span><span style="width:45px;text-align:right">F</span><span style="width:16px"></span>
   </div>`;
   list.forEach(ing=>{
     h+=`<div class="row">
       <input class="rt" value="${esc(ing.nome)}" onchange="alimIngredienteUpdate('${ing.id}','nome',this.value);openProj('alimentazione')">
       <input class="sv" value="${ing.grammatura}" style="width:55px" onchange="alimIngredienteUpdate('${ing.id}','grammatura',parseFloat(this.value)||100);openProj('alimentazione')">
+      <input class="sv" value="${ing.porzioneDefault||''}" placeholder="-" title="Porzione predefinita (g)" style="width:50px" onchange="alimIngredienteUpdate('${ing.id}','porzioneDefault',parseFloat(this.value)||null);openProj('alimentazione')">
       <input class="sv" value="${ing.kcal}" style="width:50px" onchange="alimIngredienteUpdate('${ing.id}','kcal',parseFloat(this.value)||0);openProj('alimentazione')">
       <input class="sv" value="${ing.prot}" style="width:45px" onchange="alimIngredienteUpdate('${ing.id}','prot',parseFloat(this.value)||0);openProj('alimentazione')">
       <input class="sv" value="${ing.carb}" style="width:45px" onchange="alimIngredienteUpdate('${ing.id}','carb',parseFloat(this.value)||0);openProj('alimentazione')">
@@ -7331,6 +7344,34 @@ function migrateData(){
     if(changed)sv('alim_checksOggi',checks);
     sv('nutrition_v6_slots11_migrated',true);
   }
+  // v7: ricette create tramite Quick Capture YAML col bug pre-fix salvavano ingredienti scollegati
+  // {nome,g} anche per chi aveva già eseguito la v2 (quindi non venivano ricoinvolte da quella).
+  // Ricollega ogni ingrediente al database condiviso 'alimenti' (registrandolo se assente, con
+  // macro a 0 come da v2/v3), e ricalcola le macro SOLO per le ricette rimaste tutte a zero —
+  // per non sovrascrivere macro inserite manualmente dall'utente via YAML.
+  if(!ld('nutrition_v7_yamlScollegate_migrated',false)){
+    const ricette=ricGetAll();
+    let modificate=false;
+    const daRicalcolare=[];
+    ricette.forEach(r=>{
+      if(!r.ingredienti||!r.ingredienti.length)return;
+      const haScollegati=r.ingredienti.some(ri=>ri.ingredienteId===undefined);
+      if(!haScollegati)return;
+      r.ingredienti=r.ingredienti.map(vecchio=>{
+        if(vecchio.ingredienteId!==undefined)return vecchio;
+        const nome=vecchio.nome||'Ingrediente sconosciuto';
+        const grammi=vecchio.g||0;
+        let ing=alimFindIngredienteByName(nome);
+        if(!ing)ing=alimIngredienteCreate(nome,grammi||100,0,0,0,0);
+        return{ingredienteId:ing.id,grammi};
+      });
+      modificate=true;
+      if(!r.kcal&&!r.prot&&!r.carb&&!r.grassi)daRicalcolare.push(r.id);
+    });
+    if(modificate)ricSave(ricette);
+    daRicalcolare.forEach(id=>ricRecalcMacro(id));
+    sv('nutrition_v7_yamlScollegate_migrated',true);
+  }
 }
 function bootApp(){
   initData();migrateData();ensureAssetIds();autoSnapOnce();
@@ -8001,12 +8042,16 @@ const ENTITY_REGISTRY={
       crea:{
         schema:{required:['titolo','ingredienti'],optional:['macro','tempo di preparazione','preparazione','difficoltà'],numeric:[],values:{difficoltà:['facile','media','difficile']}},
         toInternal(obj){
-          const ings=qcList(obj.ingredienti).map(i=>typeof i==='object'?{nome:i.nome,g:qcNum(i.grammi)}:{nome:i,g:0});
-          const macro=obj.macro||{};
+          // v2 FIX: g=null se i grammi non sono specificati nello YAML (non 0), per poter usare
+          // la porzione predefinita dell'alimento come fallback in commit() invece di azzerarli.
+          const ings=qcList(obj.ingredienti).map(i=>typeof i==='object'?{nome:i.nome,g:i.grammi!=null?qcNum(i.grammi):null}:{nome:i,g:null});
+          const macro=obj.macro||null; // v1 FIX: null se non fornito, per distinguere "macro assenti" da "macro a 0"
           return{
             nome:obj.titolo,ingredienti:ings,preparazione:obj.preparazione,
             tempoPrep:qcNum(obj['tempo di preparazione']),difficolta:obj.difficoltà||'facile',
-            calorie:qcNum(macro.calorie),proteine:qcNum(macro.proteine),carboidrati:qcNum(macro.carboidrati),grassi:qcNum(macro.grassi),
+            hasManualMacro:!!macro,
+            calorie:macro?qcNum(macro.calorie):0,proteine:macro?qcNum(macro.proteine):0,
+            carboidrati:macro?qcNum(macro.carboidrati):0,grassi:macro?qcNum(macro.grassi):0,
             preview:{Titolo:obj.titolo,Ingredienti:ings.length+' voci',Difficoltà:obj.difficoltà||'facile'}
           };
         },
@@ -8014,14 +8059,32 @@ const ENTITY_REGISTRY={
           const list=ricGetAll();
           let ric=list.find(r=>r.nome.toLowerCase()===internal.nome.trim().toLowerCase());
           if(!ric)ric=ricCreate(internal.nome,'primi');
-          ricUpdate(ric.id,'ingredienti',internal.ingredienti);
+
+          // v1 FIX: collega ogni ingrediente YAML al database condiviso 'alimenti' invece
+          // di salvare {nome,g} scollegato — cerca per nome, crea se non esiste, usa l'id reale.
+          // v2 FIX: se lo YAML non specifica i grammi, usa la porzione predefinita dell'alimento
+          // (se impostata) invece di azzerarli — evita di dover riscrivere la grammatura ogni volta
+          // per alimenti a porzione fissa (es. Kinder Pinguì).
+          const ingredientiCollegati=internal.ingredienti.map(ing=>{
+            let match=alimFindIngredienteByName(ing.nome);
+            if(!match)match=alimIngredienteCreate(ing.nome,ing.g||100,0,0,0,0);
+            const grammi=ing.g!=null?ing.g:(match.porzioneDefault||0);
+            return{ingredienteId:match.id,grammi};
+          });
+
+          ricUpdate(ric.id,'ingredienti',ingredientiCollegati);
           if(internal.preparazione)ricUpdate(ric.id,'preparazione',internal.preparazione);
           if(internal.tempoPrep)ricUpdate(ric.id,'tempoPrep',internal.tempoPrep);
           ricUpdate(ric.id,'difficolta',internal.difficolta);
-          if(internal.calorie)ricUpdate(ric.id,'kcal',internal.calorie);
-          if(internal.proteine)ricUpdate(ric.id,'prot',internal.proteine);
-          if(internal.carboidrati)ricUpdate(ric.id,'carb',internal.carboidrati);
-          if(internal.grassi)ricUpdate(ric.id,'grassi',internal.grassi);
+
+          if(internal.hasManualMacro){
+            ricUpdate(ric.id,'kcal',internal.calorie);
+            ricUpdate(ric.id,'prot',internal.proteine);
+            ricUpdate(ric.id,'carb',internal.carboidrati);
+            ricUpdate(ric.id,'grassi',internal.grassi);
+          } else {
+            ricRecalcMacro(ric.id);
+          }
           return true;
         }
       },
