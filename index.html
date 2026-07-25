@@ -7344,6 +7344,94 @@ function migrateData(){
     if(changed)sv('alim_checksOggi',checks);
     sv('nutrition_v6_slots11_migrated',true);
   }
+  // v8: completa macro mancanti (valori da fonti nutrizionali standard/CREA, cercate online),
+  // aggiunge alimenti nuovi richiesti, ripara due riferimenti ingrediente ROTTI preesistenti
+  // (Carbonara e Polpette Fritte puntavano a id ingrediente non più presenti in 'alimenti' —
+  // bug indipendente da questa migrazione, probabilmente da una cancellazione manuale passata)
+  // e completa con grammature reali le ricette lasciate "da definire".
+  if(!ld('nutrition_v8_ricercaMacro_migrated',false)){
+    const findExact=nome=>alimGetIngredienti().find(a=>allNormName(a.nome)===allNormName(nome));
+
+    // 1) macro mancanti su alimenti già esistenti (non tocca se già inserite manualmente)
+    [['Carote',41,1.1,7.6,0.2],
+     ['Braciole messinesi',220,22,8,12] // piatto casalingo senza valore ufficiale: stima da ricetta tipica (involtino impanato farcito)
+    ].forEach(([nome,kcal,prot,carb,grassi])=>{
+      const ing=findExact(nome);
+      if(ing&&!ing.kcal&&!ing.prot&&!ing.carb&&!ing.grassi){
+        alimIngredienteUpdate(ing.id,'kcal',kcal);alimIngredienteUpdate(ing.id,'prot',prot);
+        alimIngredienteUpdate(ing.id,'carb',carb);alimIngredienteUpdate(ing.id,'grassi',grassi);
+      }
+    });
+
+    // 2) pulizia nomi rimasti sporchi (quantità incorporata nel nome, residuo di un bug YAML passato) + macro reali
+    [["Farina d'Avena: 80 g","Farina d'Avena",385,13.5,66.3,7],
+     ["Albumi: 200 g","Albumi",48,10.9,0.7,0.2],
+     ["Lievito per Dolci: 8 g","Lievito per Dolci",53,0,13,0]
+    ].forEach(([nomeVecchio,nomeNuovo,kcal,prot,carb,grassi])=>{
+      const ing=findExact(nomeVecchio);
+      if(ing){
+        alimIngredienteUpdate(ing.id,'nome',nomeNuovo);
+        alimIngredienteUpdate(ing.id,'kcal',kcal);alimIngredienteUpdate(ing.id,'prot',prot);
+        alimIngredienteUpdate(ing.id,'carb',carb);alimIngredienteUpdate(ing.id,'grassi',grassi);
+      }
+    });
+
+    // 3) nuovo alimento per riparare "Polpette Fritte" (il suo ingrediente era stato cancellato dal DB)
+    let polpette=findExact('Polpette fritte');
+    if(!polpette)polpette=alimIngredienteCreate('Polpette fritte',100,266,12,9,20,200);
+
+    // 4) nuovi alimenti richiesti
+    if(!findExact("Burro d'Arachidi"))alimIngredienteCreate("Burro d'Arachidi",100,588,25,20,50,30);
+    let granellaPistacchio=findExact('Granella di Pistacchio');
+    if(!granellaPistacchio)granellaPistacchio=alimIngredienteCreate('Granella di Pistacchio',100,562,20.3,27.5,45.4,20);
+
+    // 5) ripara i riferimenti ingrediente rotti in Carbonara (le uova) e Polpette Fritte
+    const uova=findExact('Uova');
+    const ricList=ricGetAll();
+    let ricListModificata=false;
+    ricList.forEach(r=>{
+      (r.ingredienti||[]).forEach(ri=>{
+        if(ri.ingredienteId&&!alimIngredienteById(ri.ingredienteId)){
+          if(r.nome==='Carbonara'&&uova){ri.ingredienteId=uova.id;if(!ri.grammi)ri.grammi=100;ricListModificata=true;}
+          else if(r.nome==='Polpette Fritte'&&polpette){ri.ingredienteId=polpette.id;ricListModificata=true;}
+        }
+      });
+    });
+    if(ricListModificata)ricSave(ricList);
+
+    // 6) completa con grammature reali (da ricette di riferimento comuni) le ricette "da definire";
+    // per la pasta speck e pistacchio usa la granella (forma corretta in cottura) al posto dei pistacchi interi
+    const completaRicetta=(nomeRicetta,quantita)=>{
+      const list=ricGetAll();
+      const r=list.find(x=>x.nome===nomeRicetta);
+      if(!r)return;
+      r.ingredienti=(r.ingredienti||[]).map(ri=>{
+        const ingCorrente=alimIngredienteById(ri.ingredienteId);
+        const ingNome=ingCorrente?ingCorrente.nome:'';
+        if(ingNome==='Pistacchi'&&granellaPistacchio){
+          return{ingredienteId:granellaPistacchio.id,grammi:quantita['Pistacchi']!==undefined?quantita['Pistacchi']:(ri.grammi||0)};
+        }
+        const g=quantita[ingNome];
+        return{ingredienteId:ri.ingredienteId,grammi:g!==undefined?g:ri.grammi};
+      });
+      ricSave(list);
+      ricRecalcMacro(r.id);
+    };
+    completaRicetta('Pasta Speck e Pistacchio',{'Pasta':140,'Speck':50,'Pistacchi':25,'Parmigiano':20,'Olio EVO':10});
+    completaRicetta('Protein Pancakes',{"Farina d'Avena":50,'Albumi':150,'Banana':100,'Lievito per Dolci':5,'Flauti al Latte':20,'Nutella':15});
+    completaRicetta('Protein Crepes',{"Farina d'Avena":30,'Albumi':150,'Flauti al Latte':20,'Nutella':15});
+
+    // 7) nuova ricetta "Uova" come secondo leggero (richiesta esplicita, da alternare 1-2 volte a settimana)
+    if(uova&&!ricGetAll().find(r=>r.nome==='Uova')){
+      const rUova=ricCreate('Uova','secondi');
+      ricUpdate(rUova.id,'ingredienti',[{ingredienteId:uova.id,grammi:120}]);
+      ricRecalcMacro(rUova.id);
+    }
+
+    // ricalcolo finale di sicurezza per tutte le ricette (copre eventuali macro aggiornate sopra)
+    ricGetAll().forEach(r=>ricRecalcMacro(r.id));
+    sv('nutrition_v8_ricercaMacro_migrated',true);
+  }
   // v7: ricette create tramite Quick Capture YAML col bug pre-fix salvavano ingredienti scollegati
   // {nome,g} anche per chi aveva già eseguito la v2 (quindi non venivano ricoinvolte da quella).
   // Ricollega ogni ingrediente al database condiviso 'alimenti' (registrandolo se assente, con
@@ -7371,6 +7459,30 @@ function migrateData(){
     if(modificate)ricSave(ricette);
     daRicalcolare.forEach(id=>ricRecalcMacro(id));
     sv('nutrition_v7_yamlScollegate_migrated',true);
+  }
+  // v9: assegna una porzione predefinita (porzioneDefault) alla maggior parte del database
+  // alimenti, usando le grammature ricorrenti nel piano alimentare/ricettario o standard di
+  // mercato per i prodotti confezionati. Non sovrascrive mai una porzione già impostata
+  // (manualmente o da una create precedente) — resta sempre modificabile dall'utente.
+  if(!ld('nutrition_v9_porzioniDefault_migrated',false)){
+    [['Pasta',140],['Riso',140],['Pane',50],['Petto di pollo',200],['Vitello',200],['Hamburger',200],
+     ['Bistecca di maiale',200],['Spigola',200],['Pesce spada',200],['Orata',200],['Salmone affumicato',40],
+     ['Guanciale',50],['Parmigiano',25],['Pecorino',25],['Burro',10],['Olio EVO',10],['Yogurt',250],
+     ['Yogurt greco',250],['Banana',150],['Mela',200],['Fragole',200],['Miele',20],['Mandorle',30],
+     ['Noci',30],['Anacardi',30],['Passata',40],['Lenticchie',60],['Fagioli',60],['Patate',250],['Uova',120],
+     ['Carote',100],['Braciole messinesi',200],['Speck',50],['Pistacchi',30],['Nutella',15],
+     ["Kinder Pinguì",30],['Nesquik Biscotti (quadrati al cacao)',28],['Flauti al Latte',35],
+     ['Patatine San Carlo Classiche',25],['Plumcake Classico',35],['Arancino (ragù, fritto)',150],
+     ['Focaccia Messinese con Speck e Patate',200],['Focaccia Messinese con Patatine e Wurstel',200],
+     ['Focaccia Messinese Margherita',180],['Pidone Messinese con Speck e Patate',200],
+     ['Costardelle Fritte',150],['Cereali Fitness con Cioccolato',80],["Farina d'Avena",40],
+     ['Albumi',150],['Lievito per Dolci',5]
+     // "Pepe nero: q.b." escluso di proposito: è un condimento "quanto basta", una porzione fissa non ha senso.
+    ].forEach(([nome,porzione])=>{
+      const ing=alimGetIngredienti().find(a=>allNormName(a.nome)===allNormName(nome));
+      if(ing&&!ing.porzioneDefault)alimIngredienteUpdate(ing.id,'porzioneDefault',porzione);
+    });
+    sv('nutrition_v9_porzioniDefault_migrated',true);
   }
 }
 function bootApp(){
