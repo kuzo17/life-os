@@ -2136,7 +2136,9 @@ function doSearch(q){
   // Alimentazione: pasti in tutte le schede (testo libero legacy)
   if(!ld('archived',[]).includes('alimentazione')){
     alimGetSchede().forEach(s=>s.pasti.forEach(p=>{
-      if(p.testo&&p.testo.toLowerCase().includes(ql))results.push({type:'PASTO',proj:'ALIMENTAZIONE — '+s.nome,color:'#fb923c',text:p.slot+': '+p.testo,id:'alimentazione'});
+      (p.items||[]).forEach(it=>{
+        if(it.tipo==='testo'&&it.testo&&it.testo.toLowerCase().includes(ql))results.push({type:'PASTO',proj:'ALIMENTAZIONE — '+s.nome,color:'#fb923c',text:p.slot+': '+it.testo,id:'alimentazione'});
+      });
     }));
     // Ricette: nome, categoria, ingredienti — coerente con la ricerca del ricettario
     ricGetAll().forEach(r=>{
@@ -4784,28 +4786,54 @@ function allToggleCheck(schedaIdx,i){
 }
 
 // ── ALIMENTAZIONE ────────────────────────────────────────
-const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo','Spuntino 2','Cena'];
+// v2: Pranzo e Cena si dividono in Primi/Secondi/Contorno, ogni slot contiene una LISTA di elementi (non più uno solo).
+const ALIM_SLOT_NAMES=['Colazione','Spuntino 1','Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno','Spuntino 2','Cena — Primi','Cena — Secondi','Cena — Contorno'];
+const ALIM_SLOT_GROUPS=[
+  {label:null,slots:['Colazione']},
+  {label:null,slots:['Spuntino 1']},
+  {label:'Pranzo',slots:['Pranzo — Primi','Pranzo — Secondi','Pranzo — Contorno']},
+  {label:null,slots:['Spuntino 2']},
+  {label:'Cena',slots:['Cena — Primi','Cena — Secondi','Cena — Contorno']}
+];
+function alimSanitizePastoItem(it){
+  if(!it||typeof it!=='object')return null;
+  if(it.tipo==='ricetta'&&typeof it.ricettaId==='string')return{tipo:'ricetta',ricettaId:it.ricettaId,porzioni:(typeof it.porzioni==='number')?it.porzioni:1};
+  if(it.tipo==='ingrediente'&&typeof it.ingredienteId==='string')return{tipo:'ingrediente',ingredienteId:it.ingredienteId,grammi:(typeof it.grammi==='number')?it.grammi:0};
+  if(it.tipo==='testo'&&typeof it.testo==='string'&&it.testo.trim())return{tipo:'testo',testo:it.testo,kcal:(typeof it.kcal==='number')?it.kcal:0,p:(typeof it.p==='number')?it.p:0,c:(typeof it.c==='number')?it.c:0,f:(typeof it.f==='number')?it.f:0};
+  return null;
+}
+// converte un vecchio pasto a singola-assegnazione (formato pre-lista) in un item della nuova lista, o null se vuoto
+function alimOldPastoToItem(p){
+  if(!p)return null;
+  if(typeof p.ricettaId==='string')return{tipo:'ricetta',ricettaId:p.ricettaId,porzioni:(typeof p.porzioni==='number')?p.porzioni:1};
+  if(typeof p.ingredienteId==='string')return{tipo:'ingrediente',ingredienteId:p.ingredienteId,grammi:(typeof p.grammi==='number')?p.grammi:0};
+  if(typeof p.testo==='string'&&p.testo.trim())return{tipo:'testo',testo:p.testo,kcal:p.kcal||0,p:p.p||0,c:p.c||0,f:p.f||0};
+  return null;
+}
 function alimGetSchede(){
   const raw=ld('alim_schede',null);
-  let schede=Array.isArray(raw)&&raw.length===7?raw:ALL_GG.map(g=>({nome:g,pasti:ALIM_SLOT_NAMES.map(s=>({slot:s,testo:'',kcal:0,p:0,c:0,f:0}))}));
-  schede=schede.map((s,i)=>({
-    nome:(s&&typeof s.nome==='string')?s.nome:ALL_GG[i],
-    pasti:(s&&Array.isArray(s.pasti)&&s.pasti.length===ALIM_SLOT_NAMES.length)
-      ?s.pasti.map((p,j)=>({
-          slot:(p&&p.slot)||ALIM_SLOT_NAMES[j],
-          testo:(p&&typeof p.testo==='string')?p.testo:'',
-          kcal:(p&&typeof p.kcal==='number')?p.kcal:0,
-          p:(p&&typeof p.p==='number')?p.p:0,
-          c:(p&&typeof p.c==='number')?p.c:0,
-          f:(p&&typeof p.f==='number')?p.f:0,
-          ricettaId:(p&&typeof p.ricettaId==='string')?p.ricettaId:undefined,
-          porzioni:(p&&typeof p.porzioni==='number')?p.porzioni:undefined,
-          ingredienteId:(p&&typeof p.ingredienteId==='string')?p.ingredienteId:undefined,
-          grammi:(p&&typeof p.grammi==='number')?p.grammi:undefined
-        }))
-      :ALIM_SLOT_NAMES.map(s=>({slot:s,testo:'',kcal:0,p:0,c:0,f:0}))
-  }));
-  return schede;
+  const isNewFormat=arr=>Array.isArray(arr)&&arr.length===ALIM_SLOT_NAMES.length&&arr.every(p=>p&&Array.isArray(p.items));
+  const source=(Array.isArray(raw)&&raw.length===7)?raw:ALL_GG.map(g=>({nome:g,pasti:null}));
+  return source.map((s,i)=>{
+    const nome=(s&&typeof s.nome==='string')?s.nome:ALL_GG[i];
+    if(s&&isNewFormat(s.pasti)){
+      return{nome,pasti:s.pasti.map((p,j)=>({slot:(p&&p.slot)||ALIM_SLOT_NAMES[j],items:(Array.isArray(p.items)?p.items:[]).map(alimSanitizePastoItem).filter(Boolean)}))};
+    }
+    // formato vecchio (5 slot, un solo elemento per slot) o assente → migra alla nuova struttura a 9 slot con liste
+    const oldPasti=(s&&Array.isArray(s.pasti))?s.pasti:[];
+    const byOldSlot={};
+    oldPasti.forEach(p=>{if(p&&p.slot)byOldSlot[p.slot]=p;});
+    const pranzoItem=alimOldPastoToItem(byOldSlot['Pranzo']);
+    const cenaItem=alimOldPastoToItem(byOldSlot['Cena']);
+    const pasti=ALIM_SLOT_NAMES.map(slot=>{
+      if(slot==='Pranzo — Primi')return{slot,items:pranzoItem?[pranzoItem]:[]};
+      if(slot==='Cena — Primi')return{slot,items:cenaItem?[cenaItem]:[]};
+      if(slot==='Pranzo — Secondi'||slot==='Pranzo — Contorno'||slot==='Cena — Secondi'||slot==='Cena — Contorno')return{slot,items:[]};
+      const oldItem=alimOldPastoToItem(byOldSlot[slot]);
+      return{slot,items:oldItem?[oldItem]:[]};
+    });
+    return{nome,pasti};
+  });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -4957,7 +4985,7 @@ function ricDelete(id){
   // v1: la ricetta eliminata NON cancella i pasti — torna a testo libero
   const schede=alimGetSchede();
   schede.forEach(s=>s.pasti.forEach(p=>{
-    if(p.ricettaId===id){p.testo='(ricetta eliminata)';delete p.ricettaId;delete p.porzioni;}
+    p.items=p.items.map(it=>(it.tipo==='ricetta'&&it.ricettaId===id)?{tipo:'testo',testo:'(ricetta eliminata)',kcal:0,p:0,c:0,f:0}:it);
   }));
   sv('alim_schede',schede);
 }
@@ -4976,20 +5004,24 @@ function ricDelIngrediente(id,idx){
 }
 function ricIncrementUsage(id){const list=ricGetAll();const r=list.find(x=>x.id===id);if(r){r.usageCount=(r.usageCount||0)+1;ricSave(list);}}
 
-// ── pasto helpers — astraggono testo libero (legacy) vs riferimento a ricetta ──
-function pastoHasContent(p){return !!(p.ricettaId||p.ingredienteId||(p.testo&&p.testo.trim()));}
-function pastoNome(p){
-  if(p.ricettaId){
-    const r=ricById(p.ricettaId);
-    if(r)return r.nome+((p.porzioni&&p.porzioni!==1)?' ×'+p.porzioni:'');
+// ── pasto helpers — ogni slot pasto contiene una LISTA di elementi (ricette e/o alimenti singoli, più testo libero legacy) ──
+function pastoHasContent(p){return !!(p.items&&p.items.length);}
+function pastoItemNome(it){
+  if(it.tipo==='ricetta'){
+    const r=ricById(it.ricettaId);
+    if(r)return r.nome+((it.porzioni&&it.porzioni!==1)?' ×'+it.porzioni:'');
     return '(ricetta eliminata)';
   }
-  if(p.ingredienteId){
-    const ing=alimIngredienteById(p.ingredienteId);
-    if(ing)return ing.nome+(p.grammi?' ('+p.grammi+'g)':'');
+  if(it.tipo==='ingrediente'){
+    const ing=alimIngredienteById(it.ingredienteId);
+    if(ing)return ing.nome+(it.grammi?' ('+it.grammi+'g)':'');
     return '(alimento eliminato)';
   }
-  return p.testo||'';
+  return it.testo||'';
+}
+function pastoNome(p){
+  if(!p.items||!p.items.length)return '';
+  return p.items.map(pastoItemNome).join(' + ');
 }
 function alimGetTargets(){
   return ld('alim_targets',{kcal:2600,prot:160,carb:300,grassi:80});
@@ -5019,67 +5051,58 @@ function alimCalcPianificatoOggi(){
     return{kcal:tot.kcal+m.kcal,prot:tot.prot+m.p,carb:tot.carb+m.c,grassi:tot.grassi+m.f};
   },{kcal:0,prot:0,carb:0,grassi:0});
 }
-function pastoMacro(p){
-  if(p.ricettaId){
-    const r=ricById(p.ricettaId);
-    if(r){const m=p.porzioni||1;return{kcal:Math.round((r.kcal||0)*m),p:Math.round((r.prot||0)*m),c:Math.round((r.carb||0)*m),f:Math.round((r.grassi||0)*m)};}
+function pastoItemMacro(it){
+  if(it.tipo==='ricetta'){
+    const r=ricById(it.ricettaId);
+    if(r){const m=it.porzioni||1;return{kcal:(r.kcal||0)*m,p:(r.prot||0)*m,c:(r.carb||0)*m,f:(r.grassi||0)*m};}
     return{kcal:0,p:0,c:0,f:0};
   }
-  if(p.ingredienteId){
-    const m=alimCalcIngredienteMacro(p.ingredienteId,p.grammi||0);
-    return{kcal:Math.round(m.kcal),p:Math.round(m.prot*10)/10,c:Math.round(m.carb*10)/10,f:Math.round(m.grassi*10)/10};
+  if(it.tipo==='ingrediente'){
+    const m=alimCalcIngredienteMacro(it.ingredienteId,it.grammi||0);
+    return{kcal:m.kcal,p:m.prot,c:m.carb,f:m.grassi};
   }
-  return{kcal:p.kcal||0,p:p.p||0,c:p.c||0,f:p.f||0};
+  return{kcal:it.kcal||0,p:it.p||0,c:it.c||0,f:it.f||0};
+}
+function pastoMacro(p){
+  const tot=(p.items||[]).reduce((t,it)=>{const m=pastoItemMacro(it);return{kcal:t.kcal+m.kcal,p:t.p+m.p,c:t.c+m.c,f:t.f+m.f};},{kcal:0,p:0,c:0,f:0});
+  return{kcal:Math.round(tot.kcal),p:Math.round(tot.p*10)/10,c:Math.round(tot.c*10)/10,f:Math.round(tot.f*10)/10};
 }
 
-// ── assegnazione ricetta a un pasto del piano ──
-function alimAssignRicetta(schedaIdx,pastoIdx,ricettaId,porzioni){
+// ── aggiunge una ricetta O un alimento singolo alla LISTA di un pasto (non sovrascrive: si accumula) ──
+function alimAddRicettaToPasto(schedaIdx,pastoIdx,ricettaId,porzioni){
   const schede=alimGetSchede();
   const pasto=schede[schedaIdx].pasti[pastoIdx];
-  pasto.ricettaId=ricettaId;
-  pasto.porzioni=porzioni||1;
-  delete pasto.ingredienteId;delete pasto.grammi; // mutualmente esclusivo con alimento singolo
-  pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0; // ripulisce eventuale testo libero/macro manuali precedenti
+  pasto.items.push({tipo:'ricetta',ricettaId,porzioni:porzioni||1});
   sv('alim_schede',schede);
   ricIncrementUsage(ricettaId);
-  openProj('alimentazione');toast('RICETTA ASSEGNATA');
+  openProj('alimentazione');toast('RICETTA AGGIUNTA');
 }
-function alimUnassignRicetta(schedaIdx,pastoIdx){
+function alimAddIngredienteToPasto(schedaIdx,pastoIdx,ingredienteId,grammi){
   const schede=alimGetSchede();
   const pasto=schede[schedaIdx].pasti[pastoIdx];
-  delete pasto.ricettaId;delete pasto.porzioni;
+  pasto.items.push({tipo:'ingrediente',ingredienteId,grammi:grammi||100});
+  sv('alim_schede',schede);
+  openProj('alimentazione');toast('ALIMENTO AGGIUNTO');
+}
+function alimRemovePastoItem(schedaIdx,pastoIdx,itemIdx){
+  const schede=alimGetSchede();
+  schede[schedaIdx].pasti[pastoIdx].items.splice(itemIdx,1);
   sv('alim_schede',schede);
   openProj('alimentazione');
 }
-// ── assegnazione alimento singolo (dal database ingredienti) a un pasto del piano ──
-function alimAssignIngrediente(schedaIdx,pastoIdx,ingredienteId,grammi){
+function alimSetPastoItemPorzioni(schedaIdx,pastoIdx,itemIdx,delta){
   const schede=alimGetSchede();
-  const pasto=schede[schedaIdx].pasti[pastoIdx];
-  pasto.ingredienteId=ingredienteId;
-  pasto.grammi=grammi||100;
-  delete pasto.ricettaId;delete pasto.porzioni; // mutualmente esclusivo con ricetta
-  pasto.testo='';pasto.kcal=0;pasto.p=0;pasto.c=0;pasto.f=0; // ripulisce eventuale testo libero/macro manuali precedenti
-  sv('alim_schede',schede);
-  openProj('alimentazione');toast('ALIMENTO ASSEGNATO');
-}
-function alimUnassignIngrediente(schedaIdx,pastoIdx){
-  const schede=alimGetSchede();
-  const pasto=schede[schedaIdx].pasti[pastoIdx];
-  delete pasto.ingredienteId;delete pasto.grammi;
+  const it=schede[schedaIdx].pasti[pastoIdx].items[itemIdx];
+  if(!it||it.tipo!=='ricetta')return;
+  it.porzioni=Math.max(0.5,Math.round(((it.porzioni||1)+delta)*2)/2);
   sv('alim_schede',schede);
   openProj('alimentazione');
 }
-function alimSetGrammi(schedaIdx,pastoIdx,grammi){
+function alimSetPastoItemGrammi(schedaIdx,pastoIdx,itemIdx,grammi){
   const schede=alimGetSchede();
-  const pasto=schede[schedaIdx].pasti[pastoIdx];
-  pasto.grammi=Math.max(0,grammi||0);
-  sv('alim_schede',schede);
-  openProj('alimentazione');
-}
-function alimSetPorzioni(schedaIdx,pastoIdx,delta){
-  const schede=alimGetSchede();
-  const pasto=schede[schedaIdx].pasti[pastoIdx];
-  pasto.porzioni=Math.max(0.5,Math.round(((pasto.porzioni||1)+delta)*2)/2);
+  const it=schede[schedaIdx].pasti[pastoIdx].items[itemIdx];
+  if(!it||it.tipo!=='ingrediente')return;
+  it.grammi=Math.max(0,grammi||0);
   sv('alim_schede',schede);
   openProj('alimentazione');
 }
@@ -5090,7 +5113,7 @@ function openRicettaPicker(schedaIdx,pastoIdx){
   ov.id='ric-picker-overlay';
   ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
   ov.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border-hover);border-radius:12px;padding:16px;max-width:420px;width:100%;max-height:78vh;display:flex;flex-direction:column">
-    <div style="font-family:var(--sans);font-weight:700;font-size:13px;color:var(--text);margin-bottom:10px">Assegna al pasto</div>
+    <div style="font-family:var(--sans);font-weight:700;font-size:13px;color:var(--text);margin-bottom:10px">Aggiungi al pasto</div>
     <div style="display:flex;gap:6px;margin-bottom:10px">
       <button id="ric-picker-tab-ric" onclick="ricPickerSwitchTab('ric')" style="flex:1;font-family:var(--sans);font-weight:600;font-size:11px;padding:7px;border-radius:8px;border:1px solid var(--border-hover);background:var(--sel-bg);color:var(--text);cursor:pointer">📖 Ricette</button>
       <button id="ric-picker-tab-ing" onclick="ricPickerSwitchTab('ing')" style="flex:1;font-family:var(--sans);font-weight:600;font-size:11px;padding:7px;border-radius:8px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">🧪 Alimento singolo</button>
@@ -5145,7 +5168,7 @@ function pickIngrediente(ingredienteId){
   const ctx=window._ricPickerCtx;if(!ctx)return;
   const ing=alimIngredienteById(ingredienteId);
   closeRicettaPicker();
-  alimAssignIngrediente(ctx.schedaIdx,ctx.pastoIdx,ingredienteId,(ing&&ing.grammatura)||100);
+  alimAddIngredienteToPasto(ctx.schedaIdx,ctx.pastoIdx,ingredienteId,(ing&&ing.grammatura)||100);
 }
 function renderRicPickerList(q){
   const el=document.getElementById('ric-picker-list');if(!el)return;
@@ -5165,7 +5188,7 @@ function renderRicPickerList(q){
 function pickRicetta(ricettaId){
   const ctx=window._ricPickerCtx;if(!ctx)return;
   closeRicettaPicker();
-  alimAssignRicetta(ctx.schedaIdx,ctx.pastoIdx,ricettaId,1);
+  alimAddRicettaToPasto(ctx.schedaIdx,ctx.pastoIdx,ricettaId,1);
 }
 
 // ── navigazione libreria/dettaglio ricetta (router dentro buildAlimentazione) ──
@@ -5309,7 +5332,7 @@ function buildRicettaDetail(p,id){
     </select>
     <button class="abtn" onclick="assegnaRicettaAGiorno('${r.id}')">+ ASSEGNA</button>
   </div>`;
-  const usedIn=alimGetSchede().reduce((n,s)=>n+s.pasti.filter(x=>x.ricettaId===r.id).length,0);
+  const usedIn=alimGetSchede().reduce((n,s)=>n+s.pasti.reduce((m,pp)=>m+(pp.items||[]).filter(it=>it.tipo==='ricetta'&&it.ricettaId===r.id).length,0),0);
   h+=`<div style="font-family:var(--mono);font-size:10px;color:var(--text-ghost);margin:10px 0">In uso in ${usedIn} pasto${usedIn===1?'':'i'} della settimana · assegnata ${r.usageCount||0} volt${r.usageCount===1?'a':'e'} in totale</div>`;
   h+=`<div class="arow" style="border-top:none"><button class="abtn" onclick="deleteRicettaConfirm('${r.id}')" style="color:var(--red)">ELIMINA RICETTA</button></div>`;
   return h;
@@ -5319,7 +5342,7 @@ function assegnaRicettaAGiorno(ricettaId){
   const slotSel=document.getElementById('assegna-slot-'+ricettaId);
   const schedaIdx=parseInt(giornoSel.value);
   const pastoIdx=parseInt(slotSel.value);
-  alimAssignRicetta(schedaIdx,pastoIdx,ricettaId,1);
+  alimAddRicettaToPasto(schedaIdx,pastoIdx,ricettaId,1);
 }
 function addRicIngredienteFromInputs(id){
   const sel=document.getElementById('ric-ing-sel-'+id);
@@ -5502,35 +5525,52 @@ function buildAlimentazioneGiorni(p){
   </div>
   <div class="card" id="alim-pasti">`;
 
-  scheda.pasti.forEach((pasto,i)=>{
-    const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
-    const macro=pastoMacro(pasto);
-    h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap">
-      ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin:0;flex-shrink:0"></div>`:''}
-      <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint);width:70px;flex-shrink:0">${esc(pasto.slot)}</span>`;
-    if(pasto.ricettaId){
-      const ric=ricById(pasto.ricettaId);
-      h+=`<span class="rt" style="cursor:pointer;color:var(--text)" onclick="openRicettaDetail('${pasto.ricettaId}')">${esc(ric?ric.nome:'(ricetta eliminata)')}</span>
-      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-        <button onclick="alimSetPorzioni(${selIdx},${i},-0.5)" style="width:20px;height:20px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);cursor:pointer;font-size:11px;line-height:1">−</button>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint);min-width:26px;text-align:center">×${pasto.porzioni||1}</span>
-        <button onclick="alimSetPorzioni(${selIdx},${i},0.5)" style="width:20px;height:20px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);cursor:pointer;font-size:11px;line-height:1">+</button>
-      </div>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--green);flex-shrink:0">${macro.kcal}kcal</span>
-      <button onclick="alimUnassignRicetta(${selIdx},${i})" title="Scollega ricetta" style="font-size:12px;color:var(--text-ghost);background:none;border:none;cursor:pointer;flex-shrink:0">×</button>`;
-    } else if(pasto.ingredienteId){
-      const ing=alimIngredienteById(pasto.ingredienteId);
-      h+=`<span class="rt">${esc(ing?ing.nome:'(alimento eliminato)')}</span>
-      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-        <input type="number" value="${pasto.grammi||0}" onchange="alimSetGrammi(${selIdx},${i},parseFloat(this.value)||0)" style="width:50px;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:3px 5px;font-size:10px;color:var(--text);font-family:var(--mono);text-align:center">
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint)">g</span>
-      </div>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--green);flex-shrink:0">${macro.kcal}kcal</span>
-      <button onclick="alimUnassignIngrediente(${selIdx},${i})" title="Scollega alimento" style="font-size:12px;color:var(--text-ghost);background:none;border:none;cursor:pointer;flex-shrink:0">×</button>`;
-    } else {
-      h+=`<button onclick="openRicettaPicker(${selIdx},${i})" style="flex:1;text-align:left;font-family:var(--sans);font-size:13px;color:var(--text-ghost);background:none;border:1px dashed var(--border-hover);border-radius:6px;padding:6px 10px;cursor:pointer">+ Aggiungi dal ricettario…</button>`;
-    }
-    h+=`</div>`;
+  const _slotIdxByName={};scheda.pasti.forEach((pp,ii)=>{_slotIdxByName[pp.slot]=ii;});
+  ALIM_SLOT_GROUPS.forEach(group=>{
+    if(group.label)h+=`<div style="padding:8px 14px 2px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--text-ghost);text-transform:uppercase">${esc(group.label)}</div>`;
+    group.slots.forEach(slotName=>{
+      const i=_slotIdxByName[slotName];
+      if(i===undefined)return;
+      const pasto=scheda.pasti[i];
+      const displayLabel=group.label?slotName.slice(group.label.length+3):slotName; // rimuove "Pranzo — "/"Cena — "
+      const isChecked=isSelToday&&!!todayChecks[selIdx+'_'+i];
+      const macro=pastoMacro(pasto);
+      h+=`<div class="row${isChecked?' done':''}" style="flex-wrap:wrap;align-items:flex-start">
+        ${isSelToday?`<div class="hd${isChecked?' on':''}" onclick="alimToggleCheck(${selIdx},${i})" style="margin-top:2px;flex-shrink:0"></div>`:''}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:${pasto.items.length?'4px':'0'}">
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-faint)">${esc(displayLabel)}</span>
+            ${pasto.items.length?`<span style="font-family:var(--mono);font-size:9px;color:var(--green)">${macro.kcal}kcal</span>`:''}
+          </div>`;
+      pasto.items.forEach((it,itemIdx)=>{
+        const itMacro=pastoItemMacro(it);
+        h+=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;flex-wrap:wrap">`;
+        if(it.tipo==='ricetta'){
+          const ric=ricById(it.ricettaId);
+          h+=`<span class="rt" style="cursor:pointer;color:var(--text);flex:1;min-width:80px" onclick="openRicettaDetail('${it.ricettaId}')">${esc(ric?ric.nome:'(ricetta eliminata)')}</span>
+          <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+            <button onclick="alimSetPastoItemPorzioni(${selIdx},${i},${itemIdx},-0.5)" style="width:18px;height:18px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);cursor:pointer;font-size:10px;line-height:1">−</button>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);min-width:24px;text-align:center">×${it.porzioni||1}</span>
+            <button onclick="alimSetPastoItemPorzioni(${selIdx},${i},${itemIdx},0.5)" style="width:18px;height:18px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-faint);cursor:pointer;font-size:10px;line-height:1">+</button>
+          </div>`;
+        } else if(it.tipo==='ingrediente'){
+          const ing=alimIngredienteById(it.ingredienteId);
+          h+=`<span class="rt" style="flex:1;min-width:80px">${esc(ing?ing.nome:'(alimento eliminato)')}</span>
+          <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+            <input type="number" value="${it.grammi||0}" onchange="alimSetPastoItemGrammi(${selIdx},${i},${itemIdx},parseFloat(this.value)||0)" style="width:48px;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:3px 5px;font-size:10px;color:var(--text);font-family:var(--mono);text-align:center">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint)">g</span>
+          </div>`;
+        } else {
+          h+=`<span class="rt" style="flex:1;min-width:80px">${esc(it.testo||'')}</span>`;
+        }
+        h+=`<span style="font-family:var(--mono);font-size:9px;color:var(--text-ghost);flex-shrink:0">${Math.round(itMacro.kcal)}kcal</span>
+          <button onclick="alimRemovePastoItem(${selIdx},${i},${itemIdx})" title="Rimuovi" style="font-size:12px;color:var(--text-ghost);background:none;border:none;cursor:pointer;flex-shrink:0">×</button>
+        </div>`;
+      });
+      h+=`<button onclick="openRicettaPicker(${selIdx},${i})" style="text-align:left;font-family:var(--sans);font-size:12px;color:var(--text-ghost);background:none;border:1px dashed var(--border-hover);border-radius:6px;padding:5px 10px;cursor:pointer;margin-top:4px">+ Aggiungi…</button>
+        </div>
+      </div>`;
+    });
   });
   h+=`</div>`;
 
@@ -7204,6 +7244,31 @@ function migrateData(){
       if(!nomiEsistenti.has(allNormName(nome)))alimIngredienteCreate(nome,g,kcal,prot,carb,grassi);
     });
     sv('nutrition_v4_newFoods_migrated',true);
+  }
+  // v5: i pasti passano da 5 slot fissi (Colazione/Spuntino1/Pranzo/Spuntino2/Cena, un solo elemento ciascuno)
+  // a 9 slot (Pranzo e Cena si dividono in Primi/Secondi/Contorno) con liste multi-elemento.
+  // alimGetSchede() migra già la struttura dati automaticamente e senza perdite; qui rimappiamo SOLO
+  // le spunte "fatto oggi" già salvate (alim_checksOggi), che sono indicizzate per posizione e altrimenti
+  // finirebbero ad indicare lo slot sbagliato con la nuova numerazione a 9 slot.
+  if(!ld('nutrition_v5_slots9_migrated',false)){
+    const OLD_TO_NEW_PASTO_IDX={0:0,1:1,2:2,3:5,4:6}; // Colazione,Spuntino1,Pranzo→Primi,Spuntino2,Cena→Primi
+    const checks=ld('alim_checksOggi',{});
+    let changed=false;
+    Object.keys(checks).forEach(dateKey=>{
+      const dayChecks=checks[dateKey]||{};
+      const remapped={};
+      Object.keys(dayChecks).forEach(k=>{
+        const m=k.match(/^(\d+)_(\d+)$/);
+        if(!m){remapped[k]=dayChecks[k];return;}
+        const schedaIdx=m[1],oldPastoIdx=parseInt(m[2],10);
+        const newPastoIdx=OLD_TO_NEW_PASTO_IDX.hasOwnProperty(oldPastoIdx)?OLD_TO_NEW_PASTO_IDX[oldPastoIdx]:oldPastoIdx;
+        remapped[schedaIdx+'_'+newPastoIdx]=dayChecks[k];
+        if(newPastoIdx!==oldPastoIdx)changed=true;
+      });
+      checks[dateKey]=remapped;
+    });
+    if(changed)sv('alim_checksOggi',checks);
+    sv('nutrition_v5_slots9_migrated',true);
   }
 }
 function bootApp(){
