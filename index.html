@@ -806,7 +806,7 @@ function syncAssets(){
 }
 
 // Modal nativa (sostituisce prompt/confirm bloccanti su iOS)
-function modal(type,msg,cb){
+function modal(type,msg,cb,defVal){
   const ov=document.createElement('div');
   ov.className='qa-overlay-anim';
   ov.style.cssText='position:fixed;inset:0;background:var(--modal-overlay);z-index:9998;display:flex;align-items:center;justify-content:center;padding:1rem';
@@ -818,7 +818,7 @@ function modal(type,msg,cb){
     setTimeout(()=>ov.remove(),150);
   };
   if(type==='prompt'){
-    box.innerHTML=`<div style="font-size:13px;color:var(--text);margin-bottom:12px">${msg}</div><input id="_mi" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans)" autofocus><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button id="_mc" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button><button id="_mok" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">OK</button></div>`;
+    box.innerHTML=`<div style="font-size:13px;color:var(--text);margin-bottom:12px">${msg}</div><input id="_mi" value="${esc(defVal||'')}" style="width:100%;background:var(--input-bg);border:1px solid var(--border-hover);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans)" autofocus><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button id="_mc" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-hover);background:transparent;color:var(--text-faint);cursor:pointer">ANNULLA</button><button id="_mok" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 14px;border-radius:6px;border:none;background:var(--text);color:var(--on-accent);cursor:pointer">OK</button></div>`;
     document.body.appendChild(ov);ov.appendChild(box);
     const inp=box.querySelector('#_mi');
     box.querySelector('#_mok').onclick=()=>{const v=inp.value.trim();closeModalAnim();if(v)cb(v);};
@@ -1031,7 +1031,11 @@ PD.forEach(p=>{
     if(validFolders.includes(ov))p.folder=ov;
     // se l'override non corrisponde a nessuna folder esistente (es. typo/corruzione), lo ignora e tiene il folder di default
   }
+  const tov=ld('proj_tag_'+p.id,null);
+  if(tov)p.tag=tov;
 });
+// Elenco progetti attivi (PD + custom), esclusi i predefiniti cancellati via deleteProj
+function activeProjs(){const pd=PD,cp=ld('customProjs',[]);return pd.concat(cp).filter(p=>!ld('deletedPD',[]).includes(p.id));}
 
 const vinPot=()=>ld('vinInv',[]).filter(i=>i.stato!=='Venduto').reduce((a,i)=>a+(i.prezzo*i.qty),0);
 const vinSoldTot=()=>ld('vinSold',[]).reduce((a,i)=>a+i.prezzo,0);
@@ -1179,7 +1183,7 @@ document.getElementById('tdate').textContent=GG[D.getDay()].toUpperCase()+' '+D.
 function renderTopbar(){
   syncAssets();
   const pat=visibleAssets().reduce((s,x)=>s+x.v,0);
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   let openTasks=0,doneTasks=0;
   allProjs.filter(p=>!p.hasInv&&!ld('archived',[]).includes(p.id)).forEach(p=>{
     const tasks=ld('tasks_'+p.id,p.tasks0||[]);
@@ -1431,8 +1435,7 @@ function renderHome(){
   syncAssets();
   const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
   const archived=ld('archived',[]);
-  const customProjs=ld('customProjs',[]);
-  const allProjs=[...PD,...customProjs].filter(p=>p.id!=='allenamento'&&p.id!=='alimentazione'&&p.id!=='stretching');
+  const allProjs=activeProjs().filter(p=>p.id!=='allenamento'&&p.id!=='alimentazione'&&p.id!=='stretching');
   let h='';
   if(!_homeFolder){
     // ── VISTA FOLDER CARD ──
@@ -1455,7 +1458,11 @@ function renderHome(){
       const fStatus=fTot===0?'var(--text-ghost)':fDone===fTot?'var(--green)':fOpen>0?'var(--red)':'var(--yellow)';
       h+=`<div class="folder-card" onclick="openFolder('${esc(jstr(f))}')">
         <div class="folder-card-accent" style="background:${accentGrad}"></div>
-        <div style="font-family:var(--sans);font-weight:800;font-size:13px;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(f)}</div>
+        <div class="pc-actions" style="opacity:1">
+          <button class="pca" onclick="event.stopPropagation();renameFolder('${esc(jstr(f))}')" title="Rinomina">✎</button>
+          <button class="pca" onclick="event.stopPropagation();deleteFolder('${esc(jstr(f))}')" title="Elimina">×</button>
+        </div>
+        <div style="font-family:var(--sans);font-weight:800;font-size:13px;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:36px">${esc(f)}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:10px;color:var(--text-ghost)">${fp.length} prog.</span>
@@ -1525,6 +1532,8 @@ function renderHome(){
         <div class="acc" style="background:${color}" onclick="event.stopPropagation();showProjColorPicker('${p.id}',event)"></div>
         <div class="pc-actions">
           <button class="pca arch" onclick="event.stopPropagation();archiveProj('${p.id}')" title="Archivia">↓</button>
+          <button class="pca" onclick="event.stopPropagation();renameProj('${p.id}')" title="Rinomina">✎</button>
+          <button class="pca" onclick="event.stopPropagation();moveProjFolder('${p.id}')" title="Sposta in folder">⇄</button>
           <button class="pca" onclick="event.stopPropagation();deleteProj('${p.id}')" title="Elimina">×</button>
         </div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:8px">
@@ -1562,7 +1571,7 @@ function updateTodayBadge(){
   const todayKey=new Date().toDateString();
   const today=new Date();today.setHours(0,0,0,0);
   const archived=ld('archived',[]);
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!archived.includes(p.id));
+  const allProjs=activeProjs().filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!archived.includes(p.id));
   let open=0;
   allProjs.forEach(p=>{
     const recurCh=ld('recurChecks_'+p.id,{});
@@ -1599,6 +1608,37 @@ function addFolder(){
     folders.push(name.trim().toUpperCase());sv('folders',folders);renderHome();toast('FOLDER CREATA');
   });
 }
+function renameFolder(name){
+  modal('prompt','Rinomina folder:',newName=>{
+    const t=newName.trim().toUpperCase();if(!t||t===name)return;
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    if(folders.includes(t)){toast('ESISTE GIA\' UNA FOLDER CON QUESTO NOME');return;}
+    const idx=folders.indexOf(name);if(idx<0)return;
+    folders[idx]=t;sv('folders',folders);
+    const custom=ld('customProjs',[]);
+    activeProjs().filter(p=>p.folder===name).forEach(p=>{
+      const cp=custom.find(x=>x.id===p.id);
+      if(cp)cp.folder=t;
+      else{sv('proj_folder_'+p.id,t);const bp=PD.find(x=>x.id===p.id);if(bp)bp.folder=t;}
+    });
+    sv('customProjs',custom);
+    const orders=ld('projOrders',{});
+    if(orders[name]){orders[t]=orders[name];delete orders[name];sv('projOrders',orders);}
+    if(_homeFolder===name)_homeFolder=t;
+    renderHome();toast('FOLDER RINOMINATA');
+  },name);
+}
+function deleteFolder(name){
+  const inFolder=activeProjs().filter(p=>p.folder===name);
+  if(inFolder.length){toast('SPOSTA O ELIMINA PRIMA I '+inFolder.length+' PROGETTI DENTRO');return;}
+  modal('confirm','Eliminare la folder "'+name+'"?',()=>{
+    const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+    sv('folders',folders.filter(f=>f!==name));
+    const orders=ld('projOrders',{});delete orders[name];sv('projOrders',orders);
+    if(_homeFolder===name)_homeFolder=null;
+    renderHome();toast('FOLDER ELIMINATA');
+  });
+}
 function toggleArchive(){
   const g=document.getElementById('arch-grid'),a=document.getElementById('arch-arrow');
   if(g.style.display==='none'){g.style.display='grid';a.textContent='▼';}else{g.style.display='none';a.textContent='▶';}
@@ -1617,10 +1657,41 @@ function addProject(folder){
 }
 function deleteProj(id){
   modal('confirm','Eliminare definitivamente il progetto?',()=>{
-    const custom=ld('customProjs',[]);sv('customProjs',custom.filter(p=>p.id!==id));
+    const custom=ld('customProjs',[]);
+    if(custom.some(p=>p.id===id)){
+      sv('customProjs',custom.filter(p=>p.id!==id));
+    } else {
+      const deletedPD=ld('deletedPD',[]);
+      if(!deletedPD.includes(id)){deletedPD.push(id);sv('deletedPD',deletedPD);}
+    }
     sv('archived',ld('archived',[]).filter(x=>x!==id));
     const orders=ld('projOrders',{});Object.keys(orders).forEach(f=>orders[f]=orders[f].filter(x=>x!==id));sv('projOrders',orders);
     renderHome();toast('ELIMINATO');
+  });
+}
+function renameProj(id){
+  const p=activeProjs().find(x=>x.id===id);if(!p)return;
+  modal('prompt','Rinomina progetto:',name=>{
+    const tag=name.trim().toUpperCase();if(!tag)return;
+    const custom=ld('customProjs',[]);
+    const cp=custom.find(x=>x.id===id);
+    if(cp){cp.tag=tag;sv('customProjs',custom);}
+    else{sv('proj_tag_'+id,tag);const bp=PD.find(x=>x.id===id);if(bp)bp.tag=tag;}
+    renderHome();
+    if(document.getElementById('det').style.display!=='none')openProj(id);
+    toast('RINOMINATO');
+  },p.tag);
+}
+function moveProjFolder(id){
+  const folders=ld('folders',['BRAND DIGITALE','Z & JPC','RESELLING & COLLEZIONE','FINANZA & TRADING']);
+  const p=activeProjs().find(x=>x.id===id);if(!p)return;
+  const opts=folders.filter(f=>f!==p.folder);
+  if(!opts.length)return;
+  modal('prompt','Sposta in folder ('+opts.join(' · ')+'):',name=>{
+    const t=name.trim().toUpperCase();
+    if(!folders.includes(t)){toast('FOLDER NON VALIDA');return;}
+    persistProjectDrop(id,t);
+    renderHome();toast('SPOSTATO');
   });
 }
 function archiveProj(id){
@@ -1637,7 +1708,7 @@ function cyclePri(id){
 let dragProjId=null;
 function dragProjStart(e,id){dragProjId=id;e.dataTransfer.effectAllowed='move';}
 function persistProjectDrop(id,folder,targetId=null){
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   if(p.folder!==folder){
     const custom=ld('customProjs',[]);
@@ -1662,7 +1733,7 @@ function dropProjToFolder(e,folder){
 }
 function dropProjOnCard(e,targetId){
   e.preventDefault();e.stopPropagation();if(!dragProjId||dragProjId===targetId)return;
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const target=allProjs.find(x=>x.id===targetId);
   if(target){persistProjectDrop(dragProjId,target.folder,targetId);dragProjId=null;renderHome();}
 }
@@ -1748,7 +1819,7 @@ function getAgendaDayFull(day,allProjs){
 
 function renderAgenda(){
   const el=document.getElementById('agenda-view');if(!el)return;
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte');
+  const allProjs=activeProjs().filter(p=>!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte');
   const today=new Date();today.setHours(0,0,0,0);
   const dayNames=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const monthNames=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
@@ -2100,7 +2171,7 @@ function doSearch(q){
   const res=document.getElementById('srch-res');
   if(!q.trim()){res.style.display='none';return;}
   const ql=q.toLowerCase(),results=[];
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   allProjs.forEach(p=>{
     ld('tasks_'+p.id,p.tasks0||[]).forEach(t=>{if(t.toLowerCase().includes(ql))results.push({type:'TASK',proj:p.tag,color:p.color,text:t,id:p.id});});
     ld('goals_'+p.id,p.goals0||[]).forEach(g=>{if(g.toLowerCase().includes(ql))results.push({type:'GOAL',proj:p.tag,color:p.color,text:g,id:p.id});});
@@ -2215,7 +2286,7 @@ function openProj(id){
   // v1 FIX navigazione: memorizza da quale tab si proviene, solo al primo ingresso
   // (non ad ogni refresh interno, altrimenti sovrascriverebbe il punto di provenienza reale)
   if(document.getElementById('home').style.display!=='none')_returnToTab=_currentTab;
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const p=allProjs.find(x=>x.id===id);if(!p)return;
   p.color=ld('proj_color_'+p.id,p.color); // usa colore custom se salvato
   updateFitosFab(p.hasInv);
@@ -2871,7 +2942,7 @@ function drop(e,type,id){
   const rows=[...e.currentTarget.closest('[id]').querySelectorAll('.row')];
   const toIdx=rows.indexOf(e.currentTarget);
   if(dragIdx===null||toIdx<0||dragIdx===toIdx)return;
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const key=type==='t'?'tasks_'+id:'goals_'+id;
   const arr=ld(key,type==='t'?allProjs.find(p=>p.id===id).tasks0||[]:allProjs.find(p=>p.id===id).goals0||[]);
   const [item]=arr.splice(dragIdx,1);arr.splice(toIdx,0,item);sv(key,arr);
@@ -2892,9 +2963,9 @@ function ckGoal(el,id){
   else toast();
   renderHome();
 }
-function edGoal(i,id,v){const allProjs=[...PD,...ld('customProjs',[])];const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g[i]=v;sv('goals_'+id,g);toast();}
-function addGoal(id){const inp=document.getElementById('gi-'+id);const t=inp.value.trim();if(!t)return;const allProjs=[...PD,...ld('customProjs',[])];const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g.push(t);sv('goals_'+id,g);const c=ld('gchecks_'+id,[]);c.push(false);sv('gchecks_'+id,c);openProj(id);}
-function delGoal(i,id){const allProjs=[...PD,...ld('customProjs',[])];const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g.splice(i,1);sv('goals_'+id,g);const c=ld('gchecks_'+id,[]);c.splice(i,1);sv('gchecks_'+id,c);openProj(id);}
+function edGoal(i,id,v){const allProjs=activeProjs();const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g[i]=v;sv('goals_'+id,g);toast();}
+function addGoal(id){const inp=document.getElementById('gi-'+id);const t=inp.value.trim();if(!t)return;const allProjs=activeProjs();const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g.push(t);sv('goals_'+id,g);const c=ld('gchecks_'+id,[]);c.push(false);sv('gchecks_'+id,c);openProj(id);}
+function delGoal(i,id){const allProjs=activeProjs();const g=ld('goals_'+id,allProjs.find(p=>p.id===id).goals0||[]);g.splice(i,1);sv('goals_'+id,g);const c=ld('gchecks_'+id,[]);c.splice(i,1);sv('gchecks_'+id,c);openProj(id);}
 function ckSpesa(i,id){
   const s=ld('spese_'+id,[]);
   const wasPaid=s[i].paid;
@@ -2949,7 +3020,7 @@ function isScaduta(data){
 }
 const isExpenseOverdue=isScaduta;
 function countOverdueExpenses(){
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   let total=0;
   allProjs.forEach(p=>ld('spese_'+p.id,[]).forEach(s=>{if(!s.paid&&isExpenseOverdue(s.data))total++;}));
   ld('speseGen',[]).forEach(s=>{if(!s.paid&&isExpenseOverdue(s.data))total++;});
@@ -6305,7 +6376,7 @@ function toggleTxLog(){
 
 function renderSpese(){
   const el=document.getElementById('spese-timeline');if(!el)return;
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const all=[];
   allProjs.forEach(p=>{ld('spese_'+p.id,[]).forEach((s,i)=>all.push({...s,proj:p.tag,color:p.color,_projId:p.id,_idx:i}));});
   ld('speseGen',[]).forEach((s,i)=>all.push({...s,proj:null,color:'var(--text-ghost)',_idx:i}));
@@ -6524,7 +6595,7 @@ window._refreshAll=function(changedKeys){
     const inDet=detEl?.style.display!=='none';
     if(inDet&&!editing){
       const t=detEl?.querySelector('.dn');
-      if(t){const allP=[...PD,...ld('customProjs',[])];const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
+      if(t){const allP=activeProjs();const p=allP.find(x=>x.tag===t.textContent.trim());if(p)openProj(p.id);}
     }
     if(!editing)renderTodayFocus();
     renderAssets();
@@ -6561,7 +6632,7 @@ function renderTodayFocus(){
   const el=document.getElementById('tab-oggi');if(!el)return;
   const today=new Date();today.setHours(0,0,0,0);
   const todayKey=new Date().toDateString();
-  const allProjs=[...PD,...ld('customProjs',[])].filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
+  const allProjs=activeProjs().filter(p=>(!p.hasInv||p.hasInv==='vinted'||p.hasInv==='carte')&&!ld('archived',[]).includes(p.id));
   const agendaKey_today=agendaKey(today); // v1 FIX: usava toISOString (UTC) duplicando il vecchio bug timezone
   const _habits=ld('habits',[]),_habitLog=ld('habitLog',{});
   const _todayKeyStr=dayKey(today);
@@ -7151,7 +7222,7 @@ function changeProjectColor(id,color){
 
 // ── QUICK ADD FROM CARD ───────────────────────────────────
 function quickAddToCard(id){
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const p=allProjs.find(x=>x.id===id);
   modal('prompt','Task ricorrente per '+(p?p.tag:id)+':',text=>{
     if(!text.trim())return;
@@ -8675,7 +8746,7 @@ function qcBuildPreviewItem(rawYamlDoc,ctx){
 }
 
 function qcBuildCtx(){
-  const allProjs=[...PD,...ld('customProjs',[])];
+  const allProjs=activeProjs();
   const fallbackKey=document.getElementById('qc-date').value||agendaKey(new Date());
   const fallbackDate=agendaDateFromKey(fallbackKey);
   return{allProjs,fallbackDate,byDate:{}};
