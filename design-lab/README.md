@@ -1,3 +1,17 @@
+# LifeOS Visual Lab — Indice design
+
+**Direzione scelta per la V2:** Aurora Neo-Swiss per il tema notte + Prism Bento per il tema giorno.
+
+- **[Batch 03 — Experience Lab](batch-03/index.html)**: prototipo centrato sui flussi d'uso in 8 moduli con due temi, Bento, ricerca, Quick Capture e nuove interazioni.
+- **[Experience Blueprint](experience-blueprint.md)**: architettura dell'esperienza, user journeys prioritari, nuove funzionalità, principi di qualità.
+- **[Batch 03 — Note e limitazioni](batch-03/README.md)**: flussi testabili, confini della demo e prossime iterazioni.
+- [Batch 02 — Swiss + Bento](batch-02/index.html): quattro candidati originali a confronto.
+- [Batch 01 — Prime direzioni](index.html): esplorazione grafica iniziale.
+
+**Regola di isolamento:** modifiche solo nel branch `lifeos-visual-lab`. Non distribuire su `main` e non sostituire la codebase `lifeos-v2` senza revisione e approvazione.
+
+---
+
 # LifeOS Visual Lab — Iterazioni navigabili
 
 - **[Batch 01: tre prime direzioni](index.html)** — Aurora Dark, Prism Light, Prism Color (confronto iniziale, conservato).
