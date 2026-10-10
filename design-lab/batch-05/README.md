@@ -8,6 +8,12 @@
 - **Light: Prism Bento** — bright neutral surfaces, strong cobalt/emerald/coral/gold project accents, real contrast (not washed-out pastels).
 - **Shared**: 12-column Bento composition for dashboard/finance, module-specific summary, 14-project catalog, mobile navigation, card/list switching, density toggle.
 
+## Update: folder-first navigation restored
+
+The five V1 folder labels are now the **first page of Projects**: KUZO ENTERPRISE, Z & JPC, RESELLING & COLLEZIONE, FINANZA & TRADING, ALTRO. The tested demo path is: Folder gallery → Folder projects → Project workspace → individual task detail sheet. The breadcrumb can return one level from project to folder, then to all folders.
+
+Only default public-project labels and **synthetic UI content** are represented in the lab. The seven private custom projects, real archived statuses and live project folder membership in the uploaded Firebase JSON were **not committed here**. They are reviewed exclusively in the private local audit report.
+
 ## New visual / UX flows to evaluate
 
 ### 1. Correct hierarchy: pages for branches, sheet for leaf
