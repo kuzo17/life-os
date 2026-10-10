@@ -217,6 +217,7 @@ let tasks=[
 {id:"t3",title:"Preparare il prossimo contenuto",time:"16:00",project:"Content Studio",done:false},
 {id:"t4",title:"Controllare le scadenze",time:"17:30",project:"Finanze personali",done:false}
 ];
+let scheduledTasks=[];
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
 let state={financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:3,reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
@@ -276,7 +277,7 @@ function viewProjects(){const filtered=projects.filter(p=>(state.projectFilter==
  '<div class="grid '+(state.projectView==="grid"?"c3":"")+'" id="project-cards" style="margin-top:17px;'+(state.projectView==="list"?"grid-template-columns:1fr":"")+'">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun progetto corrispondente</div>')+'</div>'+
  '<div class="hint-box" style="margin-top:18px"><b>Idea UX:</b> nel prodotto finale ogni progetto avrà un pannello contestuale con tabs Task, Obiettivi, Ricorrenti, Spese e Note. Niente andirivieni fra schermate per modificare un singolo elemento.</div>';
 }
-function viewAgenda(){const days=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+function viewAgendaBase(){const days=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
 return headline("Agenda","Pianifica la settimana senza duplicare i task dei progetti.","TEMPO & PIANIFICAZIONE")+
 '<div class="action-row"><button class="tab active">Settimana</button><button class="tab" data-action="day-view">Giorno</button><button class="button small" data-action="quick">+ Nuova attività</button></div>'+
 '<div class="date-strip" style="margin:19px 0">'+days.map((d,i)=>'<button class="day '+(state.agendaDay===i?"active":"")+'" data-day="'+i+'">'+d+'<b>'+(5+i)+'</b></button>').join("")+'</div>'+
@@ -288,6 +289,16 @@ return headline("Agenda","Pianifica la settimana senza duplicare i task dei prog
 '<div class="span5">'+sectionHead("Riprogramma senza stress","Le task rimangono collegate ai progetti")+'<div class="card"><span class="chip coral">1 arretrata</span><h3 style="margin:16px 0 9px">Rivedere piano settimanale</h3><p class="small muted" style="line-height:1.7">Sposta a oggi oppure mantieni nella sua data originale.</p><div class="action-row"><button class="button primary small" data-action="move-overdue">→ Sposta a oggi</button><button class="button small" data-action="keep-overdue">Mantieni</button></div></div>'+
 '<div class="hint-box" style="margin-top:15px">Nella versione definitiva: selezione multipla, duplicazione, drag touch e ricorrenti per frequenza. Questa demo mostra il percorso, non modifica il calendario.</div></div></div>';
 }
+
+function viewAgenda(){
+ let html=viewAgendaBase();
+ if(scheduledTasks.length){
+   html+=sectionHead("Programmate con la cattura","Solo task programmate durante questa sessione demo");
+   html+='<div class="card">'+scheduledTasks.map(t=>'<div class="list-item"><span class="chip blue">'+safe(t.day)+'</span><div class="body">'+safe(t.title)+'</div><span class="xs muted">Cattura</span></div>').join("")+'</div>';
+ }
+ return html;
+}
+
 function viewFitos(){const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
 let body="";
 if(state.fitosTab==="today")body='<div class="grid c12"><div class="span7 hero"><div><div class="hero-label">PRONTO QUANDO VUOI</div><h2>Upper Body A</h2><p>Prossima sessione in programma: sei esercizi, recuperi configurabili e progressione basata sul catalogo.</p></div><div class="hero-row"><button class="button primary" data-action="focus-start">Avvia Focus demo</button></div></div><div class="span5 card"><div class="eyebrow">RIEPILOGO FITOS</div>'+miniStat("Allenamento","2/3","esercizi esempio","cyan","◷")+'<div class="divider"></div><div class="small muted">Nutrizione: 1.840 / 2.600 kcal</div><div class="progress" style="--pct:71%;--shade:var(--blue);margin-top:10px"><i></i></div><div style="margin-top:18px" class="small muted">Peso: 72,4 kg · Demo</div></div></div>';
@@ -442,11 +453,12 @@ document.addEventListener("click",e=>{
    const rows=$("#spoken-preview [data-row]");let n=0;
    for(const el of rows){const text=el.querySelector("[data-row-text]").value.trim();if(!text)continue;
      const kind=el.querySelector("[data-row-kind]").value,day=el.querySelector("[data-row-day]").value;
-     if(kind==="task")tasks.unshift({id:"recap"+Date.now()+n,title:text+" ["+day+"]",project:"Cattura",time:"",done:false});
-     else inbox.unshift({id:Date.now()+n,text:text+" ["+day+"]",type:kind});
+     if(kind==="task"&&day==="oggi")tasks.unshift({id:"recap"+Date.now()+n,title:text,project:"Cattura",time:"",done:false});
+     else if(kind==="task"&&day!=="Da pianificare")scheduledTasks.unshift({id:"future"+Date.now()+n,title:text,day});
+     else inbox.unshift({id:Date.now()+n,text:text+(day==="Da pianificare"?"":" ["+day+"]"),type:kind});
      n++;
    }
-   $("#dlg").close();goto("today");notify(n+" elementi inseriti nella demo");return;
+   $("#dlg").close();goto(scheduledTasks.length?"agenda":"today");notify(n+" elementi distribuiti nella demo");return;
  }
 
  if(b.dataset.ux==="finance-tab"){state.financeTab=b.dataset.tab;render();return}
@@ -481,7 +493,7 @@ document.addEventListener("submit",e=>{
  if(e.target.id==="fast-form"){
    e.preventDefault();const kind=$("#fast-kind").value;
    const title=$("#fast-title")?.value.trim();if(!title)return;
-   if(kind==="task")tasks.unshift({id:"fast"+Date.now(),title,project:$("#fast-extra")?.value||"Quick Add",time:"",done:false});
+   if(kind==="task"){const day=$("#fast-date")?.value.trim().toLowerCase()||"oggi";const obj={id:"fast"+Date.now(),title,project:$("#fast-extra")?.value||"Quick Add",time:"",done:false};if(day==="oggi")tasks.unshift(obj);else scheduledTasks.unshift({...obj,day})}
    else inbox.unshift({id:Date.now(),text:kind+": "+title,type:kind});
    $("#dlg").close();render();notify(kind==="task"?"Task inserita nella demo":"Bozza "+kind+" in Inbox demo");
  }
