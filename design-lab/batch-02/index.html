@@ -312,6 +312,7 @@ body[data-theme="neo"] .hero-eyebrow{letter-spacing:3.5px}
     <span class="lab-caption">Giorno</span>
     <button class="lab-btn theme-switch" data-theme-to="bold" type="button">Prism Bold</button>
     <button class="lab-btn theme-switch" data-theme-to="bento" type="button">Prism Bento</button>
+    <button class="lab-btn" id="mode-switch" type="button" title="Passa fra modalità notte e giorno">☼ Passa a Giorno</button>
   </div>
 </header>
 <section class="gallery" id="gallery">
@@ -427,12 +428,13 @@ body[data-theme="neo"] .hero-eyebrow{letter-spacing:3.5px}
 const themes={neo:"Aurora Neo-Swiss",dynamic:"Aurora Dynamic",bold:"Prism Bold",bento:"Prism Bento"};
 const screens={today:"Oggi",projects:"Progetti",finance:"Finanze"};
 let theme="neo",screen="today",view="gallery";
-function setTheme(next){if(!themes[next])return;theme=next;document.body.dataset.theme=next;document.querySelectorAll("[data-theme-to]").forEach(el=>{const on=el.dataset.themeTo===next;el.classList.toggle("active",on);el.setAttribute("aria-pressed",String(on))})}
+function setTheme(next){if(!themes[next])return;theme=next;document.body.dataset.theme=next;document.querySelectorAll("[data-theme-to]").forEach(el=>{const on=el.dataset.themeTo===next;el.classList.toggle("active",on);el.setAttribute("aria-pressed",String(on))});document.getElementById("mode-switch").textContent=(next==="neo"||next==="dynamic")?"☼ Passa a Giorno":"☾ Passa a Notte"}
 function setScreen(next){if(!screens[next])return;screen=next;document.querySelectorAll(".page").forEach(el=>el.classList.toggle("active",el.id===next));document.querySelectorAll("[data-go]").forEach(el=>{const active=el.dataset.go===next;el.classList.toggle("active",active);active?el.setAttribute("aria-current","page"):el.removeAttribute("aria-current")});document.getElementById("breadcrumb-label").textContent=screens[next]}
 function setView(next){view=next;document.getElementById("gallery").hidden=next!=="gallery";document.getElementById("app").classList.toggle("active",next==="app");document.getElementById("gallery-back").classList.toggle("active",next==="gallery")}
 function route(){const parts=decodeURIComponent(location.hash.replace(/^#/,"")).split("/");if(parts[0]==="view"&&themes[parts[1]]){setTheme(parts[1]);setScreen(screens[parts[2]]?parts[2]:"today");setView("app")}else setView("gallery")}
 function visit(nextTheme,nextScreen){location.hash="#view/"+nextTheme+"/"+nextScreen;route();window.scrollTo(0,0)}
 document.querySelectorAll("[data-open-theme]").forEach(b=>b.addEventListener("click",()=>visit(b.dataset.openTheme,"today")));
+document.getElementById("mode-switch").addEventListener("click",()=>{const other={neo:"bold",dynamic:"bento",bold:"neo",bento:"dynamic"}[theme];visit(other,view==="gallery"?"today":screen)});
 document.querySelectorAll("[data-theme-to]").forEach(b=>b.addEventListener("click",()=>visit(b.dataset.themeTo,view==="gallery"?"today":screen)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>visit(theme,b.dataset.go)));
 document.getElementById("gallery-back").addEventListener("click",()=>{location.hash="#gallery";route();window.scrollTo(0,0)});
