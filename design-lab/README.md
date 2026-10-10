@@ -1,3 +1,13 @@
+# Nuova regola: profondità funzionale V1 + UX superiore V2
+
+- **[Apri FitOS Focus Study — allenamento e stretching guidati](focus-study/index.html)**: programma completo, serie × ripetizioni × carichi, recuperi specifici, note tecniche, confronto storico, timer, pausa, skip, Undo, riepilogo.
+- [Audit tecnico della Focus Mode V1](fitos-focus-parity-audit.md): verifica puntuale delle funzionalità reali e obiettivi V2.
+- [Matrice parità completa V1 → V2](non-regression-matrix.md): checklist non-regressiva per Oggi, Progetti, Agenda, FitOS, Finanze, Vinted, Carte, Quick Add e sincronizzazione.
+
+**Un mockup non costituisce prova di parità funzionale. Le schermate V2 devono essere progettate partendo dalle funzioni originali, preservandole tutte e migliorandone usabilità e robustezza.**
+
+---
+
 # LifeOS Visual Lab — Iterazioni UX
 
 **Temi di riferimento approvati:** Aurora Neo-Swiss (notte) e Prism Bento (giorno).
