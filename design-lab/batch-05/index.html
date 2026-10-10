@@ -236,7 +236,18 @@ function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:
 function sectionHead(title,more=""){return '<div class="section-head"><h2>'+title+'</h2><span class="hint">'+more+'</span></div>'}
 function headline(title,desc,label="ESPERIENZA PERSONALE",actions=""){return '<div class="headline"><div><div class="eyebrow">'+label+'</div><h1>'+title+'<span style="color:var(--main)">.</span></h1><p>'+desc+'</p></div>'+actions+'</div>'}
 function miniStat(label,value,note,shade,icon){return '<div class="card stat '+shade+'"><div><div class="stat-label">'+label+'</div><div class="statnum">'+value+'</div><div class="stat-note">'+note+'</div></div><span class="stat-badge">'+icon+'</span></div>'}
-function taskRows(){return tasks.map(t=>'<div class="list-item"><button class="check '+(t.done?"done":"")+'" data-task="'+safe(t.id)+'" aria-pressed="'+t.done+'" aria-label="Segna task">'+(t.done?"✓":"")+'</button><div class="body"><div class="task-title '+(t.done?"done":"")+'">'+safe(t.title)+'</div><div class="sub">'+safe(t.project)+'</div></div><span class="faint xs">'+safe(t.time)+'</span></div>').join("")}
+
+function projectById(id){return projects.find(p=>p.id===id)||null}
+function projectName(id){return projectById(id)?.name||"Progetto non assegnato"}
+function taskPriority(t){return t.priority||"media"}
+function projectTasks(id){return tasks.filter(t=>t.projectId===id)}
+function projectMetric(p){const a=projectTasks(p.id);return {n:a.length,done:a.filter(t=>t.done).length,pct:a.length?Math.round(a.filter(t=>t.done).length/a.length*100):null}}
+function priorityChip(priority){const c={alta:"coral",media:"blue",bassa:"cyan"}[priority]||"blue";return '<span class="chip '+c+'">'+safe(priority||"media")+'</span>'}
+function renderTaskRow(t,showProject=true){
+ return '<div class="list-item"><button class="check '+(t.done?"done":"")+'" data-task="'+safe(t.id)+'" aria-pressed="'+Boolean(t.done)+'" aria-label="Completa o riapri task">'+(t.done?"✓":"")+'</button>'+
+ '<div class="body"><button class="text-action task-title '+(t.done?"done":"")+'" data-task-leaf="'+safe(t.id)+'">'+safe(t.title)+'</button><div class="sub">'+(showProject?safe(projectName(t.projectId))+" · ":"")+(t.when&&t.when!=="oggi"?safe(t.when)+" · ":"")+safe(t.time||"Senza orario")+'</div></div>'+priorityChip(taskPriority(t))+'</div>';
+}
+function taskRows(){return tasks.filter(t=>t.when==="oggi").map(t=>renderTaskRow(t,true)).join("")||'<div class="empty">Nessuna task per oggi.</div>'}
 function viewTodayBase(){
  const done=tasks.filter(t=>t.done).length,pct=Math.round(done/tasks.length*100);
  return headline("Oggi","Non tutto è urgente. Inizia dalla prossima cosa importante.","IL TUO CONTROL CENTER")+
@@ -276,15 +287,56 @@ function notifyUndo(message,undo){
  const t=$("#toast");t.replaceChildren();const msg=document.createElement("span");msg.textContent=message;const b=document.createElement("button");b.type="button";b.textContent="Annulla";b.addEventListener("click",()=>{undo();t.hidden=true;if(toastTimeout)clearTimeout(toastTimeout)});t.append(msg,b);t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},6000);
 }
 
-function projectCard(p){return '<article class="card project" role="button" tabindex="0" data-project="'+p.id+'" aria-label="Apri '+safe(p.name)+'"><div class="project-art" style="--grad:linear-gradient(115deg,'+p.color+',color-mix(in srgb,'+p.color+' 62%,#182d50))"><span class="project-glyph">'+p.glyph+'</span><span class="pill" style="background:#ffffff35;color:#fff">'+p.cat+'</span></div><div class="project-core"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p><div class="progress" style="--pct:'+p.pct+'%;--shade:'+p.color+'"><i></i></div><div class="project-foot"><span>'+p.tasks+' task</span><b>'+p.pct+'%</b></div></div></article>'}
-function viewProjects(){const filtered=projects.filter(p=>(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLowerCase().includes(state.projectQuery.toLowerCase()));
- return headline("Progetti","Tutto collegato: task, obiettivi, ricorrenti, note e spese.","ORGANIZZA & COSTRUISCI")+
- '<div class="grid c3">'+miniStat("Progetti","6","4 attivi","cyan","▦")+miniStat("Progressi medi","51%","Esempio","blue","↗")+miniStat("Da rivedere","2","In pianificazione","violet","◷")+'</div>'+
- '<div class="section-head"><h2>Workspace</h2><span class="hint">Apri una card per il dettaglio contestuale</span></div>'+
- '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca progetti" aria-label="Cerca progetti">'+
+
+function projectCard(p){
+ const m=projectMetric(p);return '<article class="card project" role="button" tabindex="0" data-project="'+p.id+'" aria-label="Apri workspace '+safe(p.name)+'">'+
+ '<div class="project-art" style="--grad:linear-gradient(115deg,'+p.color+',color-mix(in srgb,'+p.color+' 62%,#182d50))"><span class="project-glyph">'+safe(p.glyph)+'</span><span class="pill" style="background:#ffffff35;color:#fff">'+safe(p.cat)+'</span></div>'+
+ '<div class="project-core"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p>'+
+ '<div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div><div class="project-foot"><span>'+m.n+' task nella demo</span><b>'+(m.pct===null?"—":m.pct+"%")+'</b></div></div></article>';
+}
+function projectWorkspace(){
+ const p=projectById(state.projectId);
+ if(!p){state.projectId=null;return viewProjects()}
+ const m=projectMetric(p),id=p.id;
+ const sections=[["tasks","Task"],["goals","Obiettivi"],["recur","Ricorrenti"],["expenses","Spese"],["notes","Note & link"]];
+ const nav='<div class="workspace-tabs" role="group" aria-label="Sezioni del progetto">'+sections.map(([k,label])=>'<button class="tab '+(state.projectSection===k?'active':'')+'" data-workspace-tab="'+k+'">'+label+'</button>').join("")+'</div>';
+ let body='';
+ if(state.projectSection==="tasks"){
+   const pTasks=projectTasks(id);
+   body='<div class="project-content"><div>'+sectionHead("Attività del progetto","Record unici: presenti anche in Oggi e Agenda quando pertinenti")+
+   '<div class="card">'+(pTasks.length?pTasks.map(t=>renderTaskRow(t,false)).join(""):'<div class="empty">Nessuna task nella demo. Il progetto reale potrebbe averne molte.</div>')+
+   '<button class="button small" style="margin-top:14px" data-add-project-task="'+id+'">+ Task nel progetto</button></div></div>'+
+   '<div>'+sectionHead("Organizzazione","Contesto senza aprire pannelli")+ '<div class="card">'+
+   '<div class="work-stat"><span>Task totali nella demo</span><b>'+m.n+'</b></div><div class="work-stat"><span>Completate</span><b>'+m.done+'</b></div><div class="work-stat"><span>Da completare</span><b>'+(m.n-m.done)+'</b></div>'+
+   '<div class="hint-box" style="margin-top:15px">Nella V2 questa area include viste Lista, Board, Priorità e Scadenze, con filtri salvati. Nessuna delle funzioni originali viene eliminata.</div></div></div></div>';
+ }else{
+   const content={
+   goals:["Obiettivi del progetto","Obiettivi generali e settimanali, progressi e debiti delle attività rimangono moduli completi, non widget ridotti."],
+   recur:["Ricorrenti","Frequenze, completamenti per data, streak e gestione delle singole occorrenze continueranno a funzionare come nella V1."],
+   expenses:["Spese del progetto","Piani di spesa, rate e relativi pagamenti restano collegati agli asset reali senza registrazioni duplicate."],
+   notes:["Note & risorse","Note persistenti, collegamenti, documenti e risorse contestuali, senza confonderli con la Inbox."]
+   }[state.projectSection]||["Sezione",""];
+   body='<div class="module-surface"><div class="eyebrow">STRUTTURA PREVISTA / NON ANCORA IMPLEMENTATA</div><h2>'+content[0]+'</h2><p class="small muted" style="line-height:1.8;margin:14px 0 20px">'+content[1]+'</p><div class="blueprint-rows"><div class="blueprint-row"><span>Elenco completo</span><span>→</span></div><div class="blueprint-row"><span>Filtri e ordinamento</span><span>→</span></div><div class="blueprint-row"><span>Azione contestuale sull’elemento finale</span><span>◫</span></div></div></div>';
+ }
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Progetti</button><span>›</span><span>'+safe(p.folder)+'</span><span>›</span><b>'+safe(p.name)+'</b></div>'+
+ '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-projects-back>← Tutti i progetti</button></div></div>'+
+ '<div class="workspace-kpis"><div class="card"><div class="stat-label">Avanzamento task nella demo</div><div class="statnum">'+(m.pct===null?"—":m.pct+"%")+'</div><div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div></div>'+
+ '<div class="card"><div class="stat-label">Task</div><div class="statnum">'+m.n+'</div><div class="small muted">Singola fonte di verità</div></div>'+
+ '<div class="card"><div class="stat-label">Stato</div><div class="statnum" style="font-size:18px;margin:17px 0">'+(p.status==="active"?"Attivo":"Pianificato")+'</div><div class="small muted">Label dimostrativa</div></div></div>'+
+ nav+body;
+}
+function viewProjects(){
+ if(state.projectId)return projectWorkspace();
+ const filtered=projects.filter(p=>(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLocaleLowerCase("it").includes(state.projectQuery.toLocaleLowerCase("it")));
+ const active=projects.filter(p=>p.status==="active").length;
+ const completed=tasks.filter(t=>t.done).length;
+ return headline("Progetti","14 aree della V1, organizzate in workspace espandibili. I dati di avanzamento di questa demo sono inventati.","WORKSPACES & OBIETTIVI")+
+ '<div class="grid c3">'+miniStat("Aree progetto",String(projects.length),"Stessa struttura originale","cyan","▦")+miniStat("Task demo",String(tasks.length),completed+" completate","blue","✓")+miniStat("Workspace attivi",String(active),"Stato dimostrativo","violet","◈")+'</div>'+
+ '<div class="section-head"><h2>Esplora i workspace</h2><span class="hint">Pagina progetto → sezione → dettaglio elemento</span></div>'+
+ '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca un progetto..." aria-label="Cerca progetti">'+
  '<button class="tab '+(state.projectFilter==="all"?"active":"")+'" data-project-filter="all">Tutti</button><button class="tab '+(state.projectFilter==="active"?"active":"")+'" data-project-filter="active">Attivi</button><button class="tab '+(state.projectFilter==="planning"?"active":"")+'" data-project-filter="planning">Pianificati</button><button class="button small" data-action="project-layout">'+(state.projectView==="grid"?"☰ Vista lista":"▦ Vista bento")+'</button></div>'+
- '<div class="grid '+(state.projectView==="grid"?"c3":"")+'" id="project-cards" style="margin-top:17px;'+(state.projectView==="list"?"grid-template-columns:1fr":"")+'">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun progetto corrispondente</div>')+'</div>'+
- '<div class="hint-box" style="margin-top:18px"><b>Idea UX:</b> nel prodotto finale ogni progetto avrà un pannello contestuale con tabs Task, Obiettivi, Ricorrenti, Spese e Note. Niente andirivieni fra schermate per modificare un singolo elemento.</div>';
+ '<div class="project-catalog '+(state.projectView==="list"?"list-layout":"")+'" id="project-cards">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun workspace trovato.</div>')+'</div>'+
+ '<div class="hint-box" style="margin-top:20px">Questo è un prototipo di navigazione e design. Le 14 aree sono derivate dalla struttura V1, ma task e percentuali mostrate qui sono dati fittizi. I contenuti originali completi saranno preservati nella V2.</div>';
 }
 function viewAgendaBase(){const days=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
 return headline("Agenda","Pianifica la settimana senza duplicare i task dei progetti.","TEMPO & PIANIFICAZIONE")+
@@ -301,13 +353,11 @@ return headline("Agenda","Pianifica la settimana senza duplicare i task dei prog
 
 function viewAgenda(){
  let html=viewAgendaBase();
- if(scheduledTasks.length){
-   html+=sectionHead("Programmate con la cattura","Solo task programmate durante questa sessione demo");
-   html+='<div class="card">'+scheduledTasks.map(t=>'<div class="list-item"><span class="chip blue">'+safe(t.day)+'</span><div class="body">'+safe(t.title)+'</div><span class="xs muted">Cattura</span></div>').join("")+'</div>';
- }
+ const planned=tasks.filter(t=>t.when&&t.when!=="oggi");
+ html+=sectionHead("Task programmate","Le stesse task compaiono anche nel loro progetto");
+ html+='<div class="card">'+(planned.length?planned.map(t=>renderTaskRow(t,true)).join(""):'<div class="empty">Nessuna task futura nella demo.</div>')+'</div>';
  return html;
 }
-
 function viewFitos(){const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
 let body="";
 if(state.fitosTab==="today")body='<div class="grid c12"><div class="span7 hero"><div><div class="hero-label">PRONTO QUANDO VUOI</div><h2>Upper Body A</h2><p>Prossima sessione in programma: sei esercizi, recuperi configurabili e progressione basata sul catalogo.</p></div><div class="hero-row"><button class="button primary" data-action="fitos-focus-start">Avvia Focus demo</button></div></div><div class="span5 card"><div class="eyebrow">RIEPILOGO FITOS</div>'+miniStat("Allenamento","2/3","esercizi esempio","cyan","◷")+'<div class="divider"></div><div class="small muted">Nutrizione: 1.840 / 2.600 kcal</div><div class="progress" style="--pct:71%;--shade:var(--blue);margin-top:10px"><i></i></div><div style="margin-top:18px" class="small muted">Peso: 72,4 kg · Demo</div></div></div>';
