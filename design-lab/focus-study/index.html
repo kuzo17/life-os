@@ -83,7 +83,7 @@ const stretching=[
 {id:"back",name:"Mobilità dorsale",duration:120,tip:"Respira senza trattenere l'aria e cerca un movimento controllato, non un allungamento massimo.",muscle:"Dorso"},
 {id:"posterior",name:"Catena posteriore",duration:120,tip:"Mantieni una tensione moderata, senza rimbalzi. Fermati se compaiono sintomi insoliti.",muscle:"Gambe"}
 ];
-let theme="dark",mode="workout",status="ready",index=0,setIndex=0,phase="work",draft={weight:50,reps:8};
+let theme="dark",mode=location.hash==="#stretch"?"stretch":"workout",status="ready",index=0,setIndex=0,phase="work",draft={weight:50,reps:8};
 let logs={},skipped={},stretchDone={},paused=false,deadline=null,remaining=0,restLength=0,tick=null,startTime=null,elapsed=0,lastUndo=null,toastTimeout=null;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function fmt(n){n=Math.max(0,Math.floor(n));return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")}
