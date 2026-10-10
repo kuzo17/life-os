@@ -169,6 +169,12 @@ textarea.field{min-height:100px;resize:vertical}
 .preview-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
 .preview-fields select{min-width:0;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 6px;font-size:11px}
 textarea.field{min-height:100px;resize:vertical}
+
+.dashboard-tools{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.dashboard-tools>div{display:flex;gap:8px;flex-wrap:wrap}
+[data-widget][hidden]{display:none!important}
+#toast button{border:0;background:#fff;color:#254d9c;border-radius:7px;margin-left:12px;padding:7px 10px;font-size:11px;font-weight:800}
+@media(max-width:600px){.dashboard-tools>div{width:100%}.dashboard-tools .button{flex:1}}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 04 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -221,7 +227,7 @@ function sectionHead(title,more=""){return '<div class="section-head"><h2>'+titl
 function headline(title,desc,label="ESPERIENZA PERSONALE",actions=""){return '<div class="headline"><div><div class="eyebrow">'+label+'</div><h1>'+title+'<span style="color:var(--main)">.</span></h1><p>'+desc+'</p></div>'+actions+'</div>'}
 function miniStat(label,value,note,shade,icon){return '<div class="card stat '+shade+'"><div><div class="stat-label">'+label+'</div><div class="statnum">'+value+'</div><div class="stat-note">'+note+'</div></div><span class="stat-badge">'+icon+'</span></div>'}
 function taskRows(){return tasks.map(t=>'<div class="list-item"><button class="check '+(t.done?"done":"")+'" data-task="'+safe(t.id)+'" aria-pressed="'+t.done+'" aria-label="Segna task">'+(t.done?"✓":"")+'</button><div class="body"><div class="task-title '+(t.done?"done":"")+'">'+safe(t.title)+'</div><div class="sub">'+safe(t.project)+'</div></div><span class="faint xs">'+safe(t.time)+'</span></div>').join("")}
-function viewToday(){
+function viewTodayBase(){
  const done=tasks.filter(t=>t.done).length,pct=Math.round(done/tasks.length*100);
  return headline("Oggi","Non tutto è urgente. Inizia dalla prossima cosa importante.","IL TUO CONTROL CENTER")+
  '<div class="grid c12">'+
@@ -239,6 +245,27 @@ function viewToday(){
  '<div class="span4">'+sectionHead("Patrimonio","Contesto, non distrazione")+'<div class="card"><div class="eyebrow">STIMA DEMO</div><div class="statnum" style="font-size:30px">€ 24.680</div><div class="small muted">Valore illustrativo</div><div style="margin-top:19px"><button class="button small" data-action="finance">Apri finanze</button></div></div></div>'+
  '</div>';
 }
+
+function viewToday(){
+ let html=viewTodayBase();
+ html=html.replace('<div class="grid c12">','<div class="dashboard-tools"><span class="small muted">Priorità e task restano sempre visibili; i widget sono sotto il tuo controllo.</span><div><button class="button small" data-ux="widget-config">⚙ Personalizza widget</button> <button class="button small" data-ux="natural-open">✧ Scrivi come parli</button></div></div><div class="grid c12">');
+ for(const [label,key] of [["Routine","habits"],["FitOS oggi","fitos"],["Patrimonio","finance"]]){
+    const needle='<div class="span4"><div class="section-head"><h2>'+label;
+    const replacement='<div class="span4" data-widget="'+key+'"'+(state.widgets[key]?'':' hidden')+'><div class="section-head"><h2>'+label;
+    html=html.replace(needle,replacement);
+ }
+ return html;
+}
+function openWidgetConfig(){
+ dialog("Personalizza la dashboard",
+ '<div class="eyebrow">DASHBOARD ADATTIVA</div><p class="small muted" style="line-height:1.75">Le azioni principali rimangono nello stesso posto. Puoi scegliere quali widget secondari vedere, senza riordinamenti casuali.</p>'+
+ [["habits","Routine e abitudini"],["fitos","FitOS oggi"],["finance","Patrimonio"]].map(([key,label])=>'<label class="list-item" style="cursor:pointer"><input type="checkbox" data-widget-toggle="'+key+'" '+(state.widgets[key]?'checked':'')+'><span class="body">'+label+'</span></label>').join("")+
+ '<div class="modal-actions"><button class="button primary" data-close>Fatto</button></div><p class="xs muted">Solo demo: le preferenze non sono salvate dopo il refresh.</p>');
+}
+function notifyUndo(message,undo){
+ const t=$("#toast");t.replaceChildren();const msg=document.createElement("span");msg.textContent=message;const b=document.createElement("button");b.type="button";b.textContent="Annulla";b.addEventListener("click",()=>{undo();t.hidden=true;if(toastTimeout)clearTimeout(toastTimeout)});t.append(msg,b);t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},6000);
+}
+
 function projectCard(p){return '<article class="card project" role="button" tabindex="0" data-project="'+p.id+'" aria-label="Apri '+safe(p.name)+'"><div class="project-art" style="--grad:linear-gradient(115deg,'+p.color+',color-mix(in srgb,'+p.color+' 62%,#182d50))"><span class="project-glyph">'+p.glyph+'</span><span class="pill" style="background:#ffffff35;color:#fff">'+p.cat+'</span></div><div class="project-core"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p><div class="progress" style="--pct:'+p.pct+'%;--shade:'+p.color+'"><i></i></div><div class="project-foot"><span>'+p.tasks+' task</span><b>'+p.pct+'%</b></div></div></article>'}
 function viewProjects(){const filtered=projects.filter(p=>(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLowerCase().includes(state.projectQuery.toLowerCase()));
  return headline("Progetti","Tutto collegato: task, obiettivi, ricorrenti, note e spese.","ORGANIZZA & COSTRUISCI")+
@@ -405,6 +432,9 @@ function parseRoute(){let target=location.hash.slice(1);if(!views[target])target
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.ux==="widget-config"){openWidgetConfig();return}
+ if(b.dataset.ux==="natural-open"){quick();return}
+
  if(b.dataset.ux==="quick-mode"){const natural=b.dataset.mode==="natural";$("#quick-natural").hidden=!natural;$("#quick-fast").hidden=natural;$("[data-ux=quick-mode]").forEach(el=>el.classList.toggle("active",el===b));return}
  if(b.dataset.ux==="recap-back"){quick();return}
  if(b.dataset.ux==="remove-recap"){const row=b.closest("[data-row]");if(row)row.remove();return}
@@ -423,7 +453,7 @@ document.addEventListener("click",e=>{
  if(b.dataset.ux==="source-detail"){openSourceSheet(b.dataset.source);return}
  if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
  if(b.dataset.nav){goto(b.dataset.nav);return}
- if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){t.done=!t.done;render();notify(t.done?"Completata · Demo":"Riaperta · Demo")}return}
+ if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){const old=t.done;t.done=!t.done;render();notifyUndo(t.done?"Completata · Demo":"Riaperta · Demo",()=>{t.done=old;render();notify("Azione annullata · Demo")})}return}
  if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
  if(b.dataset.project){projectDetail(b.dataset.project);return}
  if(b.dataset.projectFilter){state.projectFilter=b.dataset.projectFilter;render();return}
@@ -440,7 +470,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if(e.key==="Enter"&&e.target.matches("[data-project]")){projectDetail(e.target.dataset.project)}});
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
-document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields()});
+document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
 document.addEventListener("submit",e=>{
  if(e.target.id==="spoken-form"){
    e.preventDefault();const text=$("#spoken-input").value.trim();if(!text)return;
