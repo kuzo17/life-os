@@ -204,23 +204,32 @@ textarea.field{min-height:100px;resize:vertical}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const titles={today:"Oggi",projects:"Progetti",agenda:"Agenda",fitos:"FitOS",finance:"Finanze",collections:"Collezioni",inbox:"Inbox",review:"Review",more:"Altri strumenti"};
 const projects=[
-{id:"p1",name:"LifeOS 2.0",cat:"Prodotto",desc:"Progettare il nuovo sistema personale.",pct:72,tasks:12,color:"#2363db",glyph:"◈",status:"active"},
-{id:"p2",name:"Content Studio",cat:"Creatività",desc:"Organizzare produzione e distribuzione.",pct:46,tasks:8,color:"#974fca",glyph:"✦",status:"active"},
-{id:"p3",name:"Benessere",cat:"FitOS",desc:"Allenamento, stretching e alimentazione.",pct:82,tasks:5,color:"#008b79",glyph:"♡",status:"active"},
-{id:"p4",name:"Finanze personali",cat:"Finanze",desc:"Patrimonio, risparmio e investimenti.",pct:25,tasks:7,color:"#d78025",glyph:"◉",status:"planning"},
-{id:"p5",name:"Formazione",cat:"Studio",desc:"Apprendimento e nuove competenze.",pct:61,tasks:10,color:"#267cae",glyph:"▤",status:"active"},
-{id:"p6",name:"Viaggi futuri",cat:"Personale",desc:"Idee ed esperienze da pianificare.",pct:17,tasks:4,color:"#d75371",glyph:"✧",status:"planning"}
+{id:"quartzica",name:"Quartzica",cat:"Brand digitale",folder:"Brand digitale",desc:"Contenuti e crescita social.",color:"#15a87e",glyph:"Q",status:"active"},
+{id:"aimade",name:"AI Made Simple",cat:"Brand digitale",folder:"Brand digitale",desc:"Prodotti digitali e contenuti.",color:"#e49b31",glyph:"AI",status:"active"},
+{id:"stosa",name:"Stosa Messina",cat:"Negozio",folder:"Brand digitale",desc:"Social, calendario, contenuti e iniziative.",color:"#2868df",glyph:"S",status:"active"},
+{id:"kdp",name:"KDP · Trova la Calma",cat:"Editoria",folder:"Z & JPC",desc:"Libri, pubblicazioni e promozione.",color:"#d84e4e",glyph:"K",status:"active"},
+{id:"nami",name:"Nami Moretti",cat:"Avatar",folder:"Z & JPC",desc:"Produzione e attività digitali.",color:"#8653d9",glyph:"N",status:"planning"},
+{id:"youtube",name:"YouTube Asia",cat:"Video",folder:"Z & JPC",desc:"Produzione e distribuzione video.",color:"#119fb1",glyph:"Y",status:"active"},
+{id:"vinted",name:"Vinted",cat:"Reselling",folder:"Reselling & collezione",desc:"Inventario, inserzioni e vendite.",color:"#e26ea6",glyph:"V",status:"active"},
+{id:"carte",name:"Carte eBay",cat:"Collezione",folder:"Reselling & collezione",desc:"Catalogo carte, vendite e valutazioni.",color:"#ee9543",glyph:"C",status:"active"},
+{id:"risparmio",name:"Risparmio",cat:"Finanze",folder:"Finanza & trading",desc:"Versamenti e crescita del capitale.",color:"#169d87",glyph:"R",status:"active"},
+{id:"crypto",name:"Crypto",cat:"Finanze",folder:"Finanza & trading",desc:"Monitoraggio portafoglio.",color:"#d6a335",glyph:"₿",status:"active"},
+{id:"trading",name:"Trading",cat:"Finanze",folder:"Finanza & trading",desc:"Studio, strategie e simulazioni.",color:"#7075dc",glyph:"T",status:"planning"},
+{id:"allenamento",name:"Allenamento",cat:"FitOS",folder:"Benessere",desc:"Schede, esercizi e progressione.",color:"#d65a5c",glyph:"♡",status:"active"},
+{id:"alimentazione",name:"Alimentazione",cat:"FitOS",folder:"Benessere",desc:"Piani, alimenti, ricette e macro.",color:"#df8e3b",glyph:"A",status:"active"},
+{id:"stretching",name:"Stretching",cat:"FitOS",folder:"Benessere",desc:"Mobilità e routine settimanali.",color:"#9057d5",glyph:"M",status:"active"}
 ];
 let tasks=[
-{id:"t1",title:"Revisionare priorità dei progetti",time:"09:30",project:"LifeOS 2.0",done:true},
-{id:"t2",title:"Allenamento del giorno",time:"11:00",project:"Benessere",done:true},
-{id:"t3",title:"Preparare il prossimo contenuto",time:"16:00",project:"Content Studio",done:false},
-{id:"t4",title:"Controllare le scadenze",time:"17:30",project:"Finanze personali",done:false}
+{id:"t1",title:"Controllare le royalty",projectId:"kdp",priority:"alta",when:"oggi",time:"09:30",done:true},
+{id:"t2",title:"Revisionare il calendario contenuti",projectId:"stosa",priority:"alta",when:"oggi",time:"11:00",done:true},
+{id:"t3",title:"Preparare il prossimo carosello",projectId:"kdp",priority:"media",when:"oggi",time:"16:00",done:false},
+{id:"t4",title:"Controllare la liquidità",projectId:"risparmio",priority:"bassa",when:"oggi",time:"17:30",done:false},
+{id:"t5",title:"Preparare il materiale social",projectId:"stosa",priority:"media",when:"lunedì",time:"",done:false}
 ];
-let scheduledTasks=[];
+// Agenda and project pages read tasks[] directly: no duplicated scheduled-task collection.
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
-let state={financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:3,reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
+let state={projectId:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:3,reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
 let timer=null;let toastTimeout=null;let originFocus=null;
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
