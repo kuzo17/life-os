@@ -247,6 +247,10 @@ body.density-compact .project-catalog .project{min-height:183px}
 @media(max-width:950px){.workspace-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.project-identity h1{font-size:31px}.project-emblem{width:60px;height:60px}}
 @media(max-width:650px){.project-catalog{grid-template-columns:1fr}.project-catalog.list-layout .project{grid-template-columns:105px 1fr}.project-identity{flex-wrap:wrap}.project-identity-actions{margin-left:0;width:100%}.workspace-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-kpis .card:first-child{grid-column:span 2}.project-emblem{height:56px;width:56px}.workspace-tabs{flex-wrap:nowrap;max-width:calc(100vw - 30px);overflow-x:auto;scrollbar-width:thin;padding-bottom:5px}.workspace-tabs .tab{white-space:nowrap}.project-content{grid-template-columns:1fr}.module-surface{padding:19px}.project-catalog .project{min-height:195px}.dashboard-tools .button{flex:1}.density-toggle{display:none}}
 
+
+.preview-fields.project-fields{grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr) minmax(0,1.5fr);align-items:center}
+.preview-fields.project-fields select{border-color:color-mix(in srgb,var(--main) 24%,var(--border))}
+@media(max-width:650px){.preview-fields.project-fields{grid-template-columns:minmax(0,1fr) minmax(0,.7fr)}.preview-fields.project-fields .muted{grid-column:span 2}}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 05 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -534,23 +538,57 @@ function renderFastFields(){
  const key=$("#fast-kind").value;
  $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("");
 }
+
 function interpretSimpleRecap(raw){
  const parts=raw.split(/\n|;|(?<=\.)\s+|\s+e\s+(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica)(?=\W|$))|,\s*(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica|poi|ricordami)(?=\W|$))/i).map(x=>x.trim()).filter(Boolean).slice(0,15);
+ const matches=[
+ ["kdp",/\b(kdp|royalt(?:y|ies)|amazon libri|trova la calma)\b/i],
+ ["stosa",/\b(stosa|negozio|showroom|fornitore|cucine)\b/i],
+ ["vinted",/\b(vinted|reselling abiti)\b/i],
+ ["carte",/\b(carte|pok[eé]mon|ebay)\b/i],
+ ["quartzica",/\b(quartzica)\b/i],
+ ["aimade",/\b(ai made|gumroad)\b/i],
+ ["nami",/\b(nami)\b/i],
+ ["youtube",/\b(youtube)\b/i],
+ ["risparmio",/\b(risparmio|conto risparmio)\b/i],
+ ["crypto",/\b(crypto|bitcoin)\b/i],
+ ["trading",/\b(trading)\b/i],
+ ["allenamento",/\b(allenamento|palestra|scheda pesi)\b/i],
+ ["alimentazione",/\b(alimentazione|macro|ricetta|alimento)\b/i],
+ ["stretching",/\b(stretching|mobilit[aà])\b/i]
+ ];
  return parts.map(text=>{
- const dateMatch=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)(?=\W|$)/i);
- const day=dateMatch?dateMatch[0].toLocaleLowerCase("it"):"Da pianificare";
- let kind="task";
- if(/\b(stretching|allenamento|palestra|mobilità)\b/i.test(text))kind="fitos";
- else if(/\b(rata|scadenza|pagamento)\b/i.test(text))kind="reminder";
- else if(/\b(idea|nota|appunto)\b/i.test(text))kind="note";
- return {text,day,kind};
+   const day=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)(?=\W|$)/i)?.[0].toLocaleLowerCase("it")||"Da pianificare";
+   const explicit=[...matches].filter(([,re])=>re.test(text)).map(([id])=>id);
+   const projectId=explicit.length===1?explicit[0]:"";
+   let priority=/\b(urgente|urgentissima?|priorit[aà]\s*alta|alta priorità)\b/i.test(text)?"alta":/\b(priorit[aà]\s*bassa|bassa priorità|non urgente)\b/i.test(text)?"bassa":"media";
+   let kind="task";
+   if(/\b(idea|nota|appunto)\b/i.test(text))kind="note";
+   else if(/\b(pagare|bonifico|incassare|transazione)\b/i.test(text))kind="reminder";
+   return {text,day,priority,projectId,kind,ambiguous:explicit.length>1};
  });
 }
+
+function projectOptions(selected,required=false){
+ return '<option value="">'+(required?"— Scegli un progetto —":"Nessuna destinazione")+'</option>'+projects.map(p=>'<option value="'+p.id+'" '+(selected===p.id?"selected":"")+'>'+safe(p.name)+'</option>').join("");
+}
 function showRecapPreview(items){
- dialog("Rivedi prima di salvare",
- '<div class="eyebrow">ANTEPRIMA COLLOQUIALE</div><p class="small muted" style="line-height:1.7">Ogni proposta può essere corretta. Le operazioni economiche non vengono eseguite automaticamente partendo da frasi ambigue.</p><div id="spoken-preview" class="preview-rows">'+items.map((item,i)=>
- '<div class="preview-row" data-row="'+i+'"><input class="field" data-row-text="'+i+'" value="'+safe(item.text)+'" aria-label="Modifica frase '+(i+1)+'"><div class="preview-fields"><select data-row-kind="'+i+'" aria-label="Tipo elemento">'+[["task","Task"],["fitos","FitOS"],["reminder","Promemoria"],["note","Nota"]].map(([id,label])=>'<option value="'+id+'" '+(item.kind===id?"selected":"")+'>'+label+'</option>').join("")+'</select><select data-row-day="'+i+'" aria-label="Quando">'+["Da pianificare","oggi","domani","lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"].map(x=>'<option '+(x===item.day?"selected":"")+'>'+x+'</option>').join("")+'</select><button class="button small" type="button" data-ux="remove-recap" data-row="'+i+'" aria-label="Elimina elemento">×</button></div></div>').join("")+
- '</div><div class="modal-actions"><button class="button" data-ux="recap-back" type="button">Indietro</button><button class="button primary" data-ux="recap-confirm" type="button">Conferma '+items.length+' elementi (demo)</button></div><p class="xs muted" style="line-height:1.65;margin:14px 0 0">Solo le Task entrano nel piano Oggi della demo. Gli altri tipi diventano bozze della Inbox.</p>');
+ dialog("Rivedi il recap",
+ '<div class="eyebrow">CONFERMA · PROGETTO + PRIORITÀ + QUANDO</div>'+
+ '<p class="small muted" style="line-height:1.7">Le task devono essere assegnate a un progetto. Se non lo riconosco, scegli tu prima di confermare. Il testo è interpretato con regole demo, non tramite AI.</p>'+
+ '<div id="spoken-preview" class="preview-rows">'+items.map((item,i)=>
+ '<div class="preview-row" data-row="'+i+'">'+
+ '<input class="field" data-row-text="'+i+'" value="'+safe(item.text)+'" aria-label="Testo elemento '+(i+1)+'">'+
+ '<div class="preview-fields">'+
+ '<select data-row-kind="'+i+'" aria-label="Tipo elemento">'+[["task","Task"],["fitos","FitOS"],["reminder","Promemoria"],["note","Nota"]].map(([id,label])=>'<option value="'+id+'" '+(item.kind===id?"selected":"")+'>'+label+'</option>').join("")+'</select>'+
+ '<select data-row-day="'+i+'" aria-label="Quando">'+["Da pianificare","oggi","domani","dopodomani","lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"].map(day=>'<option '+(item.day===day?"selected":"")+'>'+day+'</option>').join("")+'</select>'+
+ '<button class="button small" type="button" data-ux="remove-recap" data-row="'+i+'" aria-label="Escludi elemento">×</button></div>'+
+ '<div class="preview-fields project-fields"><select data-row-project="'+i+'" aria-label="Progetto">'+projectOptions(item.projectId,true)+'</select>'+
+ '<select data-row-priority="'+i+'" aria-label="Priorità">'+["alta","media","bassa"].map(p=>'<option '+(item.priority===p?"selected":"")+'>'+p+'</option>').join("")+'</select>'+
+ '<span class="tiny muted">'+(item.ambiguous?"Più progetti possibili: controlla":"Controlla e conferma")+'</span></div>'+
+ '</div>').join("")+
+ '</div><div class="modal-actions"><button class="button" data-ux="recap-back" type="button">Indietro</button><button class="button primary" data-ux="recap-confirm" type="button">Conferma nella demo</button></div>'+
+ '<p class="xs muted" style="margin-top:13px;line-height:1.7">Le task diventano un unico record e vengono mostrate nel progetto e, secondo la data, in Oggi o Agenda. Nessun dato è salvato su server.</p>');
 }
 function searchDialog(){dialog("Vai dove vuoi",'<input class="field" id="command-q" placeholder="Cerca sezioni, progetti, task e azioni..." aria-label="Cerca"><div id="command-results" style="margin-top:12px"></div><div class="xs muted" style="margin-top:15px">Ctrl / ⌘ + K · Esc per chiudere</div>');$("#command-q").focus();renderSearch()}
 function renderSearch(){const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");root.replaceChildren();const options=[...Object.entries(titles).filter(([k])=>k!=="more").map(([id,n])=>({id:"nav:"+id,title:n,sub:"Sezione"})),...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:"Progetto"})),...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:"Task"})),{id:"quick",title:"Cattura rapido",sub:"Azione"}];let hits=0;for(const v of options){if(!(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q))continue;if(++hits>9)break;const b=document.createElement("button");b.className="search-result";b.dataset.cmd=v.id;const t=document.createElement("span");t.textContent=v.title;const sub=document.createElement("small");sub.textContent=v.sub;b.append(t,sub);root.append(b)}if(!hits){root.textContent="Nessun risultato trovato"}}
@@ -593,15 +631,23 @@ document.addEventListener("click",e=>{
  if(b.dataset.ux==="recap-back"){quick();return}
  if(b.dataset.ux==="remove-recap"){const row=b.closest("[data-row]");if(row)row.remove();return}
  if(b.dataset.ux==="recap-confirm"){
-   const rows=$("#spoken-preview [data-row]");let n=0;
-   for(const el of rows){const text=el.querySelector("[data-row-text]").value.trim();if(!text)continue;
-     const kind=el.querySelector("[data-row-kind]").value,day=el.querySelector("[data-row-day]").value;
-     if(kind==="task"&&day==="oggi")tasks.unshift({id:"recap"+Date.now()+n,title:text,project:"Cattura",time:"",done:false});
-     else if(kind==="task"&&day!=="Da pianificare")scheduledTasks.unshift({id:"future"+Date.now()+n,title:text,day});
-     else inbox.unshift({id:Date.now()+n,text:text+(day==="Da pianificare"?"":" ["+day+"]"),type:kind});
+   const rows=$$("#spoken-preview [data-row]");
+   const parsed=rows.map(el=>({
+     title:el.querySelector("[data-row-text]").value.trim(),
+     kind:el.querySelector("[data-row-kind]").value,
+     when:el.querySelector("[data-row-day]").value,
+     projectId:el.querySelector("[data-row-project]").value,
+     priority:el.querySelector("[data-row-priority]").value
+   })).filter(x=>x.title);
+   const missing=parsed.filter(x=>x.kind==="task"&&!x.projectId);
+   if(missing.length){notify("Seleziona un progetto per ogni task prima di confermare");return}
+   let n=0;
+   for(const el of parsed){
+     if(el.kind==="task")tasks.unshift({id:"recap-"+Date.now()+"-"+n,title:el.title,projectId:el.projectId,priority:el.priority,when:el.when,done:false,time:""});
+     else inbox.unshift({id:Date.now()+n,text:el.title+" · "+(projectName(el.projectId)||"")+" · "+el.when,type:el.kind});
      n++;
    }
-   $("#dlg").close();goto(scheduledTasks.length?"agenda":"today");notify(n+" elementi distribuiti nella demo");return;
+   $("#dlg").close();state.projectId=null;goto(parsed.some(x=>x.kind==="task"&&x.when!=="oggi")?"agenda":"today");notify(n+" elementi inseriti nella demo");return;
  }
 
  if(b.dataset.ux==="finance-tab"){state.financeTab=b.dataset.tab;render();return}
