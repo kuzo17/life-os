@@ -410,8 +410,8 @@ function projectWorkspace(){
    }[state.projectSection]||["Sezione",""];
    body='<div class="module-surface"><div class="eyebrow">STRUTTURA PREVISTA / NON ANCORA IMPLEMENTATA</div><h2>'+content[0]+'</h2><p class="small muted" style="line-height:1.8;margin:14px 0 20px">'+content[1]+'</p><div class="blueprint-rows"><div class="blueprint-row"><span>Elenco completo</span><span>→</span></div><div class="blueprint-row"><span>Filtri e ordinamento</span><span>→</span></div><div class="blueprint-row"><span>Azione contestuale sull’elemento finale</span><span>◫</span></div></div></div>';
  }
- return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Progetti</button><span>›</span><span>'+safe(p.folder)+'</span><span>›</span><b>'+safe(p.name)+'</b></div>'+
- '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-projects-back>← Tutti i progetti</button></div></div>'+
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><button class="crumb-link" data-folder-back>'+safe(p.folder)+'</button><span>›</span><b>'+safe(p.name)+'</b></div>'+
+ '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-folder-back>← Torna alla cartella</button></div></div>'+
  '<div class="workspace-kpis"><div class="card"><div class="stat-label">Avanzamento task nella demo</div><div class="statnum">'+(m.pct===null?"—":m.pct+"%")+'</div><div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div></div>'+
  '<div class="card"><div class="stat-label">Task</div><div class="statnum">'+m.n+'</div><div class="small muted">Singola fonte di verità</div></div>'+
  '<div class="card"><div class="stat-label">Stato</div><div class="statnum" style="font-size:18px;margin:17px 0">'+(p.status==="active"?"Attivo":"Pianificato")+'</div><div class="small muted">Label dimostrativa</div></div></div>'+
@@ -688,6 +688,7 @@ document.addEventListener("click",e=>{
  if(b.dataset.folder){state.folderId=b.dataset.folder;state.projectId=null;render();return}
  if(b.dataset.project){state.projectId=b.dataset.project;state.projectSection="tasks";state.screen="projects";history.replaceState(null,"","#projects");render();window.scrollTo(0,0);return}
  if(b.hasAttribute("data-projects-back")){state.projectId=null;state.folderId=null;render();return}
+ if(b.hasAttribute("data-folder-back")){const orig=projectById(state.projectId);state.folderId=orig?.folder||state.folderId;state.projectId=null;render();return}
  if(b.dataset.workspaceTab){state.projectSection=b.dataset.workspaceTab;render();return}
  if(b.dataset.taskLeaf){taskLeaf(b.dataset.taskLeaf);return}
  if(b.dataset.addProjectTask){quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();const sel=$("#fast-project");if(sel)sel.value=b.dataset.addProjectTask;return}
