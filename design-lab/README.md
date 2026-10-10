@@ -1,3 +1,16 @@
+# LifeOS — Master Design Direction
+
+**Regola confermata:** nessuna perdita di funzionalità rispetto alla V1. La V2 dovrà essere superiore sia funzionalmente sia nella UX; per adesso si lavora esclusivamente nel laboratorio UI.
+
+- **[Batch 05 — Swiss Bento / Workspace Navigation](batch-05/index.html)** — 14 aree V1 nell'esplorazione progetti, vere pagine workspace con tab, pannelli solo sui singoli elementi, due temi, modalità compatta e demo task con progetto/priorità/data.
+- **[Master Concept Register](master-concept-register.md)** — unico archivio delle idee UX/feature attuali e future con decisioni, priorità e gate non regressivi.
+- [Batch 05 — cosa è demo e cosa è ancora da realizzare](batch-05/README.md).
+- [Matrice non regressione V1 → V2](non-regression-matrix.md) e [audit FitOS Focus](fitos-focus-parity-audit.md).
+
+**Ricorda:** le Batch sono prototipi statici con dati inventati; parità funzionale e migrazione dei dati saranno verificate nella vera V2, senza toccare `main` durante i test.
+
+---
+
 # Nuova regola: profondità funzionale V1 + UX superiore V2
 
 - **[Apri FitOS Focus Study — allenamento e stretching guidati](focus-study/index.html)**: programma completo, serie × ripetizioni × carichi, recuperi specifici, note tecniche, confronto storico, timer, pausa, skip, Undo, riepilogo.
