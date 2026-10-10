@@ -175,6 +175,78 @@ textarea.field{min-height:100px;resize:vertical}
 [data-widget][hidden]{display:none!important}
 #toast button{border:0;background:#fff;color:#254d9c;border-radius:7px;margin-left:12px;padding:7px 10px;font-size:11px;font-weight:800}
 @media(max-width:600px){.dashboard-tools>div{width:100%}.dashboard-tools .button{flex:1}}
+
+/* BATCH 05 / SWISS SYSTEM • PRISM BENTO • NAVIGATION DEPTH */
+body{--ring:color-mix(in srgb,var(--main) 35%,transparent)}
+body[data-theme="dark"]{--bg:#080f1a;--aside:#0b1421;--panel:#111d2d;--panel2:#18283a;--border:#293b4c;--text:#f2f7fa;--muted:#9db1c3;--main:#40dfd0;--hero:#112f43;--shadow:0 12px 25px #02091328}
+body[data-theme="light"]{--bg:#f2f5f2;--aside:#fff;--panel:#fff;--panel2:#eef3f1;--border:#d7e2de;--text:#152c32;--muted:#536e70;--main:#066c67;--hero:#c0f0dd;--shadow:0 10px 22px #253c3113}
+body[data-theme="light"] .project{--color:#245be2}
+body[data-theme="light"] .hero{background:linear-gradient(121deg,#b3ebd4 0%,#a2dada 58%,#81abf5 100%);color:#082e33}
+body[data-theme="light"] .hero .hero-label{color:#06575a}
+body[data-theme="light"] .hero .button.primary{background:#135d62;border-color:#135d62;color:white}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+1) .project-art{background:#215be9!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+2) .project-art{background:#097f74!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+3) .project-art{background:#db5c40!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+4) .project-art{background:#7942d2!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+5) .project-art{background:#dd9321!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+6) .project-art{background:#185d91!important}
+body[data-theme="light"] .accent-block{background:#2459e8}
+body[data-theme="dark"] .accent-block{background:linear-gradient(136deg,#1b5f78,#40477a)}
+body[data-theme="dark"] .project-catalog .project{box-shadow:0 2px 0 #6ac9ed16 inset}
+body[data-theme="dark"] .hero{background:radial-gradient(circle at 92% -20%,#4174a85e,transparent 56%),linear-gradient(135deg,#112a3d,#142443)}
+body[data-theme="dark"] .card:has(.big-number){background:#13273a}
+body[data-theme="dark"] .nav.active{border:1px solid #42cbcf48}
+body[data-theme="light"] .nav.active{color:#07665c}
+body[data-theme="light"] .stat-badge{background:#eef4ff}
+.project-catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:17px}
+.project-catalog.list-layout{grid-template-columns:1fr}
+.project-catalog.list-layout .project{display:grid;grid-template-columns:190px 1fr;min-height:130px}
+.project-catalog.list-layout .project .project-art{height:auto}
+.project-catalog.list-layout .project .project-core{padding:18px 20px}
+.project-catalog .project{min-height:233px}
+.project-catalog .project h3{font-size:15px;letter-spacing:-.4px}
+.project-catalog .project .project-glyph{font-size:29px;font-weight:800}
+.project-catalog .project .project-art{height:88px}
+.project-catalog .project:first-child .project-art{background:linear-gradient(120deg,#045960,#3784cb)}
+.project-catalog:not(.list-layout) .project:nth-child(7n+3){grid-column:span 1}
+.workspace-breadcrumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:24px}
+.crumb-link{background:none;border:0;color:var(--main);padding:0;font-weight:800;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--main) 30%,transparent)}
+.project-identity{display:flex;align-items:center;gap:19px;margin-bottom:22px}
+.project-identity h1{margin:4px 0 6px}
+.project-emblem{width:75px;height:75px;border-radius:18px;display:grid;place-items:center;font-size:28px;font-weight:800;color:white;flex-shrink:0}
+.project-identity-actions{margin-left:auto;align-self:start}
+.workspace-kpis{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:12px}
+.workspace-kpis .card{padding:18px}
+.workspace-tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:24px 0}
+.workspace-tabs .tab{border-radius:11px;padding:11px 17px}
+.project-content{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.65fr);gap:18px}
+.work-stat{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:11px 0;font-size:12px}
+.work-stat:last-child{border-bottom:0}
+.module-surface{border:1px dashed var(--border);background:var(--panel);padding:29px;min-height:275px;border-radius:18px}
+.module-surface h2{font-size:25px;margin:4px 0 0}
+.blueprint-rows{max-width:550px}
+.blueprint-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+.text-action{text-align:left;border:none;background:transparent;color:var(--text);font:inherit;padding:0;display:block;min-width:0;max-width:100%}
+.text-action:hover{color:var(--main)}
+.project-catalog .project:focus-visible{outline-offset:3px}
+.priority-selector{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.priority-selector button{border:1px solid var(--border);border-radius:10px;background:var(--panel2);padding:10px;font-size:11px;color:var(--text)}
+.priority-selector button.selected{border-color:var(--main);color:var(--main)}
+.dashboard-tools{border-radius:13px;border:1px solid var(--border);padding:12px 16px;background:var(--panel)}
+.grid .card{min-height:0}
+body.density-compact .card{padding:15px}
+body.density-compact .list-item{padding:9px 0;min-height:36px}
+body.density-compact .workspace{padding-top:18px}
+body.density-compact .section-head{margin-top:18px}
+body.density-compact .project-catalog .project-core{padding:12px}
+body.density-compact .project-catalog .project-art{height:65px}
+body.density-compact .project-catalog .project{min-height:183px}
+.mode-toggle{border:1px solid var(--border);background:var(--panel2);color:var(--muted);border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}
+.mode-toggle.active{color:var(--main);border-color:var(--main)}
+@media(max-width:1220px){.project-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.project-content{grid-template-columns:1fr}}
+@media(max-width:950px){.workspace-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.project-identity h1{font-size:31px}.project-emblem{width:60px;height:60px}}
+@media(max-width:650px){.project-catalog{grid-template-columns:1fr}.project-catalog.list-layout .project{grid-template-columns:105px 1fr}.project-identity{flex-wrap:wrap}.project-identity-actions{margin-left:0;width:100%}.workspace-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-kpis .card:first-child{grid-column:span 2}.project-emblem{height:56px;width:56px}.workspace-tabs{flex-wrap:nowrap;max-width:calc(100vw - 30px);overflow-x:auto;scrollbar-width:thin;padding-bottom:5px}.workspace-tabs .tab{white-space:nowrap}.project-content{grid-template-columns:1fr}.module-surface{padding:19px}.project-catalog .project{min-height:195px}.dashboard-tools .button{flex:1}.density-toggle{display:none}}
+
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 05 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -193,7 +265,7 @@ textarea.field{min-height:100px;resize:vertical}
 <div class="sidefoot"><b style="color:var(--text)">Design Lab · UX Study</b><div>Solo dati inventati, senza Firebase.<br>Obiettivo: meno click, più chiarezza.</div></div>
 </aside>
 <main class="workspace">
-<div class="topbar"><div class="crumb">LifeOS / <b id="crumb-current">Oggi</b> <span class="pill">DEMO</span></div><div class="topright"><button class="button search-trigger" id="open-search" aria-label="Apri ricerca globale">⌕ Cerca <span class="faint xs"> Ctrl K</span></button><button class="button primary quick-top" id="open-quick">+ Cattura</button></div></div>
+<div class="topbar"><div class="crumb">LifeOS / <b id="crumb-current">Oggi</b> <span class="pill">DEMO</span></div><div class="topright"><button class="mode-toggle density-toggle" id="density-toggle" aria-pressed="false" title="Densità visiva">▤ Compatta</button><button class="button search-trigger" id="open-search" aria-label="Apri ricerca globale">⌕ Cerca <span class="faint xs"> Ctrl K</span></button><button class="button primary quick-top" id="open-quick">+ Cattura</button></div></div>
 <div id="view" aria-live="polite"></div>
 <div style="margin:30px 0 10px;color:var(--faint);font-size:11px;line-height:1.7">LifeOS Experience Lab — concept UX. Nessuna funzionalità operativa e nessun dato vero. I contenuti sono simulati e si azzerano ricaricando.</div>
 </main></div>
