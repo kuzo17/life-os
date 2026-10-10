@@ -143,6 +143,24 @@ textarea.field{min-height:100px;resize:vertical}
 @media(max-width:950px){.sidebar{width:74px;padding:19px 10px}.sidebar .nav-label,.sidebar .sidefoot,.sidebar .nav-label,.sidebar .nav span:not(.nav-icon),.sidebar .brand .brand-name,.sidebar .count{display:none}.sidebar .brand{justify-content:center;padding:2px 0 30px}.sidebar .nav{justify-content:center}.span7,.span5,.span8,.span4{grid-column:span 6}.grid.c3{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.lab{height:auto;min-height:54px;padding:9px 11px;gap:8px}.lab-tag{display:none}.lab-name{font-size:10px}.lab-actions{gap:4px}.mode{font-size:10px;padding:8px}.sidebar{display:none}.workspace{padding:20px 15px 105px}.topbar{margin-bottom:24px}.topright .search-trigger{font-size:0}.topright .search-trigger:before{content:"⌕";font-size:17px}.topright .button{padding:9px}.headline{align-items:start;flex-wrap:wrap;margin-bottom:20px}.title-action{width:100%}.c12{grid-template-columns:repeat(2,minmax(0,1fr))}.span7,.span5,.span4,.span6,.span8,.span12{grid-column:span 2}.grid.c2,.grid.c3{grid-template-columns:1fr}.hero{padding:22px;min-height:196px}.fin-hero{grid-column:span 2}.fin-metrics{grid-column:span 2;grid-template-columns:repeat(2,minmax(0,1fr))}.statnum{font-size:24px}.card{padding:17px}.date-strip{gap:4px}.day{padding:12px 2px;border-radius:9px}.day b{font-size:17px}.mobile-bar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;background:var(--aside);border-top:1px solid var(--border);z-index:60;padding:8px 5px max(12px,env(safe-area-inset-bottom))}.mobile-bar button{border:0;background:none;color:var(--muted);display:grid;gap:5px;justify-items:center;font-size:10px;font-weight:700;padding:5px 7px}.mobile-bar button.active{color:var(--main)}.mobile-bar .nav-icon{font-size:19px}.mobile-bar .mobile-plus{background:var(--main);color:var(--mainInk);border-radius:14px;width:46px;height:46px;display:grid;place-items:center;font-size:24px;box-shadow:0 8px 22px color-mix(in srgb,var(--main) 25%,transparent)}.lab-name span:last-child{display:none}.topright .quick-top{display:none}}
 @media(prefers-reduced-motion:reduce){*,*:after,*:before{transition:none!important;animation:none!important}}
+
+/* Batch04 / Finance intelligence prototype */
+.finance-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.sources{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.source-card{display:flex;flex-direction:column;gap:10px;text-align:left;color:var(--text);min-height:195px;border-radius:15px;cursor:pointer}
+.source-card:hover{border-color:var(--main);transform:translateY(-2px)}
+.source-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.source-logo{display:grid;place-items:center;height:40px;width:40px;border-radius:12px;background:var(--source);color:#fff;font-weight:900;font-size:12px}
+.source-card .statnum{margin:12px 0 4px;font-size:25px}
+.source-bottom{display:flex;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid var(--border);margin-top:auto;padding-top:12px;font-size:10px;color:var(--muted)}
+.finance-note{border-left:3px solid var(--main);background:var(--panel2);padding:15px 17px;border-radius:0 13px 13px 0;color:var(--muted);font-size:11.5px;line-height:1.7}
+.modal.sheet{position:fixed;left:auto;right:0;top:0;bottom:0;margin:0;width:min(510px,100%);height:100dvh;max-height:none;border-radius:20px 0 0 20px}
+.modal.sheet .modal-inner{padding:28px}
+.stat-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding:14px 0;font-size:12px}
+.stat-row:last-child{border-bottom:0}
+@media(max-width:1200px){.sources{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sources{gap:9px}.source-card{padding:13px;min-height:172px}.source-card .statnum{font-size:21px}.modal.sheet{border-radius:0}}
+
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 04 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -187,7 +205,7 @@ let tasks=[
 ];
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
-let state={screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:3,reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
+let state={financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:3,reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
 let timer=null;let toastTimeout=null;let originFocus=null;
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
@@ -245,13 +263,50 @@ else body='<div class="grid c2"><div class="card"><h2>Storico peso</h2><div clas
 return headline("FitOS","Allenati, mangia bene e osserva i progressi senza cambiare continuamente contesto.","SALUTE & PERFORMANCE")+'<div class="screen-tabs">'+tabs.map(([key,label])=>'<button class="tab '+(state.fitosTab===key?"active":"")+'" data-fitos="'+key+'">'+label+'</button>').join("")+'</div>'+body;
 }
 function financeRows(){return tx.map(t=>'<div class="list-item"><span class="chip '+(t.type==="in"?"cyan":"coral")+'">'+(t.type==="in"?"↗":"↘")+'</span><div class="body">'+safe(t.name)+'<div class="sub">'+safe(t.date)+'</div></div><b style="color:var('+(t.type==="in"?"--good":"--coral")+')">'+(t.type==="in"?"+":"−")+" "+eur(t.amount)+'</b></div>').join("")}
-function viewFinance(){return headline("Finanze","Controllo completo senza doppi conteggi o passaggi inutili.","PATRIMONIO & FLUSSI",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>')+
+function viewFinanceBase(){return headline("Finanze","Controllo completo senza doppi conteggi o passaggi inutili.","PATRIMONIO & FLUSSI",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>')+
 '<div class="grid c12"><div class="card fin-hero colored-fin"><div class="eyebrow" style="color:var(--cyan)">PATRIMONIO NETTO · DEMO</div><div class="money">€ 24.680</div><div class="small muted">↗ + € 860 negli ultimi 30 giorni · Solo illustrazione</div><svg class="chart" viewBox="0 0 740 160" preserveAspectRatio="none" role="img" aria-label="Grafico patrimonio simulato"><defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4adad2" stop-opacity=".25"/><stop offset="1" stop-color="#4adad2" stop-opacity="0"/></linearGradient></defs><line class="chart-grid" x1="0" y1="148" x2="740" y2="148"/><path class="chart-fill" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17 L740 160 L0 160Z"/><path class="chart-line" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17"/></svg></div>'+
 '<div class="fin-metrics">'+miniStat("Entrate mese","€ 3.420","Esempio","cyan","↗")+miniStat("Uscite mese","€ 1.180","Esempio","coral","↘")+miniStat("Asset","6","Categorie","blue","◈")+miniStat("Scadenze","3","Previste","violet","◷")+'</div>'+
 '<div class="span6">'+sectionHead("Asset","Apri un asset nel prodotto definitivo")+'<div class="card"><div class="account" style="--shade:var(--cyan)"><span class="account-icon">€</span><div><h3>Liquidità</h3><span class="xs muted">Conti</span></div><b class="money-value">€ 12.640</b></div><div class="account" style="--shade:var(--blue)"><span class="account-icon">◈</span><div><h3>Investimenti</h3><span class="xs muted">Valore stimato</span></div><b class="money-value">€ 7.830</b></div><div class="account" style="--shade:var(--violet)"><span class="account-icon">◇</span><div><h3>Collezioni</h3><span class="xs muted">Valore stimato</span></div><b class="money-value">€ 4.210</b></div></div></div>'+
 '<div class="span6">'+sectionHead("Movimenti","Registrazione disponibile come demo")+'<div class="card" id="tx-list">'+financeRows()+'</div></div>'+
 '<div class="span12 hint-box"><b>Flusso V2 proposto:</b> registrare un movimento richiederà l’asset, l’importo e una conferma dell’effetto. Pagare una spesa pianificata dovrà creare la transazione e aggiornarne lo stato senza duplicazioni. Questa demo non modifica alcun saldo reale.</div></div>';
 }
+
+const incomeSources=[
+ {id:"kdp",name:"Amazon KDP",symbol:"KDP",color:"#e69b39",earned:850,paid:620,pending:230,stock:0,note:"Royalties maturate, pagamenti ricevuti e importi da incassare sono tre valori diversi."},
+ {id:"vinted",name:"Vinted",symbol:"V",color:"#0f9f90",earned:310,paid:240,pending:70,stock:740,note:"Inventario, ricavo della vendita e profitto devono essere registrati separatamente."},
+ {id:"cards",name:"Carte",symbol:"◇",color:"#6868dd",earned:1150,paid:1030,pending:120,stock:4210,note:"Il valore delle carte ancora possedute non è denaro incassato. Vanno considerati anche i costi."},
+ {id:"shop",name:"Negozio",symbol:"N",color:"#d96345",earned:1800,paid:1800,pending:0,stock:0,mode:"fixed",note:"Entrata configurata come fissa nella demo, convertibile in variabile senza modificare la storia."}
+];
+function sourceCards(){
+ return '<div class="sources">'+incomeSources.map(x=>'<button class="card source-card" style="--source:'+x.color+'" data-ux="source-detail" data-source="'+x.id+'"><div class="source-top"><span class="source-logo">'+x.symbol+'</span><span class="pill">'+(x.id==="shop"?(x.mode==="fixed"?"Fissa":"Variabile"):"Fonte reddito")+'</span></div><div><h3>'+safe(x.name)+'</h3><div class="statnum">'+eur(x.earned)+'</div><div class="xs muted">Ricavi maturati · Demo</div></div><div class="source-bottom"><span>Incassati '+eur(x.paid)+'</span><span>Dettagli ↗</span></div></button>').join("")+'</div>';
+}
+function financeTabMenu(){
+ const options=[["overview","Riepilogo"],["income","Fonti di reddito"],["assets","Asset"],["scheduled","Scadenze"]];
+ return '<div class="finance-tabs">'+options.map(([id,label])=>'<button class="tab '+(state.financeTab===id?"active":"")+'" data-ux="finance-tab" data-tab="'+id+'">'+label+'</button>').join("")+'</div>';
+}
+function viewFinance(){
+ const header=headline("Finanze","Patrimonio, redditi, incassi e spese: tutto collegato, senza confondere i valori.","ECONOMIA PERSONALE",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>');
+ let content="";
+ if(state.financeTab==="overview"){
+   const legacy=viewFinanceBase(),pos=legacy.indexOf('<div class="grid c12">');
+   content=legacy.slice(pos);
+   content+=sectionHead("Attività economiche","Seleziona una fonte per vedere gli importi distinti")+sourceCards();
+   content+='<div class="finance-note" style="margin-top:19px"><b>Distinzione importante:</b> una royalty maturata KDP non è necessariamente liquidità disponibile. Vendere una carta sposta valore dall’inventario verso gli incassi: non significa che il prezzo di vendita sia tutto profitto.</div>';
+ }else if(state.financeTab==="income"){
+   content='<p class="small muted" style="line-height:1.7">KDP, Vinted, Carte e Negozio sono <b>fonti economiche</b>, non automaticamente conti o asset. Le cifre sono puramente dimostrative.</p>'+sourceCards();
+   content+=sectionHead("Flussi del periodo","Tutti i valori sono simulati")+
+   '<div class="grid c3">'+miniStat("Ricavi maturati","€ 4.110","Non tutti sono versati","cyan","↗")+miniStat("Già incassati","€ 3.690","Accreditati/versati","blue","✓")+miniStat("Da incassare","€ 420","Non sono saldo conto","violet","◷")+'</div>';
+   content+='<div class="finance-note" style="margin-top:18px">Negozio: la previsione può essere fissa inizialmente e diventare variabile senza sovrascrivere le vecchie registrazioni. La previsione futura non è un incasso.</div>';
+ }else if(state.financeTab==="assets"){
+   content=sectionHead("Asset patrimoniali","Ciò che possiedi, distinto dalle fonti di reddito")+
+   '<div class="grid c2"><div class="card"><div class="account" style="--shade:var(--cyan)"><span class="account-icon">€</span><div><h3>Liquidità</h3><span class="xs muted">Conti e contanti</span></div><b class="money-value">€ 12.640</b></div><div class="account" style="--shade:var(--blue)"><span class="account-icon">◈</span><div><h3>Investimenti</h3><span class="xs muted">Valutazioni</span></div><b class="money-value">€ 7.830</b></div><div class="account" style="--shade:var(--violet)"><span class="account-icon">◇</span><div><h3>Carte possedute</h3><span class="xs muted">Inventario stimato</span></div><b class="money-value">€ 4.210</b></div></div><div class="card"><div class="eyebrow">PATRIMONIO NETTO · DEMO</div><div class="money">€ 24.680</div><p class="small muted" style="line-height:1.7">In questa simulazione gli importi ancora da incassare non sono inclusi nel patrimonio. La V2 definirà una politica esplicita per crediti, valutazioni e riconciliazione.</p></div></div>';
+ }else{
+   content=sectionHead("Spese pianificate","Previste, non ancora pagate")+
+   '<div class="grid c2"><div class="card"><div class="list-item"><span class="chip coral">Domani</span><div class="body">Rata prevista<div class="sub">Da associare a un asset al pagamento</div></div><b>€ 85</b></div><div class="list-item"><span class="chip blue">15 ott</span><div class="body">Software<div class="sub">Ricorrente</div></div><b>€ 29</b></div></div><div class="card"><div class="eyebrow">NEGOZIO</div><h2>Entrata attesa</h2><div class="statnum">€ 1.800</div><p class="small muted">Previsione fissa nella demo, non ancora un movimento finanziario.</p><button class="button small" data-ux="source-detail" data-source="shop">Gestisci previsione →</button></div></div>';
+ }
+ return header+financeTabMenu()+content;
+}
+
 function viewCollections(){return headline("Collezioni","Inventario, valutazioni e vendite, senza mischiare le entrate con il patrimonio.","RESELLING & CARTE")+
 '<div class="screen-tabs"><button class="tab '+(state.collectionTab==="cards"?"active":"")+'" data-collection="cards">Carte</button><button class="tab '+(state.collectionTab==="vinted"?"active":"")+'" data-collection="vinted">Vinted</button></div>'+
 '<div class="grid c3">'+miniStat("In inventario",state.collectionTab==="cards"?"32":"18","Esempio","blue","◇")+miniStat("Valore stimato",state.collectionTab==="cards"?"€ 4.210":"€ 740","Esempio","cyan","◈")+miniStat("Venduto",state.collectionTab==="cards"?"6":"9","Esempio","violet","↗")+'</div>'+
@@ -275,12 +330,23 @@ function render(){const el=$("#view");el.innerHTML=views[state.screen]();$("#cru
 function goto(screen){if(!views[screen])return;state.screen=screen;history.replaceState(null,"","#"+screen);render();window.scrollTo(0,0)}
 function setTheme(theme){if(!["dark","light"].includes(theme))return;state.theme=theme;document.body.dataset.theme=theme;$$("[data-theme]").forEach(b=>{const yes=b.dataset.theme===theme;b.classList.toggle("on",yes);b.setAttribute("aria-pressed",String(yes))})}
 function notify(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},2700)}
-function dialog(title,body){$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;$("#dlg").showModal()}
+function dialog(title,body){$("#dlg").classList.remove("sheet");$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;$("#dlg").showModal()}
 function quick(){dialog("Cattura rapidamente",'<form id="quick-form"><label class="field-label" for="quick-value">Cosa vuoi catturare?</label><input class="field" id="quick-value" placeholder="Una task, una nota o una scadenza" required maxlength="180"><label class="field-label" for="quick-kind">Come vuoi gestirla?</label><select class="field" id="quick-kind"><option value="inbox">Aggiungi alla Inbox</option><option value="task">Crea task per oggi</option></select><div class="modal-actions"><button type="button" class="button ghost" data-close>Annulla</button><button type="submit" class="button primary">Aggiungi (demo)</button></div><p class="xs muted" style="margin:15px 0 0">Il salvataggio è solo temporaneo nella pagina. Nessun dato viene inviato.</p></form>');$("#quick-value").focus()}
 function searchDialog(){dialog("Vai dove vuoi",'<input class="field" id="command-q" placeholder="Cerca sezioni, progetti, task e azioni..." aria-label="Cerca"><div id="command-results" style="margin-top:12px"></div><div class="xs muted" style="margin-top:15px">Ctrl / ⌘ + K · Esc per chiudere</div>');$("#command-q").focus();renderSearch()}
 function renderSearch(){const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");root.replaceChildren();const options=[...Object.entries(titles).filter(([k])=>k!=="more").map(([id,n])=>({id:"nav:"+id,title:n,sub:"Sezione"})),...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:"Progetto"})),...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:"Task"})),{id:"quick",title:"Cattura rapido",sub:"Azione"}];let hits=0;for(const v of options){if(!(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q))continue;if(++hits>9)break;const b=document.createElement("button");b.className="search-result";b.dataset.cmd=v.id;const t=document.createElement("span");t.textContent=v.title;const sub=document.createElement("small");sub.textContent=v.sub;b.append(t,sub);root.append(b)}if(!hits){root.textContent="Nessun risultato trovato"}}
 function projectDetail(id){const p=projects.find(x=>x.id===id);if(!p)return;dialog(safe(p.name),'<p class="small muted" style="line-height:1.7">'+safe(p.desc)+'</p><div class="grid c2"><div class="card"><span class="xs muted">Avanzamento</span><div class="statnum">'+p.pct+'%</div></div><div class="card"><span class="xs muted">Task collegate</span><div class="statnum">'+p.tasks+'</div></div></div><div class="screen-tabs" style="margin-top:22px"><button class="tab active" data-detail-tab="tasks">Task</button><button class="tab" data-detail-tab="goals">Obiettivi</button><button class="tab" data-detail-tab="recur">Ricorrenti</button><button class="tab" data-detail-tab="spese">Spese</button><button class="tab" data-detail-tab="notes">Note</button></div><div id="project-detail-content" class="hint-box">Task e priorità del progetto, nello stesso pannello di dettaglio.</div><p class="xs muted" style="margin-top:18px">Questa è una prova di navigazione contestuale. Non sono dati reali del progetto.</p>')}
 function txNew(){dialog("Registra movimento",'<form id="tx-form"><label class="field-label" for="tx-name">Descrizione</label><input id="tx-name" class="field" placeholder="Es. Acquisto materiale" required maxlength="100"><label class="field-label" for="tx-amount">Importo (€)</label><input id="tx-amount" class="field" type="number" min="0.01" step="0.01" required placeholder="25,00"><label class="field-label" for="tx-type">Direzione</label><select id="tx-type" class="field"><option value="out">Uscita</option><option value="in">Entrata</option></select><label class="field-label" for="tx-asset">Asset</label><select id="tx-asset" class="field"><option>Conto principale (demo)</option><option>Contanti (demo)</option></select><div class="hint-box" style="margin-top:18px">La V2 vera dovrà mostrare una conferma esplicita dell’effetto su saldo e storico. Questa demo non aggiorna il patrimonio.</div><div class="modal-actions"><button class="button ghost" type="button" data-close>Chiudi</button><button class="button primary" type="submit">Anteprima operazione</button></div></form>')}
+
+function openSourceSheet(id){
+ const x=incomeSources.find(s=>s.id===id);if(!x)return;
+ dialog(safe(x.name),
+ '<div class="eyebrow">FONTE DI REDDITO · DEMO</div><div class="card" style="margin-bottom:16px"><div class="stat-label">Ricavi maturati</div><div class="statnum">'+eur(x.earned)+'</div><div class="stat-row"><span class="muted">Incassati</span><b>'+eur(x.paid)+'</b></div><div class="stat-row"><span class="muted">Da incassare</span><b>'+eur(x.pending)+'</b></div></div>'+
+ (x.stock?'<div class="stat-row"><span class="muted">Valore inventario posseduto</span><b>'+eur(x.stock)+'</b></div>':'')+
+ '<p class="small muted" style="line-height:1.8;margin-top:20px">'+safe(x.note)+'</p>'+
+ (x.id==="shop"?'<div class="card" style="margin-top:14px"><div class="eyebrow">ENTRATA ATTESA</div><h2>Modalità '+(x.mode==="fixed"?"fissa":"variabile")+'</h2><p class="small muted" style="margin:13px 0">Impostazione dimostrativa, senza modificare movimenti già registrati.</p><button class="button" data-ux="toggle-shop">Passa a '+(x.mode==="fixed"?"variabile":"fissa")+'</button></div>':'')+
+ '<div class="finance-note" style="margin-top:18px">L’inventario non è un incasso; il ricavo maturato non è automaticamente denaro disponibile. Nessun dato reale viene consultato.</div>');
+ $("#dlg").classList.add("sheet");
+}
 function focusDialog(){dialog("Focus Mode · Demo",'<div style="text-align:center"><div class="eyebrow">SESSIONE NON PERSISTITA</div><div class="money" id="focus-display">25:00</div><div class="small muted">Il timer è una simulazione locale.</div></div><div class="modal-actions" style="justify-content:center"><button class="button primary" data-focus="toggle" id="focus-toggle">▶ Avvia</button><button class="button" data-focus="reset">↺ Ripristina</button></div>');updateFocus()}
 function updateFocus(){const remaining=Math.max(0,1500-state.focus);const el=$("#focus-display");if(el)el.textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0");const b=$("#focus-toggle");if(b)b.textContent=state.focusRunning?"Ⅱ Pausa":"▶ Avvia"}
 function stopTimer(){state.focusRunning=false;if(timer){clearInterval(timer);timer=null}updateFocus()}
@@ -288,6 +354,9 @@ function parseRoute(){let target=location.hash.slice(1);if(!views[target])target
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.ux==="finance-tab"){state.financeTab=b.dataset.tab;render();return}
+ if(b.dataset.ux==="source-detail"){openSourceSheet(b.dataset.source);return}
+ if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
  if(b.dataset.nav){goto(b.dataset.nav);return}
  if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){t.done=!t.done;render();notify(t.done?"Completata · Demo":"Riaperta · Demo")}return}
  if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
