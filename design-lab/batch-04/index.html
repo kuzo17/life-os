@@ -161,6 +161,14 @@ textarea.field{min-height:100px;resize:vertical}
 @media(max-width:1200px){.sources{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sources{gap:9px}.source-card{padding:13px;min-height:172px}.source-card .statnum{font-size:21px}.modal.sheet{border-radius:0}}
 
+
+.quick-modes{display:flex;gap:8px;margin:3px 0 20px}.quick-modes button{flex:1}
+.capture-hint{border:1px dashed var(--border);border-radius:12px;background:var(--panel2);padding:13px 14px;margin-top:13px;color:var(--muted);font-size:11px;line-height:1.7}
+.preview-rows{display:flex;flex-direction:column;gap:12px;max-height:325px;overflow:auto;margin:17px 0}
+.preview-row{display:grid;gap:9px;border:1px solid var(--border);padding:12px;background:var(--panel2);border-radius:12px}
+.preview-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
+.preview-fields select{min-width:0;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 6px;font-size:11px}
+textarea.field{min-height:100px;resize:vertical}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 04 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -331,7 +339,50 @@ function goto(screen){if(!views[screen])return;state.screen=screen;history.repla
 function setTheme(theme){if(!["dark","light"].includes(theme))return;state.theme=theme;document.body.dataset.theme=theme;$$("[data-theme]").forEach(b=>{const yes=b.dataset.theme===theme;b.classList.toggle("on",yes);b.setAttribute("aria-pressed",String(yes))})}
 function notify(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},2700)}
 function dialog(title,body){$("#dlg").classList.remove("sheet");$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;$("#dlg").showModal()}
-function quick(){dialog("Cattura rapidamente",'<form id="quick-form"><label class="field-label" for="quick-value">Cosa vuoi catturare?</label><input class="field" id="quick-value" placeholder="Una task, una nota o una scadenza" required maxlength="180"><label class="field-label" for="quick-kind">Come vuoi gestirla?</label><select class="field" id="quick-kind"><option value="inbox">Aggiungi alla Inbox</option><option value="task">Crea task per oggi</option></select><div class="modal-actions"><button type="button" class="button ghost" data-close>Annulla</button><button type="submit" class="button primary">Aggiungi (demo)</button></div><p class="xs muted" style="margin:15px 0 0">Il salvataggio è solo temporaneo nella pagina. Nessun dato viene inviato.</p></form>');$("#quick-value").focus()}
+
+function quick(){
+ dialog("Aggiungi qualsiasi cosa",
+ '<div class="quick-modes"><button class="tab active" data-ux="quick-mode" data-mode="natural">✧ Linguaggio naturale</button><button class="tab" data-ux="quick-mode" data-mode="fast">＋ Quick Add</button></div>'+
+ '<div id="quick-natural"><form id="spoken-form"><label class="field-label" for="spoken-input">Scrivi un recap come lo diresti a voce</label><textarea class="field" id="spoken-input" rows="5" placeholder="Domani controllare le royalty KDP; lunedì chiamare il fornitore; venerdì rivedere la rata..." required></textarea><div class="capture-hint">Niente YAML. Puoi scrivere più frasi in un unico messaggio. Questa demo riconosce alcune date ed espressioni semplici, non utilizza ancora un modello linguistico.</div><div class="modal-actions"><button type="submit" class="button primary">Analizza e controlla →</button></div></form></div>'+
+ '<div id="quick-fast" hidden><form id="fast-form"><label class="field-label" for="fast-kind">Categoria</label><select class="field" id="fast-kind">'+[["task","Task"],["food","Alimento"],["exercise","Esercizio allenamento"],["stretch","Stretching"],["recipe","Ricetta"],["habit","Abitudine"],["weight","Peso"],["movement","Movimento finanziario"],["expense","Spesa pianificata"],["card","Carta"],["vinted","Articolo Vinted"],["note","Nota o idea"]].map(([id,label])=>'<option value="'+id+'">'+label+'</option>').join("")+'</select><div id="fast-fields"></div><div class="modal-actions"><button type="submit" class="button primary">Aggiungi nella demo</button></div><p class="xs muted" style="margin-top:14px;line-height:1.7">Le Task vengono inserite nel piano demo; gli altri tipi diventano bozze nella Inbox. Non sono registrazioni vere dei singoli moduli.</p></form></div>');
+ renderFastFields();
+}
+function renderFastFields(){
+ const specs={
+ task:[["title","Titolo","text"],["extra","Progetto (facoltativo)","text"],["date","Quando","text"]],
+ food:[["title","Nome alimento","text"],["amount","Calorie / 100 g","number"],["extra","Proteine / 100 g","number"]],
+ exercise:[["title","Nome esercizio","text"],["amount","Serie","number"],["extra","Ripetizioni","number"]],
+ stretch:[["title","Nome esercizio","text"],["amount","Durata minuti","number"]],
+ recipe:[["title","Nome ricetta","text"],["extra","Categoria","text"]],
+ habit:[["title","Nome abitudine","text"],["amount","Target (facoltativo)","number"]],
+ weight:[["title","Peso in kg","number"],["date","Data (facoltativa)","text"]],
+ movement:[["title","Descrizione","text"],["amount","Importo €","number"],["extra","Asset","text"]],
+ expense:[["title","Nome spesa","text"],["amount","Importo €","number"],["date","Scadenza","text"]],
+ card:[["title","Carta","text"],["extra","Serie / set","text"],["amount","Prezzo acquisto €","number"]],
+ vinted:[["title","Articolo","text"],["amount","Prezzo €","number"]],
+ note:[["title","Titolo / idea","text"],["extra","Dettagli","text"]]
+ };
+ const key=$("#fast-kind").value;
+ $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("");
+}
+function interpretSimpleRecap(raw){
+ const parts=raw.split(/\n|;|(?<=\.)\s+|,\s*(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica|poi|ricordami)\b)/i).map(x=>x.trim()).filter(Boolean).slice(0,15);
+ return parts.map(text=>{
+ const dateMatch=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)\b/i);
+ const day=dateMatch?dateMatch[0].toLocaleLowerCase("it"):"Da pianificare";
+ let kind="task";
+ if(/\b(stretching|allenamento|palestra|mobilità)\b/i.test(text))kind="fitos";
+ else if(/\b(rata|scadenza|pagamento)\b/i.test(text))kind="reminder";
+ else if(/\b(idea|nota|appunto)\b/i.test(text))kind="note";
+ return {text,day,kind};
+ });
+}
+function showRecapPreview(items){
+ dialog("Rivedi prima di salvare",
+ '<div class="eyebrow">ANTEPRIMA COLLOQUIALE</div><p class="small muted" style="line-height:1.7">Ogni proposta può essere corretta. Le operazioni economiche non vengono eseguite automaticamente partendo da frasi ambigue.</p><div id="spoken-preview" class="preview-rows">'+items.map((item,i)=>
+ '<div class="preview-row" data-row="'+i+'"><input class="field" data-row-text="'+i+'" value="'+safe(item.text)+'" aria-label="Modifica frase '+(i+1)+'"><div class="preview-fields"><select data-row-kind="'+i+'" aria-label="Tipo elemento">'+[["task","Task"],["fitos","FitOS"],["reminder","Promemoria"],["note","Nota"]].map(([id,label])=>'<option value="'+id+'" '+(item.kind===id?"selected":"")+'>'+label+'</option>').join("")+'</select><select data-row-day="'+i+'" aria-label="Quando">'+["Da pianificare","oggi","domani","lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"].map(x=>'<option '+(x===item.day?"selected":"")+'>'+x+'</option>').join("")+'</select><button class="button small" type="button" data-ux="remove-recap" data-row="'+i+'" aria-label="Elimina elemento">×</button></div></div>').join("")+
+ '</div><div class="modal-actions"><button class="button" data-ux="recap-back" type="button">Indietro</button><button class="button primary" data-ux="recap-confirm" type="button">Conferma '+items.length+' elementi (demo)</button></div><p class="xs muted" style="line-height:1.65;margin:14px 0 0">Solo le Task entrano nel piano Oggi della demo. Gli altri tipi diventano bozze della Inbox.</p>');
+}
 function searchDialog(){dialog("Vai dove vuoi",'<input class="field" id="command-q" placeholder="Cerca sezioni, progetti, task e azioni..." aria-label="Cerca"><div id="command-results" style="margin-top:12px"></div><div class="xs muted" style="margin-top:15px">Ctrl / ⌘ + K · Esc per chiudere</div>');$("#command-q").focus();renderSearch()}
 function renderSearch(){const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");root.replaceChildren();const options=[...Object.entries(titles).filter(([k])=>k!=="more").map(([id,n])=>({id:"nav:"+id,title:n,sub:"Sezione"})),...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:"Progetto"})),...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:"Task"})),{id:"quick",title:"Cattura rapido",sub:"Azione"}];let hits=0;for(const v of options){if(!(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q))continue;if(++hits>9)break;const b=document.createElement("button");b.className="search-result";b.dataset.cmd=v.id;const t=document.createElement("span");t.textContent=v.title;const sub=document.createElement("small");sub.textContent=v.sub;b.append(t,sub);root.append(b)}if(!hits){root.textContent="Nessun risultato trovato"}}
 function projectDetail(id){const p=projects.find(x=>x.id===id);if(!p)return;dialog(safe(p.name),'<p class="small muted" style="line-height:1.7">'+safe(p.desc)+'</p><div class="grid c2"><div class="card"><span class="xs muted">Avanzamento</span><div class="statnum">'+p.pct+'%</div></div><div class="card"><span class="xs muted">Task collegate</span><div class="statnum">'+p.tasks+'</div></div></div><div class="screen-tabs" style="margin-top:22px"><button class="tab active" data-detail-tab="tasks">Task</button><button class="tab" data-detail-tab="goals">Obiettivi</button><button class="tab" data-detail-tab="recur">Ricorrenti</button><button class="tab" data-detail-tab="spese">Spese</button><button class="tab" data-detail-tab="notes">Note</button></div><div id="project-detail-content" class="hint-box">Task e priorità del progetto, nello stesso pannello di dettaglio.</div><p class="xs muted" style="margin-top:18px">Questa è una prova di navigazione contestuale. Non sono dati reali del progetto.</p>')}
@@ -354,6 +405,20 @@ function parseRoute(){let target=location.hash.slice(1);if(!views[target])target
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.ux==="quick-mode"){const natural=b.dataset.mode==="natural";$("#quick-natural").hidden=!natural;$("#quick-fast").hidden=natural;$("[data-ux=quick-mode]").forEach(el=>el.classList.toggle("active",el===b));return}
+ if(b.dataset.ux==="recap-back"){quick();return}
+ if(b.dataset.ux==="remove-recap"){const row=b.closest("[data-row]");if(row)row.remove();return}
+ if(b.dataset.ux==="recap-confirm"){
+   const rows=$("#spoken-preview [data-row]");let n=0;
+   for(const el of rows){const text=el.querySelector("[data-row-text]").value.trim();if(!text)continue;
+     const kind=el.querySelector("[data-row-kind]").value,day=el.querySelector("[data-row-day]").value;
+     if(kind==="task")tasks.unshift({id:"recap"+Date.now()+n,title:text+" ["+day+"]",project:"Cattura",time:"",done:false});
+     else inbox.unshift({id:Date.now()+n,text:text+" ["+day+"]",type:kind});
+     n++;
+   }
+   $("#dlg").close();goto("today");notify(n+" elementi inseriti nella demo");return;
+ }
+
  if(b.dataset.ux==="finance-tab"){state.financeTab=b.dataset.tab;render();return}
  if(b.dataset.ux==="source-detail"){openSourceSheet(b.dataset.source);return}
  if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
@@ -375,7 +440,21 @@ document.addEventListener("click",e=>{
 document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if(e.key==="Enter"&&e.target.matches("[data-project]")){projectDetail(e.target.dataset.project)}});
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
+document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields()});
 document.addEventListener("submit",e=>{
+ if(e.target.id==="spoken-form"){
+   e.preventDefault();const text=$("#spoken-input").value.trim();if(!text)return;
+   const items=interpretSimpleRecap(text);
+   if(items.length)showRecapPreview(items);
+   else notify("Non ho rilevato elementi da aggiungere");
+ }
+ if(e.target.id==="fast-form"){
+   e.preventDefault();const kind=$("#fast-kind").value;
+   const title=$("#fast-title")?.value.trim();if(!title)return;
+   if(kind==="task")tasks.unshift({id:"fast"+Date.now(),title,project:$("#fast-extra")?.value||"Quick Add",time:"",done:false});
+   else inbox.unshift({id:Date.now(),text:kind+": "+title,type:kind});
+   $("#dlg").close();render();notify(kind==="task"?"Task inserita nella demo":"Bozza "+kind+" in Inbox demo");
+ }
  if(e.target.id==="quick-form"){e.preventDefault();const title=$("#quick-value").value.trim(),kind=$("#quick-kind").value;if(!title)return;if(kind==="task"){tasks.unshift({id:"t"+Date.now(),title,time:"",project:"Personale",done:false})}else inbox.unshift({id:Date.now(),text:title,type:"idea"});$("#dlg").close();render();notify((kind==="task"?"Task creata":"Inbox aggiornata")+" · Demo")}
  if(e.target.id==="tx-form"){e.preventDefault();const title=$("#tx-name").value.trim(),amount=Number($("#tx-amount").value),type=$("#tx-type").value;if(!title||!Number.isFinite(amount)||amount<=0)return;$("#dlg").close();dialog("Conferma effetto · Demo",'<p class="small muted" style="line-height:1.8">Questa operazione simulata registrerebbe <b>'+safe(title)+'</b>, '+(type==="in"?"entrata":"uscita")+' di <b>'+eur(amount)+'</b>. Non modifica il patrimonio, gli asset reali o Firebase.</p><div class="modal-actions"><button class="button" data-close>Annulla</button><button class="button primary" id="confirm-demo-tx">Conferma nella demo</button></div>');$("#confirm-demo-tx").addEventListener("click",()=>{tx.unshift({id:Date.now(),name:title,type,amount,date:"Adesso"});$("#dlg").close();render();notify("Movimento aggiunto alla lista demo")})}
 });
