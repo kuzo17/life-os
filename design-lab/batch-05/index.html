@@ -522,7 +522,7 @@ function quick(){
 }
 function renderFastFields(){
  const specs={
- task:[["title","Titolo","text"],["extra","Progetto (facoltativo)","text"],["date","Quando","text"]],
+ task:[["title","Titolo","text"],["date","Quando (oggi, domani, lunedì...)","text"]],
  food:[["title","Nome alimento","text"],["amount","Calorie / 100 g","number"],["extra","Proteine / 100 g","number"]],
  exercise:[["title","Nome esercizio","text"],["amount","Serie","number"],["extra","Ripetizioni","number"]],
  stretch:[["title","Nome esercizio","text"],["amount","Durata minuti","number"]],
@@ -536,7 +536,7 @@ function renderFastFields(){
  note:[["title","Titolo / idea","text"],["extra","Dettagli","text"]]
  };
  const key=$("#fast-kind").value;
- $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("");
+ $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("")+(key==="task"?'<label class="field-label" for="fast-project">Progetto (obbligatorio)</label><select class="field" id="fast-project" required>'+projectOptions("",true)+'</select><label class="field-label" for="fast-priority">Priorità</label><select class="field" id="fast-priority"><option>alta</option><option selected>media</option><option>bassa</option></select>':"");
 }
 
 function interpretSimpleRecap(raw){
@@ -668,12 +668,12 @@ document.addEventListener("click",e=>{
  if(b.dataset.day){state.agendaDay=Number(b.dataset.day);render();notify("Giorno selezionato · Dati demo invariati");return}
  if(b.dataset.cmd){const value=b.dataset.cmd;$("#dlg").close();if(value==="quick")quick();else if(value.startsWith("nav:"))goto(value.slice(4));else if(value.startsWith("p:")){goto("projects");state.projectId=value.slice(2);state.projectSection="tasks";render()}else if(value.startsWith("task:"))goto("today");return}
  if(b.dataset.inboxTriage){const item=inbox.find(x=>x.id===Number(b.dataset.inboxTriage));if(item){dialog("Smista elemento",'<p class="muted small">'+safe(item.text)+'</p><div class="grid c2"><button class="button" data-triage-to="task" data-triage-id="'+item.id+'">→ Task</button><button class="button" data-triage-to="note" data-triage-id="'+item.id+'">→ Nota</button></div><p class="xs muted" style="margin-top:15px">In V2 lo smistamento farà uso dello stesso servizio dei moduli destinatari.</p>')}return}
- if(b.dataset.triageTo){const id=Number(b.dataset.triageId);const item=inbox.find(x=>x.id===id);if(item){if(b.dataset.triageTo==="task")tasks.push({id:"t"+Date.now(),title:item.text,time:"",project:"Inbox",done:false});inbox=inbox.filter(x=>x.id!==id);$("#dlg").close();render();notify("Smistato in "+(b.dataset.triageTo==="task"?"Task":"Note")+" · Demo")}return}
+ if(b.dataset.triageTo){const id=Number(b.dataset.triageId);const item=inbox.find(x=>x.id===id);if(item&&b.dataset.triageTo==="task"){$("#dlg").close();quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();$("#fast-title").value=item.text;state.triageId=id;return}if(item){inbox=inbox.filter(x=>x.id!==id);$("#dlg").close();render();notify("Elemento archiviato nella demo")}return}
  if(b.dataset.focus){if(b.dataset.focus==="reset"){stopTimer();state.focus=0;updateFocus()}else{state.focusRunning?stopTimer():(state.focusRunning=true,timer=setInterval(()=>{state.focus++;updateFocus();if(state.focus>=1500){stopTimer();notify("Focus completato · Demo")}},1000),updateFocus())}return}
  if(b.dataset.detailTab){$$("[data-detail-tab]").forEach(x=>x.classList.toggle("active",x===b));$("#project-detail-content").textContent=({tasks:"Task e priorità",goals:"Obiettivi generali e settimanali",recur:"Regole e completamenti ricorrenti",spese:"Spese collegate al progetto",notes:"Note, link e risorse"})[b.dataset.detailTab]+" del progetto, in un pannello contestuale.";return}
 });
 document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
-document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if(e.key==="Enter"&&e.target.matches("[data-project]")){projectDetail(e.target.dataset.project)}});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-project]")){e.preventDefault();state.projectId=e.target.dataset.project;state.projectSection="tasks";state.screen="projects";render()}});
 $("#density-toggle").addEventListener("click",e=>{const active=document.body.classList.toggle("density-compact");e.currentTarget.setAttribute("aria-pressed",String(active));e.currentTarget.textContent=active?"▤ Comoda":"▤ Compatta"});
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
 document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
@@ -693,9 +693,9 @@ document.addEventListener("submit",e=>{
  if(e.target.id==="fast-form"){
    e.preventDefault();const kind=$("#fast-kind").value;
    const title=$("#fast-title")?.value.trim();if(!title)return;
-   if(kind==="task"){const day=$("#fast-date")?.value.trim().toLowerCase()||"oggi";const obj={id:"fast"+Date.now(),title,project:$("#fast-extra")?.value||"Quick Add",time:"",done:false};if(day==="oggi")tasks.unshift(obj);else scheduledTasks.unshift({...obj,day})}
+   if(kind==="task"){const projectId=$("#fast-project")?.value;if(!projectId){notify("Seleziona prima un progetto");return}const when=$("#fast-date")?.value.trim().toLocaleLowerCase("it")||"oggi";tasks.unshift({id:"fast"+Date.now(),title,projectId,priority:$("#fast-priority")?.value||"media",when,time:"",done:false})}
    else inbox.unshift({id:Date.now(),text:kind+": "+title,type:kind});
-   $("#dlg").close();render();notify(kind==="task"?"Task inserita nella demo":"Bozza "+kind+" in Inbox demo");
+   if(kind==="task"&&state.triageId){inbox=inbox.filter(x=>x.id!==state.triageId);state.triageId=null}$("#dlg").close();render();notify(kind==="task"?"Task inserita nel progetto":"Bozza "+kind+" in Inbox demo");
  }
  if(e.target.id==="quick-form"){e.preventDefault();const title=$("#quick-value").value.trim(),kind=$("#quick-kind").value;if(!title)return;if(kind==="task"){tasks.unshift({id:"t"+Date.now(),title,time:"",project:"Personale",done:false})}else inbox.unshift({id:Date.now(),text:title,type:"idea"});$("#dlg").close();render();notify((kind==="task"?"Task creata":"Inbox aggiornata")+" · Demo")}
  if(e.target.id==="tx-form"){e.preventDefault();const title=$("#tx-name").value.trim(),amount=Number($("#tx-amount").value),type=$("#tx-type").value;if(!title||!Number.isFinite(amount)||amount<=0)return;$("#dlg").close();dialog("Conferma effetto · Demo",'<p class="small muted" style="line-height:1.8">Questa operazione simulata registrerebbe <b>'+safe(title)+'</b>, '+(type==="in"?"entrata":"uscita")+' di <b>'+eur(amount)+'</b>. Non modifica il patrimonio, gli asset reali o Firebase.</p><div class="modal-actions"><button class="button" data-close>Annulla</button><button class="button primary" id="confirm-demo-tx">Conferma nella demo</button></div>');$("#confirm-demo-tx").addEventListener("click",()=>{tx.unshift({id:Date.now(),name:title,type,amount,date:"Adesso"});$("#dlg").close();render();notify("Movimento aggiunto alla lista demo")})}
