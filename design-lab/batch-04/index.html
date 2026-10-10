@@ -365,7 +365,7 @@ function render(){const el=$("#view");el.innerHTML=views[state.screen]();$("#cru
 function goto(screen){if(!views[screen])return;state.screen=screen;history.replaceState(null,"","#"+screen);render();window.scrollTo(0,0)}
 function setTheme(theme){if(!["dark","light"].includes(theme))return;state.theme=theme;document.body.dataset.theme=theme;$$("[data-theme]").forEach(b=>{const yes=b.dataset.theme===theme;b.classList.toggle("on",yes);b.setAttribute("aria-pressed",String(yes))})}
 function notify(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},2700)}
-function dialog(title,body){$("#dlg").classList.remove("sheet");$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;$("#dlg").showModal()}
+function dialog(title,body){$("#dlg").classList.remove("sheet");$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;if(!$("#dlg").open)$("#dlg").showModal()}
 
 function quick(){
  dialog("Aggiungi qualsiasi cosa",
@@ -393,9 +393,9 @@ function renderFastFields(){
  $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("");
 }
 function interpretSimpleRecap(raw){
- const parts=raw.split(/\n|;|(?<=\.)\s+|\s+e\s+(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica)\b)|,\s*(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica|poi|ricordami)\b)/i).map(x=>x.trim()).filter(Boolean).slice(0,15);
+ const parts=raw.split(/\n|;|(?<=\.)\s+|\s+e\s+(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica)(?=\W|$))|,\s*(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica|poi|ricordami)(?=\W|$))/i).map(x=>x.trim()).filter(Boolean).slice(0,15);
  return parts.map(text=>{
- const dateMatch=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)\b/i);
+ const dateMatch=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)(?=\W|$)/i);
  const day=dateMatch?dateMatch[0].toLocaleLowerCase("it"):"Da pianificare";
  let kind="task";
  if(/\b(stretching|allenamento|palestra|mobilità)\b/i.test(text))kind="fitos";
