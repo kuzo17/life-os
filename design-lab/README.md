@@ -1,3 +1,11 @@
+# LifeOS Visual Lab — Iterazioni navigabili
+
+- **[Batch 01: tre prime direzioni](index.html)** — Aurora Dark, Prism Light, Prism Color (confronto iniziale, conservato).
+- **[Batch 02: Swiss + Bento, quattro varianti](batch-02/index.html)** — Aurora Neo-Swiss, Aurora Dynamic (notte), Prism Bold, Prism Bento (giorno), con Quick Add, Command Center, vista lista, dettagli progetto e bento grid.
+- [Specifiche e limiti della Batch 02](batch-02/README.md).
+
+---
+
 # LifeOS Visual Lab — Batch 01
 
 Standalone interactive design exploration. **Not the V1 or the actual V2 app**. No Firebase import, login, authentication, database access, or real user data.
