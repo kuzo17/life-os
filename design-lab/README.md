@@ -1,3 +1,18 @@
+# LifeOS Visual Lab — Iterazioni UX
+
+**Temi di riferimento approvati:** Aurora Neo-Swiss (notte) e Prism Bento (giorno).
+
+- **[Batch 04 — Finance & Smart Capture](batch-04/index.html)**: KDP/Vinted/Carte/Negozio, distinzione asset/fonte di reddito, Quick Add migliorata, cattura colloquiale con anteprima, widget configurabili, side sheets e Undo.
+- **[Decisioni e microfunzioni Batch 04](experience-decisions-04.md)**: finanza, nuova strategia Quick Add, dashboard adattiva e piano dei piccoli miglioramenti.
+- **[Limiti e prove Batch 04](batch-04/README.md)**.
+- [Batch 03 — Experience Lab](batch-03/index.html): scheletro delle otto aree, sistema di navigazione e workflow.
+- [Batch 02 — Swiss & Bento](batch-02/index.html): confronto fra 4 candidati.
+- [Batch 01 — Exploration](index.html): primi concept.
+
+Le batch sono prototipi isolati, **non** il codice definitivo dell'app. Non modificare `main` o `lifeos-v2` e non accedere ai dati Firebase in questo laboratorio.
+
+---
+
 # LifeOS Visual Lab — Indice design
 
 **Direzione scelta per la V2:** Aurora Neo-Swiss per il tema notte + Prism Bento per il tema giorno.
