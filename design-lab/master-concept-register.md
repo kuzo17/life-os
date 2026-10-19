@@ -1,3 +1,20 @@
+## Progresso Visual Lab — Batch 06 (2026-10-19)
+
+**LAB / non implementazione V2:** abbiamo spostato la progettazione di Agenda, FitOS e Finanze da schermate dimostrative statiche a percorsi visuali a più livelli: pagina di navigazione → sottosezione → eventuale pannello finale. Abbiamo preservato i temi Aurora Neo-Swiss/Prism Bento, la home a cartelle e il modello a singola task collegata a progetto/priorità/data nella demo.
+
+**Idee/decisioni ancora da validare prima della V2 reale:**
+- Progettare routing profondo con Back/Forward del browser, breadcrumb e persistenza degli stati filtri.
+- Agenda con vere date ISO, regole ricorrenti, operazioni in massa e spostamenti/duplicazioni legittimi.
+- FitOS con catalogo reale, log serie, storico, recuperi nel background, sessioni interrotte e template separati.
+- Finanze per fonte reddituale con ledger/payout riconciliati e trattamento di inventario, liquidità e profitto senza doppio conteggio.
+- Cartelle con custom, archivio, ordinamento e recupero progetti con override orfani da backup (nessun dato privato nel prototipo).
+- QA visuale su browser, touchscreen, accessibilità e verifiche di contrasto.
+- Lo studio Focus attuale è indipendente dalla scheda del giorno selezionata: collegare la vera sessione alla scheda sarà un requisito V2, non qualcosa già completato.
+
+Vedi [Batch 06](batch-06/README.md) per test statici e limiti. Tutti i concept e le funzionalità V1 già riportati nel registro e nella matrice non regressione restano vincolanti: **nessun downgrade funzionale**.
+
+---
+
 # LifeOS — Master Concept Register / Visual Lab
 
 **Version:** 2026-10-10 · **Owner decision:** design-first phase, functionality preserved as a hard constraint.
