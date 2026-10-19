@@ -1,0 +1,1482 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1421">
+<title>LifeOS Experience Lab — Batch 10</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"DM Sans",system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-width:320px;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+body[data-theme="dark"]{color-scheme:dark;--bg:#0a111e;--aside:#0b1421;--panel:#111d2c;--panel2:#182738;--border:#293b4d;--text:#f3f7fb;--muted:#a2b2c5;--faint:#7d92a9;--main:#39dfce;--mainInk:#06262b;--cyan:#39dfce;--blue:#6e9cff;--violet:#a98aff;--orange:#f9b06f;--coral:#f88c85;--good:#55d5ac;--warn:#ecb46a;--shadow:0 17px 35px #01050d55;--hero:#11293a;--navActive:#163646;--white:#fff}
+body[data-theme="light"]{color-scheme:light;--bg:#f4f6f3;--aside:#fff;--panel:#fff;--panel2:#eef2f0;--border:#dbe3df;--text:#18272c;--muted:#5b7277;--faint:#82979b;--main:#075f64;--mainInk:#fff;--cyan:#059b90;--blue:#2357ed;--violet:#6b3bd8;--orange:#df8a18;--coral:#da593d;--good:#087f68;--warn:#b36a0c;--shadow:0 13px 26px #163b3110;--hero:#e3f4eb;--navActive:#e8f3ed;--white:#fff}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--main);outline-offset:3px}
+button:disabled{opacity:.5;cursor:default}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p{margin-top:0}h1,h2,h3,.huge,.brand{font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+h1{font-size:clamp(29px,3.5vw,47px);letter-spacing:-2px;line-height:1.12;margin:0 0 10px;font-weight:800}
+h2{font-size:18px;letter-spacing:-.6px;margin:0;font-weight:800}h3{font-size:14px;letter-spacing:-.3px;margin:0;font-weight:800}
+.muted{color:var(--muted)}.faint{color:var(--faint)}.small{font-size:12px}.xs{font-size:10.5px}.strong{font-weight:800}.mono{font-variant-numeric:tabular-nums}.eyebrow{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--main);margin:0 0 10px}
+.lab{position:sticky;top:0;z-index:90;background:var(--bg);border-bottom:1px solid var(--border);height:55px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(12px,2.5vw,40px);gap:15px}
+.lab-name{display:flex;align-items:center;gap:10px;font-size:12px;white-space:nowrap;font-weight:800;letter-spacing:.6px}.spectrum{width:12px;height:12px;border-radius:5px;background:linear-gradient(135deg,var(--cyan),var(--blue),var(--violet),var(--coral))}
+.lab-actions{display:flex;gap:8px;align-items:center}.lab-tag{font-size:10px;border:1px solid var(--border);padding:6px 9px;border-radius:8px;color:var(--muted);font-weight:800}
+.mode{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:8px 12px;border-radius:10px;font-size:11px;font-weight:800;white-space:nowrap}
+.mode.on{background:var(--main);color:var(--mainInk);border-color:var(--main)}.mode:hover{border-color:var(--main)}
+.layout{display:flex;min-height:calc(100vh - 55px)}
+.sidebar{width:248px;flex-shrink:0;position:sticky;top:55px;height:calc(100vh - 55px);background:var(--aside);border-right:1px solid var(--border);padding:25px 14px 19px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:12px;font-size:22px;letter-spacing:-1.5px;font-weight:800;padding:2px 12px 30px}
+.brand-icon{width:37px;height:37px;border-radius:12px;color:#fff;background:linear-gradient(135deg,var(--cyan),var(--blue) 53%,var(--violet));display:grid;place-items:center;box-shadow:0 5px 18px #2474aa33;font-size:18px}.brand b{color:var(--main)}
+.nav-label{font-size:10px;color:var(--faint);letter-spacing:1.6px;font-weight:800;margin:20px 13px 8px;text-transform:uppercase}
+.nav{display:flex;align-items:center;gap:12px;border:0;background:none;color:var(--muted);width:100%;border-radius:11px;text-align:left;padding:11px 13px;margin:2px 0;font-size:12.5px;font-weight:750}
+.nav:hover{color:var(--text);background:var(--panel2)}
+.nav.active{color:var(--main);background:var(--navActive)}.nav-icon{display:grid;place-items:center;width:21px;font-size:17px;font-weight:600}
+.nav .count{margin-left:auto;min-width:18px;text-align:center;border-radius:7px;padding:2px 4px;background:var(--panel2);font-size:10px;color:var(--muted)}
+.sidefoot{margin-top:auto;padding:16px 11px 3px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6}
+.workspace{flex:1;min-width:0;max-width:1650px;padding:28px clamp(23px,3.1vw,55px) 80px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:35px}
+.crumb{font-size:11px;font-weight:700;color:var(--muted)}
+.topright{display:flex;align-items:center;gap:8px}
+.button{border:1px solid var(--border);border-radius:11px;padding:11px 14px;font-weight:800;font-size:12px;background:var(--panel);color:var(--text)}
+.button:hover{border-color:var(--main)}
+.button.primary{background:var(--main);border-color:var(--main);color:var(--mainInk)}
+.button.ghost{background:transparent}.button.small{padding:8px 11px;font-size:11px}
+.pill{font-size:10px;font-weight:800;border-radius:7px;padding:5px 8px;background:var(--panel2);color:var(--muted);white-space:nowrap}
+.page{display:none}.page.active{display:block}
+.headline{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:27px}
+.headline>div>p:last-child{font-size:13px;line-height:1.6;color:var(--muted);margin:0}
+.title-action{flex-shrink:0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:17px;box-shadow:var(--shadow);padding:20px;min-width:0}
+.grid{display:grid;gap:16px}.c12{grid-template-columns:repeat(12,minmax(0,1fr))}.c2{grid-template-columns:repeat(2,minmax(0,1fr))}.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.span7{grid-column:span 7}.span5{grid-column:span 5}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.hero{border-radius:19px;padding:27px 28px;background:radial-gradient(ellipse at 96% 5%,color-mix(in srgb,var(--blue) 23%,transparent),transparent 55%),var(--hero);border:1px solid var(--border);min-height:213px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+.hero:after{content:"";position:absolute;width:290px;height:290px;right:-120px;top:-115px;border:2px solid color-mix(in srgb,var(--cyan) 27%,transparent);border-radius:50%;box-shadow:0 0 0 37px color-mix(in srgb,var(--blue) 6%,transparent),0 0 0 77px color-mix(in srgb,var(--violet) 5%,transparent)}
+.hero h2{font-size:clamp(25px,2.4vw,35px);max-width:600px;line-height:1.15;letter-spacing:-1.4px;margin:7px 0 12px;position:relative;z-index:1}
+.hero p{max-width:590px;font-size:12.5px;color:var(--muted);line-height:1.65;position:relative;z-index:1;margin-bottom:0}
+.hero-label{font-size:10px;color:var(--main);letter-spacing:2px;text-transform:uppercase;font-weight:900;position:relative;z-index:1}
+.hero-row{display:flex;gap:13px;align-items:center;margin-top:19px;position:relative;z-index:1;flex-wrap:wrap}
+.hero-row .button.primary{font-size:11px}
+.stat{display:flex;gap:11px;justify-content:space-between;align-items:start}
+.stat-badge{height:39px;width:39px;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--shade) 16%,var(--panel));color:var(--shade);font-size:20px}
+.statnum{font-family:"Plus Jakarta Sans";font-size:26px;letter-spacing:-1px;font-weight:800;margin:8px 0 2px;font-variant-numeric:tabular-nums}
+.stat-label{font-size:11px;color:var(--muted);font-weight:700}
+.stat-note{font-size:10px;color:var(--faint);margin-top:5px}
+.stat.cyan{--shade:var(--cyan)}.stat.blue{--shade:var(--blue)}.stat.coral{--shade:var(--coral)}.stat.violet{--shade:var(--violet)}
+body[data-theme="light"] .hero{background:linear-gradient(115deg,#d8f4e8,#b7e7de 50%,#bdd9fd);color:#103834}
+body[data-theme="light"] .hero-label{color:#075f64}
+body[data-theme="light"] .hero p{color:#41615d}
+body[data-theme="light"] .hero-row .button.primary{background:#076d67;color:#fff}
+body[data-theme="light"] .accent-block{background:#2457eb;color:#fff}
+body[data-theme="dark"] .accent-block{background:linear-gradient(140deg,#173a56,#403564);color:#fff}
+.accent-block{border:0;border-radius:17px;padding:20px;min-height:132px;display:flex;flex-direction:column;justify-content:space-between}
+.accent-block .num{font-size:30px;letter-spacing:-1px;font-weight:800;font-family:"Plus Jakarta Sans"}
+.accent-block .detail{font-size:11px;opacity:.83}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 14px}
+.section-head .hint{font-size:11px;color:var(--muted)}
+.list-item{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);min-height:47px;font-size:12.5px}
+.list-item:last-child{border-bottom:0}
+.list-item .body{min-width:0;flex:1}.list-item .sub{font-size:10.5px;color:var(--muted);margin-top:4px}
+.check{width:21px;height:21px;flex-shrink:0;border-radius:7px;border:1.5px solid var(--muted);background:none;color:transparent;font-size:13px;display:grid;place-items:center;padding:0}
+.check.done{background:var(--cyan);border-color:var(--cyan);color:#0b292e}
+.task-title.done{text-decoration:line-through;color:var(--faint)}
+.chip{border-radius:8px;font-size:10px;font-weight:800;padding:6px 8px;background:color-mix(in srgb,var(--shade) 14%,var(--panel2));color:var(--shade);white-space:nowrap}
+.chip.cyan{--shade:var(--cyan)}.chip.blue{--shade:var(--blue)}.chip.violet{--shade:var(--violet)}.chip.coral{--shade:var(--coral)}.chip.orange{--shade:var(--orange)}
+.stretch{margin-left:auto}
+input.search{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:11px 12px;min-width:170px;width:100%;max-width:290px}
+.search:focus{outline-color:var(--main)}
+.progress{height:7px;border-radius:8px;background:var(--panel2);overflow:hidden}.progress>i{display:block;height:100%;width:var(--pct);background:var(--shade);border-radius:8px}
+.project{padding:0;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .16s,border-color .16s}
+.project:hover{transform:translateY(-3px);border-color:var(--main)}
+.project-art{height:76px;display:flex;align-items:start;justify-content:space-between;padding:14px;background:var(--grad);color:white;position:relative}
+.project-art:after{content:"";position:absolute;width:125px;height:125px;border:2px solid #ffffff33;border-radius:34px;transform:rotate(35deg);top:20px;right:-35px}
+.project-glyph{font-size:22px;font-weight:900;position:relative;z-index:1}
+.project-core{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.project-core p{font-size:11.5px;line-height:1.65;margin:0;color:var(--muted);min-height:37px}
+.project-foot{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted);margin-top:auto}
+.two-part{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.action-row{display:flex;gap:9px;flex-wrap:wrap}
+.screen-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:19px 0}
+.tab{padding:8px 12px;background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:10px;font-size:11px;font-weight:800}
+.tab.active{background:var(--navActive);border-color:var(--main);color:var(--main)}
+.date-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.day{border:1px solid var(--border);background:var(--panel);color:var(--muted);padding:16px 8px;display:grid;gap:9px;text-align:center;border-radius:13px;font-size:11px;font-weight:800}
+.day b{font-size:20px;color:var(--text)}.day.active{border-color:var(--main);background:var(--navActive);color:var(--main)}.day.active b{color:var(--main)}
+.bento-small{padding:15px}
+.weekbar{display:flex;align-items:end;gap:7px;height:82px}.weekbar i{flex:1;height:var(--h);border-radius:6px 6px 0 0;background:linear-gradient(to top,var(--blue),var(--cyan))}
+.ring{height:108px;width:108px;border-radius:50%;background:radial-gradient(circle,var(--panel) 56%,transparent 57%),conic-gradient(var(--cyan) 68%,var(--border) 68%);display:grid;place-items:center;font-weight:800;font-size:22px;margin:auto}
+.timeline-item{display:grid;grid-template-columns:68px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center}
+.timeline-item:last-child{border:0}.timeline-time{font-size:10px;color:var(--muted)}
+.timeline-card{padding:13px;border-left:3px solid var(--shade);background:var(--panel2);border-radius:9px;display:flex;align-items:center;gap:11px}
+.timeline-card span:first-child{flex:1}
+.money{font-size:clamp(33px,4vw,56px);font-family:"Plus Jakarta Sans";font-weight:800;letter-spacing:-2px;margin:8px 0 2px}
+.chart{height:170px;width:100%;display:block;margin-top:10px}.chart-grid{stroke:var(--border)}.chart-line{stroke:var(--cyan);stroke-width:3.7;fill:none;filter:drop-shadow(0 0 7px color-mix(in srgb,var(--cyan) 44%,transparent))}.chart-fill{fill:url(#gfill)}
+.fin-hero{grid-column:span 8;min-height:278px}.fin-metrics{grid-column:span 4;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.fin-metrics .card{padding:15px}
+.fin-metrics .statnum{font-size:23px}
+.fin-metrics .stat-badge{height:31px;width:31px;font-size:16px}
+.account{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+.account:last-child{border:0}.account .money-value{margin-left:auto;font-size:12px;font-weight:800}
+.account-icon{height:34px;width:34px;border-radius:10px;color:var(--shade);background:color-mix(in srgb,var(--shade) 14%,var(--panel2));display:grid;place-items:center}
+.inbox-box{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:12px 14px}
+.inbox-box input{background:none;border:0;color:var(--text);flex:1;min-width:0;outline:none}
+.inbox-box input:focus{outline:none}
+.inbox-box:focus-within{border-color:var(--main)}
+.divider{height:1px;background:var(--border);margin:15px 0}
+.hint-box{border:1px dashed var(--border);background:var(--panel2);padding:16px 18px;border-radius:14px;color:var(--muted);line-height:1.55;font-size:11.5px}
+.empty{padding:25px;text-align:center;border-radius:12px;background:var(--panel2);color:var(--muted);font-size:12px}
+body[data-theme="light"] .colored-fin{background:#2157e9!important;color:#fff!important}
+body[data-theme="light"] .colored-fin .muted{color:#e7eeff!important}
+.mobile-bar{display:none}
+.modal{border:1px solid var(--border);border-radius:20px;background:var(--panel);color:var(--text);width:min(540px,calc(100% - 28px));max-height:calc(100dvh - 36px);overflow:auto;box-shadow:0 35px 95px #0009;padding:0}
+.modal::backdrop{background:#030916bc;backdrop-filter:blur(5px)}
+.modal-inner{padding:24px}
+.modal-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:20px}
+.modal-top h2{font-size:21px}
+.modal-close{border:1px solid var(--border);border-radius:9px;background:var(--panel2);color:var(--text);height:32px;width:32px;font-size:18px}
+.field-label{display:block;font-size:11px;font-weight:800;color:var(--muted);margin:15px 0 7px}
+.field{display:block;width:100%;border-radius:11px;padding:12px 13px;border:1px solid var(--border);background:var(--panel2);color:var(--text)}
+textarea.field{min-height:100px;resize:vertical}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:23px;flex-wrap:wrap}
+.search-result{display:flex;gap:12px;align-items:center;border:0;background:transparent;color:var(--text);padding:14px 9px;width:100%;text-align:left;border-bottom:1px solid var(--border);font-size:12px}
+.search-result:hover{background:var(--panel2)}.search-result small{margin-left:auto;color:var(--muted)}
+.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:13px 18px;border-radius:12px;z-index:120;font-weight:800;font-size:12px;box-shadow:var(--shadow);min-width:240px;text-align:center}
+@media(max-width:1250px){.fin-hero{grid-column:span 12}.fin-metrics{grid-column:span 12;grid-template-columns:repeat(4,minmax(0,1fr))}.span7,.span5{grid-column:span 6}.sidebar{width:215px}}
+@media(max-width:950px){.sidebar{width:74px;padding:19px 10px}.sidebar .nav-label,.sidebar .sidefoot,.sidebar .nav-label,.sidebar .nav span:not(.nav-icon),.sidebar .brand .brand-name,.sidebar .count{display:none}.sidebar .brand{justify-content:center;padding:2px 0 30px}.sidebar .nav{justify-content:center}.span7,.span5,.span8,.span4{grid-column:span 6}.grid.c3{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.lab{height:auto;min-height:54px;padding:9px 11px;gap:8px}.lab-tag{display:none}.lab-name{font-size:10px}.lab-actions{gap:4px}.mode{font-size:10px;padding:8px}.sidebar{display:none}.workspace{padding:20px 15px 105px}.topbar{margin-bottom:24px}.topright .search-trigger{font-size:0}.topright .search-trigger:before{content:"⌕";font-size:17px}.topright .button{padding:9px}.headline{align-items:start;flex-wrap:wrap;margin-bottom:20px}.title-action{width:100%}.c12{grid-template-columns:repeat(2,minmax(0,1fr))}.span7,.span5,.span4,.span6,.span8,.span12{grid-column:span 2}.grid.c2,.grid.c3{grid-template-columns:1fr}.hero{padding:22px;min-height:196px}.fin-hero{grid-column:span 2}.fin-metrics{grid-column:span 2;grid-template-columns:repeat(2,minmax(0,1fr))}.statnum{font-size:24px}.card{padding:17px}.date-strip{gap:4px}.day{padding:12px 2px;border-radius:9px}.day b{font-size:17px}.mobile-bar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;background:var(--aside);border-top:1px solid var(--border);z-index:60;padding:8px 5px max(12px,env(safe-area-inset-bottom))}.mobile-bar button{border:0;background:none;color:var(--muted);display:grid;gap:5px;justify-items:center;font-size:10px;font-weight:700;padding:5px 7px}.mobile-bar button.active{color:var(--main)}.mobile-bar .nav-icon{font-size:19px}.mobile-bar .mobile-plus{background:var(--main);color:var(--mainInk);border-radius:14px;width:46px;height:46px;display:grid;place-items:center;font-size:24px;box-shadow:0 8px 22px color-mix(in srgb,var(--main) 25%,transparent)}.lab-name span:last-child{display:none}.topright .quick-top{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:after,*:before{transition:none!important;animation:none!important}}
+
+/* Batch04 / Finance intelligence prototype */
+.finance-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.sources{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.source-card{display:flex;flex-direction:column;gap:10px;text-align:left;color:var(--text);min-height:195px;border-radius:15px;cursor:pointer}
+.source-card:hover{border-color:var(--main);transform:translateY(-2px)}
+.source-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.source-logo{display:grid;place-items:center;height:40px;width:40px;border-radius:12px;background:var(--source);color:#fff;font-weight:900;font-size:12px}
+.source-card .statnum{margin:12px 0 4px;font-size:25px}
+.source-bottom{display:flex;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid var(--border);margin-top:auto;padding-top:12px;font-size:10px;color:var(--muted)}
+.finance-note{border-left:3px solid var(--main);background:var(--panel2);padding:15px 17px;border-radius:0 13px 13px 0;color:var(--muted);font-size:11.5px;line-height:1.7}
+.modal.sheet{position:fixed;left:auto;right:0;top:0;bottom:0;margin:0;width:min(510px,100%);height:100dvh;max-height:none;border-radius:20px 0 0 20px}
+.modal.sheet .modal-inner{padding:28px}
+.stat-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding:14px 0;font-size:12px}
+.stat-row:last-child{border-bottom:0}
+@media(max-width:1200px){.sources{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sources{gap:9px}.source-card{padding:13px;min-height:172px}.source-card .statnum{font-size:21px}.modal.sheet{border-radius:0}}
+
+
+.quick-modes{display:flex;gap:8px;margin:3px 0 20px}.quick-modes button{flex:1}
+.capture-hint{border:1px dashed var(--border);border-radius:12px;background:var(--panel2);padding:13px 14px;margin-top:13px;color:var(--muted);font-size:11px;line-height:1.7}
+.preview-rows{display:flex;flex-direction:column;gap:12px;max-height:325px;overflow:auto;margin:17px 0}
+.preview-row{display:grid;gap:9px;border:1px solid var(--border);padding:12px;background:var(--panel2);border-radius:12px}
+.preview-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
+.preview-fields select{min-width:0;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 6px;font-size:11px}
+textarea.field{min-height:100px;resize:vertical}
+
+.dashboard-tools{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.dashboard-tools>div{display:flex;gap:8px;flex-wrap:wrap}
+[data-widget][hidden]{display:none!important}
+#toast button{border:0;background:#fff;color:#254d9c;border-radius:7px;margin-left:12px;padding:7px 10px;font-size:11px;font-weight:800}
+@media(max-width:600px){.dashboard-tools>div{width:100%}.dashboard-tools .button{flex:1}}
+
+/* BATCH 07 / SWISS SYSTEM • PRISM BENTO • NAVIGATION DEPTH */
+body{--ring:color-mix(in srgb,var(--main) 35%,transparent)}
+body[data-theme="dark"]{--bg:#080f1a;--aside:#0b1421;--panel:#111d2d;--panel2:#18283a;--border:#293b4c;--text:#f2f7fa;--muted:#9db1c3;--main:#40dfd0;--hero:#112f43;--shadow:0 12px 25px #02091328}
+body[data-theme="light"]{--bg:#f2f5f2;--aside:#fff;--panel:#fff;--panel2:#eef3f1;--border:#d7e2de;--text:#152c32;--muted:#536e70;--main:#066c67;--hero:#c0f0dd;--shadow:0 10px 22px #253c3113}
+body[data-theme="light"] .project{--color:#245be2}
+body[data-theme="light"] .hero{background:linear-gradient(121deg,#b3ebd4 0%,#a2dada 58%,#81abf5 100%);color:#082e33}
+body[data-theme="light"] .hero .hero-label{color:#06575a}
+body[data-theme="light"] .hero .button.primary{background:#135d62;border-color:#135d62;color:white}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+1) .project-art{background:#215be9!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+2) .project-art{background:#097f74!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+3) .project-art{background:#db5c40!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+4) .project-art{background:#7942d2!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+5) .project-art{background:#dd9321!important}
+body[data-theme="light"] .project-catalog .project:nth-child(6n+6) .project-art{background:#185d91!important}
+body[data-theme="light"] .accent-block{background:#2459e8}
+body[data-theme="dark"] .accent-block{background:linear-gradient(136deg,#1b5f78,#40477a)}
+body[data-theme="dark"] .project-catalog .project{box-shadow:0 2px 0 #6ac9ed16 inset}
+body[data-theme="dark"] .hero{background:radial-gradient(circle at 92% -20%,#4174a85e,transparent 56%),linear-gradient(135deg,#112a3d,#142443)}
+body[data-theme="dark"] .card:has(.big-number){background:#13273a}
+body[data-theme="dark"] .nav.active{border:1px solid #42cbcf48}
+body[data-theme="light"] .nav.active{color:#07665c}
+body[data-theme="light"] .stat-badge{background:#eef4ff}
+.project-catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:17px}
+.project-catalog.list-layout{grid-template-columns:1fr}
+.project-catalog.list-layout .project{display:grid;grid-template-columns:190px 1fr;min-height:130px}
+.project-catalog.list-layout .project .project-art{height:auto}
+.project-catalog.list-layout .project .project-core{padding:18px 20px}
+.project-catalog .project{min-height:233px}
+.project-catalog .project h3{font-size:15px;letter-spacing:-.4px}
+.project-catalog .project .project-glyph{font-size:29px;font-weight:800}
+.project-catalog .project .project-art{height:88px}
+.project-catalog .project:first-child .project-art{background:linear-gradient(120deg,#045960,#3784cb)}
+.project-catalog:not(.list-layout) .project:nth-child(7n+3){grid-column:span 1}
+.workspace-breadcrumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:24px}
+.crumb-link{background:none;border:0;color:var(--main);padding:0;font-weight:800;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--main) 30%,transparent)}
+.project-identity{display:flex;align-items:center;gap:19px;margin-bottom:22px}
+.project-identity h1{margin:4px 0 6px}
+.project-emblem{width:75px;height:75px;border-radius:18px;display:grid;place-items:center;font-size:28px;font-weight:800;color:white;flex-shrink:0}
+.project-identity-actions{margin-left:auto;align-self:start}
+.workspace-kpis{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:12px}
+.workspace-kpis .card{padding:18px}
+.workspace-tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:24px 0}
+.workspace-tabs .tab{border-radius:11px;padding:11px 17px}
+.project-content{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.65fr);gap:18px}
+.work-stat{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:11px 0;font-size:12px}
+.work-stat:last-child{border-bottom:0}
+.module-surface{border:1px dashed var(--border);background:var(--panel);padding:29px;min-height:275px;border-radius:18px}
+.module-surface h2{font-size:25px;margin:4px 0 0}
+.blueprint-rows{max-width:550px}
+.blueprint-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+.text-action{text-align:left;border:none;background:transparent;color:var(--text);font:inherit;padding:0;display:block;min-width:0;max-width:100%}
+.text-action:hover{color:var(--main)}
+.project-catalog .project:focus-visible{outline-offset:3px}
+.priority-selector{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.priority-selector button{border:1px solid var(--border);border-radius:10px;background:var(--panel2);padding:10px;font-size:11px;color:var(--text)}
+.priority-selector button.selected{border-color:var(--main);color:var(--main)}
+.dashboard-tools{border-radius:13px;border:1px solid var(--border);padding:12px 16px;background:var(--panel)}
+.grid .card{min-height:0}
+body.density-compact .card{padding:15px}
+body.density-compact .list-item{padding:9px 0;min-height:36px}
+body.density-compact .workspace{padding-top:18px}
+body.density-compact .section-head{margin-top:18px}
+body.density-compact .project-catalog .project-core{padding:12px}
+body.density-compact .project-catalog .project-art{height:65px}
+body.density-compact .project-catalog .project{min-height:183px}
+.mode-toggle{border:1px solid var(--border);background:var(--panel2);color:var(--muted);border-radius:10px;padding:9px 10px;font-size:11px;font-weight:800}
+.mode-toggle.active{color:var(--main);border-color:var(--main)}
+@media(max-width:1220px){.project-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.project-content{grid-template-columns:1fr}}
+@media(max-width:950px){.workspace-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.project-identity h1{font-size:31px}.project-emblem{width:60px;height:60px}}
+@media(max-width:650px){.project-catalog{grid-template-columns:1fr}.project-catalog.list-layout .project{grid-template-columns:105px 1fr}.project-identity{flex-wrap:wrap}.project-identity-actions{margin-left:0;width:100%}.workspace-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-kpis .card:first-child{grid-column:span 2}.project-emblem{height:56px;width:56px}.workspace-tabs{flex-wrap:nowrap;max-width:calc(100vw - 30px);overflow-x:auto;scrollbar-width:thin;padding-bottom:5px}.workspace-tabs .tab{white-space:nowrap}.project-content{grid-template-columns:1fr}.module-surface{padding:19px}.project-catalog .project{min-height:195px}.dashboard-tools .button{flex:1}.density-toggle{display:none}}
+
+
+.preview-fields.project-fields{grid-template-columns:minmax(0,1.6fr) minmax(0,.9fr) minmax(0,1.5fr);align-items:center}
+.preview-fields.project-fields select{border-color:color-mix(in srgb,var(--main) 24%,var(--border))}
+@media(max-width:650px){.preview-fields.project-fields{grid-template-columns:minmax(0,1fr) minmax(0,.7fr)}.preview-fields.project-fields .muted{grid-column:span 2}}
+
+/* Folder-first project navigation */
+.folder-grid-b05{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:15px}
+.folder-card-b05{grid-column:span 4;min-height:214px;text-align:left;border:1px solid var(--border);border-radius:20px;padding:21px;display:flex;flex-direction:column;align-items:flex-start;position:relative;transition:transform .15s,box-shadow .15s;background:var(--panel);color:var(--text)}
+.folder-card-b05:nth-child(n+4){grid-column:span 6}
+.folder-card-b05:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--main)}
+.folder-icon-b05{display:grid;place-items:center;border:1px solid #ffffff59;border-radius:12px;width:43px;height:43px;font-size:21px;background:#ffffff18}
+.folder-n-b05{position:absolute;top:23px;right:22px;font-size:11px;font-weight:900;opacity:.7}
+.folder-card-b05 h2{margin-top:auto;max-width:300px;font-size:19px;letter-spacing:-.8px}
+.folder-bottom-b05{display:flex;width:100%;justify-content:space-between;align-items:center;border-top:1px solid #ffffff44;margin-top:18px;padding-top:12px;font-size:11px}
+body[data-theme="dark"] .folder-blue{background:#152e4b}body[data-theme="dark"] .folder-purple{background:#30274c}body[data-theme="dark"] .folder-coral{background:#4b2e3b}body[data-theme="dark"] .folder-teal{background:#173c40}body[data-theme="dark"] .folder-gold{background:#453827}
+body[data-theme="light"] .folder-card-b05{border:0;color:#fff}
+body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"] .folder-purple{background:#743ee0}body[data-theme="light"] .folder-coral{background:#d85440}body[data-theme="light"] .folder-teal{background:#0b816f}body[data-theme="light"] .folder-gold{background:#b37823}
+@media(max-width:1200px){.folder-card-b05{grid-column:span 6}}
+@media(max-width:650px){.folder-card-b05,.folder-card-b05:nth-child(n+4){grid-column:span 12;min-height:166px}.folder-icon-b05{height:35px;width:35px}}
+
+/* Batch 07 — realistic linked-task planner */
+.agenda-command{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:22px 0 15px;flex-wrap:wrap}
+.agenda-command h2{font-size:17px}.agenda-project-filter{min-width:180px;max-width:260px;padding:8px}
+.agenda-week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px}
+.agenda-day-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;text-align:left;padding:14px 12px;color:var(--text);display:flex;flex-direction:column;gap:10px;min-height:116px}
+.agenda-day-card.selected{background:var(--navActive);border-color:var(--main);box-shadow:0 0 0 1px var(--main) inset}
+.agenda-day-card:hover{border-color:var(--main)}
+.agenda-day-title{font-size:10px;font-weight:900;letter-spacing:1.3px;color:var(--muted)}
+.agenda-day-num{font-size:18px;font-weight:900;letter-spacing:-.6px}
+.agenda-day-count{font-size:11px;color:var(--muted)}
+.agenda-day-markers{display:flex;gap:4px;margin-top:auto}
+.agenda-day-markers i{height:4px;width:20px;border-radius:6px}
+.agenda-main-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr);gap:17px;margin-top:4px}
+.agenda-task{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--border)}
+.agenda-task:last-child{border-bottom:0}
+.agenda-task-when{width:35px;flex-shrink:0;color:var(--muted);font-size:11px}
+.agenda-task .body{flex:1;min-width:0}
+.agenda-day-focus .agenda-week-grid{max-width:840px}
+@media(max-width:1100px){.agenda-week-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.agenda-main-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.agenda-week-grid{grid-template-columns:repeat(7,minmax(145px,1fr));overflow:auto}.agenda-day-focus{overflow-x:auto}.agenda-command{align-items:stretch}.agenda-project-filter{max-width:none;width:100%}}
+
+/* Batch 07 — multi-level FitOS layout, full week / leaf exercises */
+.fitos-level-nav{display:flex;gap:8px;margin:7px 0 24px;flex-wrap:wrap}
+.fitos-week-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;flex-wrap:wrap}
+.fitos-week-summary h2{font-size:25px;margin-bottom:7px}
+.fitos-summary-tags{display:flex;gap:8px}
+.fitos-week-cards{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.fitos-day-card{grid-column:span 4;min-height:160px;text-align:left;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:15px;padding:20px;display:flex;flex-direction:column;gap:13px}
+.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 6}
+.fitos-day-card:hover{border-color:var(--main);background:var(--navActive)}
+.fitos-day-card h3{font-size:17px;letter-spacing:-.6px}
+.fitos-day-meta{font-size:11px;color:var(--muted);line-height:1.6}
+.fitos-go{font-size:10px;font-weight:900;color:var(--main);margin-top:auto}
+.fitos-day-hero{background:var(--hero);border:1px solid var(--border);border-radius:17px;padding:26px}
+.fitos-day-hero h2{font-size:30px;letter-spacing:-1px;margin-bottom:8px}
+.fitos-day-hero p{color:var(--muted);font-size:12px;line-height:1.7;margin-bottom:22px;max-width:600px}
+.fitos-exercise-line{display:flex;align-items:center;gap:16px;text-align:left;background:transparent;color:var(--text);width:100%;border:0;border-bottom:1px solid var(--border);padding:17px 3px}
+.fitos-exercise-line:last-child{border-bottom:none}
+.fitos-exercise-line:hover{color:var(--main)}
+.fitos-ex-num{font-size:20px;font-weight:900;color:var(--muted);min-width:28px}
+.fitos-exercise-line>div{flex:1}
+.fitos-exercise-line b{font-size:13px}
+.fitos-exercise-line .small{margin-top:5px}
+.fitos-ex-link{font-size:10px;font-weight:900}
+.fitos-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fitos-catalog-card{text-align:left;display:flex;flex-direction:column;gap:9px;min-height:160px}
+.fitos-catalog-card:hover{border-color:var(--main)}
+.fitos-catalog-card>span{margin-top:auto;font-weight:800;font-size:11px;color:var(--main)}
+.fitos-ex-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fitos-ex-stats>div{background:var(--panel2);padding:15px;border-radius:11px;display:flex;flex-direction:column;gap:9px}
+.fitos-ex-stats>div span{font-size:10px;color:var(--muted)}
+.fitos-ex-stats>div b{font-size:20px}
+@media(max-width:1050px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 6}.fitos-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 12;min-height:128px}.fitos-catalog-grid{grid-template-columns:1fr}.fitos-day-hero h2{font-size:24px}}
+
+/* Batch 07 — Finance source page and leaf-only operation details */
+.finance-source-head{display:flex;gap:17px;align-items:center;flex-wrap:wrap;margin:20px 0 24px}
+.finance-source-title{flex:1;min-width:220px}
+.finance-source-head h1{margin:5px 0 8px}
+.finance-source-brand{display:grid;place-items:center;width:69px;height:69px;border-radius:16px;color:white;font-size:20px;font-weight:900}
+.finance-source-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.finance-source-kpis .card{padding:20px}
+.finance-source-kpis .statnum{font-size:clamp(20px,2.6vw,34px)}
+.finance-source-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);gap:18px}
+.finance-ledger-row{display:flex;align-items:center;gap:12px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);width:100%;text-align:left;padding:17px 0}
+.finance-ledger-row:last-child{border-bottom:0}
+.finance-ledger-row:hover .body b{color:var(--main)}
+.finance-ledger-row .body{flex:1;min-width:0;font-size:12px}
+.finance-ledger-row .sub{margin-top:4px}
+.finance-stock-metric{padding:17px;background:var(--panel2);border-radius:13px;display:flex;flex-direction:column;gap:8px}
+.finance-stock-metric span,.finance-stock-metric small{font-size:11px;color:var(--muted)}
+.finance-stock-metric b{font-size:23px}
+@media(max-width:1050px){.finance-source-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.finance-source-kpis{grid-template-columns:1fr}.finance-source-kpis .card{padding:15px}.finance-source-head{gap:12px}.finance-source-brand{width:49px;height:49px;font-size:14px}.finance-ledger-row{gap:7px}}
+
+.folder-manager{display:grid;gap:7px;margin-top:15px}
+.folder-manager-row{display:flex;gap:7px;align-items:center;border:1px solid var(--border);padding:10px;border-radius:12px;flex-wrap:wrap}
+.folder-manager-row .body{flex:1;min-width:135px}
+.folder-manager-row .body b{font-size:12px}
+.folder-manager-row .sub{font-size:10px;color:var(--muted);margin-top:3px}
+.folder-manager-glyph{width:37px;height:37px;background:var(--panel2);border-radius:10px;display:grid;place-items:center;font-size:19px}
+.folder-manager-row button{font-size:10px}
+.project-identity-actions{display:flex;gap:7px;flex-wrap:wrap}
+
+/* Batch07: inventory as a branch page, item as the leaf */
+.inventory-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.inventory-toolbar .search{margin-right:auto}
+.inventory-table{overflow-x:auto}
+.inventory-head,.inventory-line{display:grid;grid-template-columns:minmax(180px,2fr) .7fr 1fr .8fr;gap:12px;align-items:center;min-width:590px}
+.inventory-head{font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.inventory-line{padding:16px 0;width:100%;background:transparent;border:0;border-bottom:1px solid var(--border);text-align:left;color:var(--text);font-size:12px}
+.inventory-line:hover b{color:var(--main)}
+.inventory-line:last-child{border-bottom:0}
+.inventory-line small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.inventory-line .chip{width:fit-content}
+.inventory-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+@media(max-width:650px){.inventory-toolbar .search{max-width:none;width:100%}.inventory-input-grid{grid-template-columns:1fr 1fr}}
+
+/* BATCH 08 / COMPACT AUTO-REVEAL NAV + PARITY WORKBENCH */
+.layout{padding-left:76px;display:block}
+.sidebar{position:fixed;z-index:75;left:0;top:55px;width:76px;padding:18px 10px;height:calc(100dvh - 55px);overflow:hidden;box-shadow:none;transition:width .18s ease,box-shadow .18s ease;background:color-mix(in srgb,var(--aside) 96%,transparent)}
+.sidebar::after{content:"";position:absolute;inset:0;pointer-events:none;border-right:1px solid var(--border)}
+.sidebar:hover,.sidebar:focus-within,.sidebar[data-expanded="true"]{width:248px;box-shadow:18px 0 38px #02091242;overflow-y:auto}
+.sidebar[data-pinned="true"]{width:248px;box-shadow:none}
+body.nav-pinned .layout{padding-left:248px}
+.sidebar .brand{padding:2px 9px 22px;min-width:220px}
+.sidebar .brand-name,.sidebar .nav-label,.sidebar .nav>span:not(.nav-icon):not(.count),.sidebar .sidefoot,.sidebar .nav-pin-label{opacity:0;visibility:hidden;transition:opacity .1s ease}
+.sidebar:hover .brand-name,.sidebar:hover .nav-label,.sidebar:hover .nav>span:not(.nav-icon):not(.count),.sidebar:hover .sidefoot,.sidebar:hover .nav-pin-label,.sidebar:focus-within .brand-name,.sidebar:focus-within .nav-label,.sidebar:focus-within .nav>span:not(.nav-icon):not(.count),.sidebar:focus-within .sidefoot,.sidebar:focus-within .nav-pin-label,.sidebar[data-expanded="true"] .brand-name,.sidebar[data-expanded="true"] .nav-label,.sidebar[data-expanded="true"] .nav>span:not(.nav-icon):not(.count),.sidebar[data-expanded="true"] .sidefoot,.sidebar[data-expanded="true"] .nav-pin-label,.sidebar[data-pinned="true"] .brand-name,.sidebar[data-pinned="true"] .nav-label,.sidebar[data-pinned="true"] .nav>span:not(.nav-icon):not(.count),.sidebar[data-pinned="true"] .sidefoot,.sidebar[data-pinned="true"] .nav-pin-label{opacity:1;visibility:visible;transition-delay:.07s}
+.sidebar .nav{min-width:220px;padding:11px 13px}.sidebar .nav-icon{flex:0 0 21px}.sidebar .count{margin-left:auto}
+.nav-tools{display:flex;gap:6px;padding:0 2px 14px;min-width:220px}
+.nav-tools [data-nav-close]{display:none}
+.nav-tool{height:36px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);display:flex;align-items:center;gap:9px;padding:0 10px;font-size:11px;font-weight:800}
+.nav-tool:hover{color:var(--text);border-color:var(--main)}
+.nav-scrim{display:none}.mobile-menu{display:none}
+.workspace{max-width:1780px;padding-left:clamp(20px,2.7vw,48px);padding-right:clamp(20px,2.7vw,48px)}
+.parity-list{display:grid;gap:9px}.parity-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}.parity-row:last-child{border-bottom:0}.parity-row .body{min-width:0}.parity-row .sub{font-size:10.5px;color:var(--muted);margin-top:4px}.parity-row.done .body>b{text-decoration:line-through;color:var(--faint)}
+.agenda-bulkbar{position:sticky;bottom:12px;z-index:10;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 13px;margin-top:14px;background:var(--text);color:var(--bg);border-radius:13px;box-shadow:var(--shadow)}.agenda-bulkbar .button{background:transparent;border-color:color-mix(in srgb,var(--bg) 35%,transparent);color:var(--bg)}.agenda-bulkbar .button.danger{border-color:var(--coral);color:var(--coral)}
+.agenda-select{width:21px;height:21px;border-radius:7px;border:1.5px solid var(--muted);background:transparent;color:transparent;display:grid;place-items:center;flex:0 0 auto;padding:0}.agenda-select.on{background:var(--main);border-color:var(--main);color:var(--mainInk)}
+.demo-contract{display:flex;gap:9px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--main) 35%,var(--border));background:color-mix(in srgb,var(--main) 7%,var(--panel));padding:13px 15px;border-radius:13px;margin:0 0 22px;color:var(--muted);font-size:11px;line-height:1.55}.demo-contract b{color:var(--text)}
+@media(max-width:950px){.sidebar{width:76px;padding:18px 10px}.sidebar:hover,.sidebar:focus-within,.sidebar[data-expanded="true"]{width:248px}.sidebar .nav{justify-content:flex-start}.sidebar .brand{justify-content:flex-start}.layout{padding-left:76px}body.nav-pinned .layout{padding-left:248px}}
+@media(max-width:720px){.layout,body.nav-pinned .layout{padding-left:0}.sidebar{display:flex;top:0;height:100dvh;width:min(310px,88vw);transform:translateX(-105%);transition:transform .2s ease;z-index:110;padding-top:max(18px,env(safe-area-inset-top));box-shadow:20px 0 45px #0008}.sidebar:hover,.sidebar:focus-within,.sidebar[data-expanded="true"],.sidebar[data-pinned="true"]{width:min(310px,88vw)}.sidebar[data-mobile-open="true"]{transform:translateX(0);overflow-y:auto}.sidebar .brand-name,.sidebar .nav-label,.sidebar .nav>span:not(.nav-icon):not(.count),.sidebar .sidefoot,.sidebar .nav-pin-label{opacity:1;visibility:visible}.nav-scrim{display:block;position:fixed;inset:0;background:#030914a6;z-index:105;border:0}.mobile-menu{display:grid;place-items:center}.mobile-bar{display:grid;grid-template-columns:repeat(5,1fr)}.mobile-bar button{min-width:0}.workspace{padding-left:15px;padding-right:15px}.agenda-bulkbar{bottom:78px}.nav-tools [data-nav-pin]{display:none}.nav-tools [data-nav-close]{display:flex}}
+@media(prefers-reduced-motion:reduce){.sidebar{transition:none}.sidebar .brand-name,.sidebar .nav-label,.sidebar .nav>span:not(.nav-icon):not(.count),.sidebar .sidefoot,.sidebar .nav-pin-label{transition:none}}
+
+/* BATCH 09 / INTEGRATED FITOS SESSION */
+.focus-shell{display:grid;grid-template-columns:minmax(235px,.72fr) minmax(420px,1.45fr) minmax(235px,.78fr);gap:15px;align-items:start}
+.focus-panel{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.focus-program{position:sticky;top:78px}.focus-insights{position:sticky;top:78px}
+.focus-program-head{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:14px}.focus-program-list{display:grid;gap:7px}
+.focus-exercise{width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--text);border-radius:12px;padding:11px;display:grid;gap:7px}.focus-exercise:hover{background:var(--panel2)}.focus-exercise.active{border-color:var(--main);background:var(--navActive)}.focus-exercise.done{opacity:.7}.focus-exercise.skipped{opacity:.58}.focus-exercise:disabled{cursor:default}
+.focus-exercise-top{display:flex;align-items:center;gap:8px}.focus-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex:0 0 auto}.focus-exercise.active .focus-dot{background:var(--main)}.focus-exercise.done .focus-dot{background:var(--good)}.focus-setdots{display:flex;gap:4px}.focus-setdots i{height:4px;flex:1;border-radius:5px;background:var(--border)}.focus-setdots i.done{background:var(--main)}
+.focus-hero{background:var(--hero);border:1px solid var(--border);border-radius:17px;padding:25px;min-height:180px;display:flex;flex-direction:column;justify-content:space-between}.focus-hero h1{font-size:clamp(28px,4vw,48px)}
+.focus-counters{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.focus-counter{background:var(--panel2);border-radius:14px;padding:22px;text-align:center}.focus-counter strong{display:block;font-size:29px;margin:10px 0}.focus-counter-actions{display:flex;justify-content:center;gap:7px}.focus-counter-actions button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:19px}
+.focus-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.focus-actions .button.primary{flex:1;min-width:180px}
+.focus-stat{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding:11px 0;font-size:11px}.focus-stat:last-child{border-bottom:0}
+.rest-card{text-align:center;padding:24px}.rest-ring{--pct:100%;width:190px;height:190px;margin:5px auto 18px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,var(--panel) 57%,transparent 58%),conic-gradient(var(--main) var(--pct),var(--border) 0)}.rest-ring strong{font-size:42px;letter-spacing:-2px}.rest-ring small{display:block;color:var(--muted);font-size:9px;letter-spacing:1.5px;margin-top:3px}
+.focus-mobile-program{display:none}.session-log{display:grid;gap:8px}.session-set{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:11px;border-radius:11px;background:var(--panel2);font-size:11px}.session-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}.session-summary>div{background:var(--panel2);border-radius:13px;padding:17px;text-align:center}.session-summary strong{display:block;font-size:24px;margin-bottom:5px}
+.template-choice{border:1px dashed var(--border);border-radius:13px;padding:15px;margin-top:15px}.focus-resume{border-color:var(--main)!important;color:var(--main)!important}
+@media(max-width:1180px){.focus-shell{grid-template-columns:minmax(220px,.7fr) minmax(390px,1.3fr)}.focus-insights{position:static;grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:15px}.focus-insights>*{min-width:0}}
+@media(max-width:760px){.focus-shell{display:block}.focus-program{display:none}.focus-mobile-program{display:block;margin-bottom:12px}.focus-mobile-program details{border:1px solid var(--border);background:var(--panel);border-radius:13px;padding:13px}.focus-mobile-program summary{font-weight:800;color:var(--main);cursor:pointer}.focus-mobile-program .focus-program-list{max-height:260px;overflow:auto;margin-top:12px}.focus-main{padding:14px}.focus-insights{display:block;margin-top:12px}.focus-counters{grid-template-columns:1fr 1fr}.focus-counter{padding:17px 8px}.rest-ring{width:165px;height:165px}.session-summary{grid-template-columns:repeat(3,1fr)}.session-summary>div{padding:13px 4px}.session-summary strong{font-size:19px}}
+/* BATCH 10 / FITOS HISTORY + PROGRESSION */
+.history-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.5fr);gap:14px;margin-bottom:14px}.history-copy{background:var(--hero);border:1px solid var(--border);border-radius:17px;padding:26px}.history-copy h2{font-size:29px;letter-spacing:-1px;margin:5px 0 9px}.history-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.history-kpi{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:17px}.history-kpi strong{display:block;font-size:22px;margin-top:9px}.history-filter{display:flex;gap:7px;overflow:auto;padding:4px 0 14px;scrollbar-width:thin}.history-filter .tab{white-space:nowrap}.history-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:14px;align-items:start}.history-list,.history-progress{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:20px}.history-session{width:100%;display:grid;grid-template-columns:94px minmax(0,1fr) auto;gap:14px;align-items:center;text-align:left;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--border);padding:16px 2px}.history-session:last-child{border-bottom:0}.history-session:hover,.history-session:focus-visible{color:var(--main)}.history-session-date{font-size:11px;font-weight:900;color:var(--muted)}.history-session h3{font-size:14px;margin-bottom:5px}.history-session-metrics{display:flex;gap:7px;flex-wrap:wrap}.history-session-arrow{font-size:18px}.history-chart{height:170px;display:flex;align-items:flex-end;gap:9px;padding-top:25px;border-bottom:1px solid var(--border)}.history-bar{flex:1;min-width:18px;height:var(--h);background:linear-gradient(180deg,var(--cyan),var(--blue));border-radius:7px 7px 2px 2px;position:relative}.history-bar span{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;white-space:nowrap}.history-bar i{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;color:var(--muted)}.history-pr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}.history-pr:last-child{border-bottom:0}.history-pr strong{display:block;margin-bottom:4px}.history-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.history-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}.history-detail-exercise{border:1px solid var(--border);border-radius:14px;padding:17px;margin-top:10px}.history-detail-exercise-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}.history-set-row{display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:9px;padding:9px 0;border-top:1px solid var(--border);font-size:11px}.history-set-row span:not(:first-child){text-align:right}.history-source-note{border-left:3px solid var(--main);background:var(--navActive);padding:13px 15px;border-radius:0 11px 11px 0;margin-top:15px}.history-empty{padding:26px;text-align:center;color:var(--muted)}
+@media(max-width:1000px){.history-grid{grid-template-columns:1fr}.history-progress{position:static}.history-hero{grid-template-columns:1fr}.history-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:650px){.history-copy{padding:20px}.history-copy h2{font-size:24px}.history-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.history-list,.history-progress{padding:15px}.history-session{grid-template-columns:74px minmax(0,1fr) auto;gap:9px}.history-detail-grid{grid-template-columns:1fr}.history-set-row{grid-template-columns:42px 1fr 1fr 1fr}.history-detail-head{flex-direction:column}}
+</style></head>
+<body data-theme="dark">
+<header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 10 • FITOS PROGRESSION</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
+<div class="layout">
+<aside class="sidebar" id="primary-sidebar" aria-label="Navigazione principale"><div class="brand"><span class="brand-icon">◈</span><span class="brand-name">Life<span>OS</span> <b>2.0</b></span></div>
+<div class="nav-tools"><button class="nav-tool" data-nav-pin aria-pressed="false" title="Fissa o libera la navigazione"><span aria-hidden="true">⌖</span><span class="nav-pin-label">Fissa aperta</span></button><button class="nav-tool" data-nav-close title="Chiudi navigazione"><span aria-hidden="true">×</span><span class="nav-pin-label">Chiudi</span></button></div>
+<div class="nav-label">Il tuo spazio</div>
+<button class="nav active" data-nav="today"><span class="nav-icon">⌂</span><span>Oggi</span></button>
+<button class="nav" data-nav="projects"><span class="nav-icon">▦</span><span>Progetti</span></button>
+<button class="nav" data-nav="agenda"><span class="nav-icon">▤</span><span>Agenda</span></button>
+<button class="nav" data-nav="fitos"><span class="nav-icon">♡</span><span>FitOS</span></button>
+<button class="nav" data-nav="finance"><span class="nav-icon">◉</span><span>Finanze</span></button>
+<div class="nav-label">Altri strumenti</div>
+<button class="nav" data-nav="collections"><span class="nav-icon">◇</span><span>Collezioni</span></button>
+<button class="nav" data-nav="inbox"><span class="nav-icon">↧</span><span>Inbox</span><span class="count" id="inbox-count">2</span></button>
+<button class="nav" data-nav="review"><span class="nav-icon">◎</span><span>Review</span></button>
+<div class="sidefoot"><b style="color:var(--text)">Design Lab · UX Study</b><div>Solo dati inventati, senza Firebase.<br>Obiettivo: meno click, più chiarezza.</div></div>
+</aside>
+<main class="workspace">
+<div class="topbar"><div class="crumb">LifeOS / <b id="crumb-current">Oggi</b> <span class="pill">DEMO</span></div><div class="topright"><button class="mode-toggle density-toggle" id="density-toggle" aria-pressed="false" title="Densità visiva">▤ Compatta</button><button class="button search-trigger" id="open-search" aria-label="Apri ricerca globale">⌕ Cerca <span class="faint xs"> Ctrl K</span></button><button class="button primary quick-top" id="open-quick">+ Cattura</button></div></div>
+<div id="view" aria-live="polite"></div>
+<div style="margin:30px 0 10px;color:var(--faint);font-size:11px;line-height:1.7">LifeOS Experience Lab — concept UX. Nessuna funzionalità operativa e nessun dato vero. I contenuti sono simulati e si azzerano ricaricando.</div>
+</main></div>
+<button class="nav-scrim" id="nav-scrim" aria-label="Chiudi navigazione" hidden></button>
+<nav class="mobile-bar" aria-label="Navigazione mobile"><button data-nav="today" class="active"><span class="nav-icon">⌂</span>Oggi</button><button data-nav="projects"><span class="nav-icon">▦</span>Progetti</button><button data-nav="agenda"><span class="nav-icon">▤</span>Agenda</button><button class="mobile-plus" id="mobile-quick" aria-label="Cattura rapida">+</button><button class="mobile-menu" id="mobile-menu" aria-label="Apri tutti i moduli" aria-expanded="false"><span class="nav-icon">☷</span>Moduli</button></nav>
+<dialog class="modal" id="dlg" aria-labelledby="dlg-title"><div class="modal-inner" id="dlg-body"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const titles={today:"Oggi",projects:"Progetti",agenda:"Agenda",fitos:"FitOS",finance:"Finanze",collections:"Collezioni",inbox:"Inbox",review:"Review",more:"Altri strumenti"};
+const projects=[
+{id:"quartzica",name:"Quartzica",cat:"Brand digitale",folderId:"kuzo",desc:"Contenuti e crescita social.",color:"#15a87e",glyph:"Q",status:"active"},
+{id:"aimade",name:"AI Made Simple",cat:"Brand digitale",folderId:"kuzo",desc:"Prodotti digitali e contenuti.",color:"#e49b31",glyph:"AI",status:"active"},
+{id:"stosa",name:"Stosa Messina",cat:"Negozio",folderId:"kuzo",desc:"Social, calendario, contenuti e iniziative.",color:"#2868df",glyph:"S",status:"active"},
+{id:"kdp",name:"KDP · Trova la Calma",cat:"Editoria",folderId:"zjpc",desc:"Libri, pubblicazioni e promozione.",color:"#d84e4e",glyph:"K",status:"active"},
+{id:"nami",name:"Nami Moretti",cat:"Avatar",folderId:"zjpc",desc:"Produzione e attività digitali.",color:"#8653d9",glyph:"N",status:"planning"},
+{id:"youtube",name:"YouTube Asia",cat:"Video",folderId:"zjpc",desc:"Produzione e distribuzione video.",color:"#119fb1",glyph:"Y",status:"active"},
+{id:"vinted",name:"Vinted",cat:"Reselling",folderId:"reselling",desc:"Inventario, inserzioni e vendite.",color:"#e26ea6",glyph:"V",status:"active"},
+{id:"carte",name:"Carte eBay",cat:"Collezione",folderId:"reselling",desc:"Catalogo carte, vendite e valutazioni.",color:"#ee9543",glyph:"C",status:"active"},
+{id:"risparmio",name:"Risparmio",cat:"Finanze",folderId:"finance",desc:"Versamenti e crescita del capitale.",color:"#169d87",glyph:"R",status:"active"},
+{id:"crypto",name:"Crypto",cat:"Finanze",folderId:"finance",desc:"Monitoraggio portafoglio.",color:"#d6a335",glyph:"₿",status:"active"},
+{id:"trading",name:"Trading",cat:"Finanze",folderId:"finance",desc:"Studio, strategie e simulazioni.",color:"#7075dc",glyph:"T",status:"planning"},
+{id:"allenamento",name:"Allenamento",cat:"FitOS",folderId:"fitos",desc:"Schede, esercizi e progressione.",color:"#d65a5c",glyph:"♡",status:"active"},
+{id:"alimentazione",name:"Alimentazione",cat:"FitOS",folderId:"fitos",desc:"Piani, alimenti, ricette e macro.",color:"#df8e3b",glyph:"A",status:"active"},
+{id:"stretching",name:"Stretching",cat:"FitOS",folderId:"fitos",desc:"Mobilità e routine settimanali.",color:"#9057d5",glyph:"M",status:"active"}
+];
+let tasks=[
+{id:"t1",title:"Controllare le royalty",projectId:"kdp",priority:"alta",when:"oggi",time:"09:30",done:true},
+{id:"t2",title:"Revisionare il calendario contenuti",projectId:"stosa",priority:"alta",when:"oggi",time:"11:00",done:true},
+{id:"t3",title:"Preparare il prossimo carosello",projectId:"kdp",priority:"media",when:"oggi",time:"16:00",done:false},
+{id:"t4",title:"Controllare la liquidità",projectId:"risparmio",priority:"bassa",when:"oggi",time:"17:30",done:false},
+{id:"t5",title:"Preparare il materiale social",projectId:"stosa",priority:"media",when:"lunedì",time:"",done:false}
+];
+// Agenda and project pages read tasks[] directly: no duplicated scheduled-task collection.
+let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
+let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
+let projectGoals=[
+ {id:"g1",projectId:"kdp",title:"Preparare la prossima uscita",scope:"generale",done:false},
+ {id:"g2",projectId:"kdp",title:"Chiudere il controllo metadati",scope:"settimanale",done:true},
+ {id:"g3",projectId:"stosa",title:"Rendere stabile il calendario editoriale",scope:"generale",done:false}
+];
+let recurrences=[
+ {id:"r1",projectId:"kdp",title:"Controllo royalty",rule:"Ogni lunedì",streak:4,active:true},
+ {id:"r2",projectId:"stosa",title:"Revisione calendario",rule:"Ogni venerdì",streak:2,active:true}
+];
+let projectExpenses=[
+ {id:"e1",projectId:"kdp",title:"Strumento editoriale",amount:24,date:"28 ott",paid:false},
+ {id:"e2",projectId:"stosa",title:"Materiale promozionale",amount:65,date:"04 nov",paid:true}
+];
+let projectNotes=[
+ {id:"n1",projectId:"kdp",title:"Checklist pubblicazione",body:"Metadati, copertina, anteprima e pagina autore.",kind:"nota"},
+ {id:"n2",projectId:"kdp",title:"Risorsa di riferimento",body:"Link dimostrativo non connesso.",kind:"link"}
+];
+let state={folderId:null,projectId:null,financeSource:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",fitosHistoryExercise:"all",fitosHistorySession:null,collectionTab:"cards",collectionFilter:"all",collectionQuery:"",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",agendaBulk:false,reviewStep:0,focus:0,focusRunning:false,focusStarted:0,navPinned:false,navOpen:false};
+const agendaSelection=new Set();
+let timer=null;let toastTimeout=null;let originFocus=null;
+let sessionTick=null;
+const workoutSession={id:"session-demo-01",templateId:"upper-a",dayIndex:0,status:"ready",exerciseIndex:0,phase:"work",logs:{},skipped:{},draft:{kg:50,reps:8},rest:{total:0,remaining:0,deadline:null,paused:false},startedAt:null,endedAt:null,elapsed:0,lastSet:null,templateUpdated:false};
+function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
+function sectionHead(title,more=""){return '<div class="section-head"><h2>'+title+'</h2><span class="hint">'+more+'</span></div>'}
+function headline(title,desc,label="ESPERIENZA PERSONALE",actions=""){return '<div class="headline"><div><div class="eyebrow">'+label+'</div><h1>'+title+'<span style="color:var(--main)">.</span></h1><p>'+desc+'</p></div>'+actions+'</div>'}
+function miniStat(label,value,note,shade,icon){return '<div class="card stat '+shade+'"><div><div class="stat-label">'+label+'</div><div class="statnum">'+value+'</div><div class="stat-note">'+note+'</div></div><span class="stat-badge">'+icon+'</span></div>'}
+
+function projectById(id){return projects.find(p=>p.id===id)||null}
+function projectName(id){return projectById(id)?.name||"Progetto non assegnato"}
+function taskPriority(t){return t.priority||"media"}
+function projectTasks(id){return tasks.filter(t=>t.projectId===id)}
+function projectMetric(p){const a=projectTasks(p.id);return {n:a.length,done:a.filter(t=>t.done).length,pct:a.length?Math.round(a.filter(t=>t.done).length/a.length*100):null}}
+function priorityChip(priority){const c={alta:"coral",media:"blue",bassa:"cyan"}[priority]||"blue";return '<span class="chip '+c+'">'+safe(priority||"media")+'</span>'}
+function renderTaskRow(t,showProject=true){
+ return '<div class="list-item"><button class="check '+(t.done?"done":"")+'" data-task="'+safe(t.id)+'" aria-pressed="'+Boolean(t.done)+'" aria-label="Completa o riapri task">'+(t.done?"✓":"")+'</button>'+
+ '<div class="body"><button class="text-action task-title '+(t.done?"done":"")+'" data-task-leaf="'+safe(t.id)+'">'+safe(t.title)+'</button><div class="sub">'+(showProject?safe(projectName(t.projectId))+" · ":"")+(t.when&&t.when!=="oggi"?safe(t.when)+" · ":"")+safe(t.time||"Senza orario")+'</div></div>'+priorityChip(taskPriority(t))+'</div>';
+}
+function taskRows(){return tasks.filter(t=>t.when==="oggi").map(t=>renderTaskRow(t,true)).join("")||'<div class="empty">Nessuna task per oggi.</div>'}
+function viewTodayBase(){
+ const todays=tasks.filter(t=>t.when==="oggi"),done=todays.filter(t=>t.done).length,pct=todays.length?Math.round(done/todays.length*100):0;
+ const next=todays.filter(t=>!t.done).sort((a,b)=>({alta:0,media:1,bassa:2}[taskPriority(a)]??1)-({alta:0,media:1,bassa:2}[taskPriority(b)]??1))[0];
+ return headline("Oggi","Non tutto è urgente. Inizia dalla prossima cosa importante.","IL TUO CONTROL CENTER")+
+ '<div class="grid c12">'+
+ '<div class="hero span7"><div><div class="hero-label">PROSSIMA TASK DEL GIORNO · DATI DEMO</div><h2>'+safe(next?.title||"Nessuna task urgente.")+'</h2><p>'+(next?"Progetto: "+safe(projectName(next.projectId))+" · Priorità "+safe(taskPriority(next)):"Hai completato le attività del giorno nella demo.")+'</p></div><div class="hero-row"><button class="button primary" data-action="focus-start">◉ Focus lavoro</button><span class="small muted">Timer di concentrazione generico; FitOS usa la sua Focus Mode dedicata.</span></div></div>'+
+ '<div class="span5 grid c12" style="gap:12px"><div class="accent-block span12"><div><div class="xs strong">IL TUO AVANZAMENTO</div><div class="num">'+pct+'% <span class="xs" style="opacity:.8">'+done+'/'+todays.length+' task</span></div></div><div style="height:6px;border-radius:10px;background:#ffffff45;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#fff;border-radius:10px"></div></div></div>'+
+ '<div class="card span6" style="padding:15px"><div class="muted xs">Abitudini</div><div class="statnum">3/4</div><span class="chip cyan">In corso</span></div><div class="card span6" style="padding:15px"><div class="muted xs">Scadenze</div><div class="statnum">2</div><span class="chip coral">Da verificare</span></div></div>'+
+ '<div class="span7">'+sectionHead("Il tuo piano","Le task puoi completarle qui")+'<div class="card">'+taskRows()+'<button class="button small" style="margin-top:14px" data-action="quick">+ Aggiungi task</button></div></div>'+
+ '<div class="span5">'+sectionHead("Punti da controllare","Segnali, non notifiche inutili")+'<div class="card">'+
+ '<div class="list-item"><span class="chip coral">!</span><div class="body"><b>Task rimasta da ieri</b><div class="sub">Riprogramma senza perdere il contesto</div></div><button class="button small" data-action="agenda">Apri</button></div>'+
+ '<div class="list-item"><span class="chip violet">◷</span><div class="body"><b>Allenamento in programma</b><div class="sub">Scheda e sessione Focus</div></div><button class="button small" data-action="fitos">Vai</button></div>'+
+ '<div class="list-item"><span class="chip cyan">↧</span><div class="body"><b id="today-inbox-count">'+inbox.length+' elementi da smistare</b><div class="sub">Cattura ora, organizza più tardi</div></div><button class="button small" data-action="inbox">Inbox</button></div></div></div>'+
+ '<div class="span4">'+sectionHead("Routine","Progressi, senza pressioni")+'<div class="card">'+
+ '<div class="list-item"><span class="chip cyan">✓</span><div class="body">Movimento<div class="sub">Completato oggi</div></div></div><div class="list-item"><span class="chip violet">◷</span><div class="body">Lettura<div class="sub">Da completare</div></div></div><div class="list-item"><span class="chip blue">♥</span><div class="body">Benessere<div class="sub">In corso</div></div></div><button class="button small" style="margin-top:12px" data-action="review">Vedi trend</button></div></div>'+
+ '<div class="span4">'+sectionHead("FitOS oggi","Un passo alla volta")+'<div class="card"><div class="eyebrow">PROSSIMA SESSIONE</div><h2 style="margin:8px 0">Upper Body A</h2><p class="small muted" style="line-height:1.6">6 esercizi · 45 minuti previsti</p><div class="progress" style="--pct:33%;--shade:var(--cyan)"><i></i></div><div class="action-row" style="margin-top:21px"><button class="button primary small" data-action="fitos">Apri FitOS</button></div></div></div>'+
+ '<div class="span4">'+sectionHead("Patrimonio","Contesto, non distrazione")+'<div class="card"><div class="eyebrow">STIMA DEMO</div><div class="statnum" style="font-size:30px">€ 24.680</div><div class="small muted">Valore illustrativo</div><div style="margin-top:19px"><button class="button small" data-action="finance">Apri finanze</button></div></div></div>'+
+ '</div>';
+}
+
+function viewToday(){
+ let html=viewTodayBase();
+ html=html.replace('<div class="grid c12">','<div class="dashboard-tools"><span class="small muted">Priorità e task restano sempre visibili; i widget sono sotto il tuo controllo.</span><div><button class="button small" data-ux="widget-config">⚙ Personalizza widget</button> <button class="button small" data-ux="natural-open">✧ Scrivi come parli</button></div></div><div class="grid c12">');
+ for(const [label,key] of [["Routine","habits"],["FitOS oggi","fitos"],["Patrimonio","finance"]]){
+    const needle='<div class="span4"><div class="section-head"><h2>'+label;
+    const replacement='<div class="span4" data-widget="'+key+'"'+(state.widgets[key]?'':' hidden')+'><div class="section-head"><h2>'+label;
+    html=html.replace(needle,replacement);
+ }
+ return html;
+}
+function openWidgetConfig(){
+ dialog("Personalizza la dashboard",
+ '<div class="eyebrow">DASHBOARD ADATTIVA</div><p class="small muted" style="line-height:1.75">Le azioni principali rimangono nello stesso posto. Puoi scegliere quali widget secondari vedere, senza riordinamenti casuali.</p>'+
+ [["habits","Routine e abitudini"],["fitos","FitOS oggi"],["finance","Patrimonio"]].map(([key,label])=>'<label class="list-item" style="cursor:pointer"><input type="checkbox" data-widget-toggle="'+key+'" '+(state.widgets[key]?'checked':'')+'><span class="body">'+label+'</span></label>').join("")+
+ '<div class="modal-actions"><button class="button primary" data-close>Fatto</button></div><p class="xs muted">Solo demo: le preferenze non sono salvate dopo il refresh.</p>');
+}
+function notifyUndo(message,undo){
+ const t=$("#toast");t.replaceChildren();const msg=document.createElement("span");msg.textContent=message;const b=document.createElement("button");b.type="button";b.textContent="Annulla";b.addEventListener("click",()=>{undo();t.hidden=true;if(toastTimeout)clearTimeout(toastTimeout)});t.append(msg,b);t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},6000);
+}
+
+
+function projectCard(p){
+ const m=projectMetric(p);return '<article class="card project" role="button" tabindex="0" data-project="'+p.id+'" aria-label="Apri workspace '+safe(p.name)+'">'+
+ '<div class="project-art" style="--grad:linear-gradient(115deg,'+p.color+',color-mix(in srgb,'+p.color+' 62%,#182d50))"><span class="project-glyph">'+safe(p.glyph)+'</span><span class="pill" style="background:#ffffff35;color:#fff">'+safe(p.cat)+'</span></div>'+
+ '<div class="project-core"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p>'+
+ '<div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div><div class="project-foot"><span>'+m.n+' task nella demo</span><b>'+(m.pct===null?"—":m.pct+"%")+'</b></div></div></article>';
+}
+function projectParitySection(projectId,section){
+ const add='<button class="button small" data-project-entity-add="'+section+'" data-project-id="'+projectId+'">+ Aggiungi</button>';
+ if(section==="goals"){
+  const rows=projectGoals.filter(x=>x.projectId===projectId);
+  return sectionHead("Obiettivi",add)+'<div class="card parity-list">'+(rows.length?rows.map(x=>'<div class="parity-row '+(x.done?'done':'')+'"><button class="check '+(x.done?'done':'')+'" data-goal-toggle="'+x.id+'" aria-label="'+(x.done?'Riapri':'Completa')+' obiettivo">✓</button><div class="body"><b>'+safe(x.title)+'</b><div class="sub">'+(x.scope==="settimanale"?'Obiettivo settimanale':'Obiettivo generale')+' · demo in memoria</div></div><button class="button small" data-entity-delete="goal" data-entity-id="'+x.id+'">Elimina</button></div>').join(''):'<div class="empty">Nessun obiettivo demo per questo progetto.</div>')+'</div>';
+ }
+ if(section==="recur"){
+  const rows=recurrences.filter(x=>x.projectId===projectId);
+  return sectionHead("Ricorrenti",add)+'<div class="card parity-list">'+(rows.length?rows.map(x=>'<div class="parity-row"><button class="check '+(x.active?'done':'')+'" data-recur-toggle="'+x.id+'" aria-label="'+(x.active?'Sospendi':'Riattiva')+' ricorrenza">✓</button><div class="body"><b>'+safe(x.title)+'</b><div class="sub">'+safe(x.rule)+' · streak '+x.streak+' · '+(x.active?'attiva':'in pausa')+'</div></div><button class="button small" data-entity-delete="recur" data-entity-id="'+x.id+'">Elimina</button></div>').join(''):'<div class="empty">Nessuna regola ricorrente demo.</div>')+'</div>';
+ }
+ if(section==="expenses"){
+  const rows=projectExpenses.filter(x=>x.projectId===projectId);
+  return sectionHead("Spese pianificate",add)+'<div class="card parity-list">'+(rows.length?rows.map(x=>'<div class="parity-row '+(x.paid?'done':'')+'"><button class="check '+(x.paid?'done':'')+'" data-expense-toggle="'+x.id+'" aria-label="'+(x.paid?'Segna non pagata':'Segna pagata')+'">✓</button><div class="body"><b>'+safe(x.title)+'</b><div class="sub">Scadenza '+safe(x.date)+' · '+(x.paid?'pagata':'da pagare')+' · nessun movimento creato</div></div><b>'+eur(x.amount)+'</b></div>').join(''):'<div class="empty">Nessuna spesa pianificata demo.</div>')+'<div class="hint-box">Segnare “pagata” cambia solo questa vista demo: non crea un movimento e non tocca asset o saldi.</div></div>';
+ }
+ const rows=projectNotes.filter(x=>x.projectId===projectId);
+ return sectionHead("Note & risorse",add)+'<div class="card parity-list">'+(rows.length?rows.map(x=>'<div class="parity-row"><span class="chip violet">'+safe(x.kind)+'</span><div class="body"><b>'+safe(x.title)+'</b><div class="sub">'+safe(x.body)+'</div></div><button class="button small" data-entity-delete="note" data-entity-id="'+x.id+'">Elimina</button></div>').join(''):'<div class="empty">Nessuna nota o risorsa demo.</div>')+'</div>';
+}
+function projectWorkspace(){
+ const p=projectById(state.projectId);
+ if(!p){state.projectId=null;return viewProjects()}
+ const m=projectMetric(p),id=p.id;
+ const sections=[["tasks","Task"],["goals","Obiettivi"],["recur","Ricorrenti"],["expenses","Spese"],["notes","Note & link"]];
+ const nav='<div class="workspace-tabs" role="group" aria-label="Sezioni del progetto">'+sections.map(([k,label])=>'<button class="tab '+(state.projectSection===k?'active':'')+'" data-workspace-tab="'+k+'">'+label+'</button>').join("")+'</div>';
+ let body='';
+ if(state.projectSection==="tasks"){
+   const pTasks=projectTasks(id);
+   body='<div class="project-content"><div>'+sectionHead("Attività del progetto","Record unici: presenti anche in Oggi e Agenda quando pertinenti")+
+   '<div class="card">'+(pTasks.length?pTasks.map(t=>renderTaskRow(t,false)).join(""):'<div class="empty">Nessuna task nella demo. Il progetto reale potrebbe averne molte.</div>')+
+   '<button class="button small" style="margin-top:14px" data-add-project-task="'+id+'">+ Task nel progetto</button></div></div>'+
+   '<div>'+sectionHead("Organizzazione","Contesto senza aprire pannelli")+ '<div class="card">'+
+   '<div class="work-stat"><span>Task totali nella demo</span><b>'+m.n+'</b></div><div class="work-stat"><span>Completate</span><b>'+m.done+'</b></div><div class="work-stat"><span>Da completare</span><b>'+(m.n-m.done)+'</b></div>'+
+   '<div class="hint-box" style="margin-top:15px">Nella V2 questa area include viste Lista, Board, Priorità e Scadenze, con filtri salvati. Nessuna delle funzioni originali viene eliminata.</div></div></div></div>';
+ }else body='<div class="demo-contract"><span>◎</span><div><b>UX navigabile, dati sintetici.</b> Le modifiche vivono solo in memoria e si azzerano al reload. Nessuna sincronizzazione, Firebase o registrazione finanziaria.</div></div>'+projectParitySection(id,state.projectSection);
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><button class="crumb-link" data-folder-back>'+safe(folderName(p.folderId))+'</button><span>›</span><b>'+safe(p.name)+'</b></div>'+
+ '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-project-organize="'+id+'">⚙ Organizza</button><button class="button small" data-folder-back>← Torna alla cartella</button></div></div>'+
+ '<div class="workspace-kpis"><div class="card"><div class="stat-label">Avanzamento task nella demo</div><div class="statnum">'+(m.pct===null?"—":m.pct+"%")+'</div><div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div></div>'+
+ '<div class="card"><div class="stat-label">Task</div><div class="statnum">'+m.n+'</div><div class="small muted">Singola fonte di verità</div></div>'+
+ '<div class="card"><div class="stat-label">Stato</div><div class="statnum" style="font-size:18px;margin:17px 0">'+(p.status==="active"?"Attivo":p.status==="archived"?"Archiviato":"Pianificato")+'</div><div class="small muted">Label dimostrativa</div></div></div>'+
+ nav+body;
+}
+function addProjectEntity(kind,projectId){
+ const p=projectById(projectId);if(!p)return;
+ const labels={goals:"Nuovo obiettivo",recur:"Nuova ricorrenza",expenses:"Nuova spesa pianificata",notes:"Nuova nota o risorsa"};
+ let extra='';
+ if(kind==="goals")extra='<label class="field-label" for="entity-extra">Tipo</label><select class="field" id="entity-extra"><option value="generale">Generale</option><option value="settimanale">Settimanale</option></select>';
+ if(kind==="recur")extra='<label class="field-label" for="entity-extra">Frequenza</label><input class="field" id="entity-extra" required placeholder="Es. ogni lunedì">';
+ if(kind==="expenses")extra='<label class="field-label" for="entity-amount">Importo €</label><input class="field" id="entity-amount" type="number" min="0" step="0.01" required><label class="field-label" for="entity-extra">Scadenza</label><input class="field" id="entity-extra" required placeholder="Es. 28 ott">';
+ if(kind==="notes")extra='<label class="field-label" for="entity-note-kind">Tipo</label><select class="field" id="entity-note-kind"><option value="nota">Nota</option><option value="link">Link / risorsa</option></select><label class="field-label" for="entity-extra">Contenuto</label><textarea class="field" id="entity-extra" required></textarea>';
+ dialog(labels[kind]||"Nuovo elemento",'<form id="project-entity-form" data-entity-kind="'+kind+'" data-project-id="'+projectId+'"><p class="small muted">'+safe(p.name)+' · demo locale non persistita</p><label class="field-label" for="entity-title">Titolo</label><input class="field" id="entity-title" required maxlength="120">'+extra+'<div class="modal-actions"><button class="button" type="button" data-close>Annulla</button><button class="button primary" type="submit">Aggiungi alla demo</button></div></form>');
+}
+const homeFolders=[
+ {id:"kuzo",name:"KUZO ENTERPRISE",icon:"◈",color:"blue",original:true},
+ {id:"zjpc",name:"Z & JPC",icon:"✦",color:"purple",original:true},
+ {id:"reselling",name:"RESELLING & COLLEZIONE",icon:"◇",color:"coral",original:true},
+ {id:"finance",name:"FINANZA & TRADING",icon:"◎",color:"teal",original:true},
+ {id:"altro",name:"ALTRO",icon:"▤",color:"gold",original:true}
+];
+let nextDemoId=100;
+function folderById(id){return homeFolders.find(x=>x.id===id)||null}
+function folderName(id){return folderById(id)?.name||(id==="fitos"?"FitOS":"Cartella sconosciuta")}
+function folderCount(id){return projects.filter(p=>p.folderId===id).length}
+
+function folderOptions(selected){return homeFolders.map(f=>'<option value="'+safe(f.id)+'" '+(selected===f.id?'selected':'')+'>'+safe(f.name)+'</option>').join('')}
+function manageFolders(){
+ dialog("Gestisci cartelle",'<p class="small muted" style="line-height:1.7">Cartelle con ID stabili. Puoi modificarne ordine e nome senza scollegare i progetti.</p>'+
+ '<div class="folder-manager">'+homeFolders.map((f,i)=>'<div class="folder-manager-row"><span class="folder-manager-glyph">'+f.icon+'</span>'+
+ '<div class="body"><b>'+safe(f.name)+'</b><div class="sub">'+folderCount(f.id)+' progetti</div></div>'+
+ '<button class="button small" data-folder-shift="'+f.id+'" data-shift="-1" '+(i===0?'disabled':'')+'>↑</button>'+
+ '<button class="button small" data-folder-shift="'+f.id+'" data-shift="1" '+(i===homeFolders.length-1?'disabled':'')+'>↓</button>'+
+ '<button class="button small" data-folder-rename="'+f.id+'">Rinomina</button>'+
+ (!f.original?'<button class="button small" data-folder-delete="'+f.id+'">Elimina</button>':'')+'</div>').join('')+'</div>'+
+ '<div class="modal-actions"><button class="button" data-close>Chiudi</button><button class="button primary" data-folder-create>+ Cartella</button></div>');
+}
+function editFolder(id){
+ const f=folderById(id);
+ dialog(f?"Rinomina cartella":"Nuova cartella",'<form id="folder-edit-form" data-folder-id="'+safe(f?.id||"")+'">'+
+ '<label class="field-label" for="folder-name">Nome</label><input class="field" id="folder-name" maxlength="55" required value="'+safe(f?.name||"")+'">'+
+ '<div class="modal-actions"><button class="button" type="button" data-folder-manage>Indietro</button><button class="button primary" type="submit">'+(f?"Salva nome":"Crea cartella")+'</button></div></form>');
+}
+function editProject(id,folderId){
+ const p=id?projectById(id):null;
+ dialog(p?"Organizza progetto":"Nuovo progetto",'<form id="project-edit-form" data-project-id="'+safe(p?.id||"")+'">'+
+ '<label class="field-label" for="project-name">Nome</label><input class="field" id="project-name" maxlength="80" required value="'+safe(p?.name||"")+'">'+
+ '<label class="field-label" for="project-folder">Cartella</label><select class="field" id="project-folder">'+folderOptions(p?.folderId||folderId)+'</select>'+
+ '<label class="field-label" for="project-category">Categoria</label><input class="field" id="project-category" maxlength="50" value="'+safe(p?.cat||"Personale")+'">'+
+ '<label class="field-label" for="project-status">Stato</label><select class="field" id="project-status">'+
+ [['active','Attivo'],['planning','Pianificato'],['archived','Archiviato']].map(([v,n])=>'<option value="'+v+'" '+((p?.status||"active")===v?'selected':'')+'>'+n+'</option>').join('')+'</select>'+
+ '<label class="field-label" for="project-desc">Descrizione</label><textarea class="field" id="project-desc" maxlength="240">'+safe(p?.desc||"")+'</textarea>'+
+ '<div class="modal-actions"><button type="button" class="button" data-close>Chiudi</button><button type="submit" class="button primary">Salva nella demo</button></div></form>'+
+ '<p class="small muted" style="margin-top:12px">Archiviare non elimina le task del progetto.</p>');
+}
+function viewFolderHome(){
+ return headline("Cartelle","Apri una cartella per esplorare i progetti: la navigazione non si ferma a una griglia unica.","WORKSPACE / ORGANIZZAZIONE",'<button class="button title-action" data-folder-manage>⚙ Gestisci cartelle</button>')+
+ '<div class="folder-grid-b05">'+homeFolders.map((f,i)=>'<button class="folder-card-b05 folder-'+f.color+'" data-folder="'+safe(f.id)+'"><span class="folder-icon-b05">'+f.icon+'</span><span class="folder-n-b05">0'+(i+1)+'</span><h2>'+safe(f.name)+'</h2><div class="folder-bottom-b05">'+folderCount(f.id)+' progetti demo <span>↗</span></div></button>').join("")+'</div>'+
+ '<p class="small muted" style="margin:19px 0;line-height:1.7">Cartelle originali V1. I contenuti sono dimostrativi: i progetti personalizzati e il loro archivio verranno migrati privatamente, non pubblicati in questo laboratorio.</p>';
+}
+function viewProjects(){
+ if(!state.projectId&&!state.folderId)return viewFolderHome();
+ if(state.projectId)return projectWorkspace();
+ const filtered=projects.filter(p=>p.folderId===state.folderId&&(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLocaleLowerCase("it").includes(state.projectQuery.toLocaleLowerCase("it")));
+ const active=projects.filter(p=>p.status==="active").length;
+ const completed=tasks.filter(t=>t.done).length;
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><b>'+safe(folderName(state.folderId))+'</b></div>'+headline(folderName(state.folderId),"Apri un progetto di questa cartella per esplorarne le sezioni.","CARTELLA / PROGETTI")+
+ '<div class="grid c3">'+miniStat("Aree progetto",String(projects.length),"Stessa struttura originale","cyan","▦")+miniStat("Task demo",String(tasks.length),completed+" completate","blue","✓")+miniStat("Workspace attivi",String(active),"Stato dimostrativo","violet","◈")+'</div>'+
+ '<div class="section-head"><h2>Esplora i workspace</h2><div class="action-row"><button class="button small" data-project-create="'+state.folderId+'">+ Nuovo progetto</button><button class="button small" data-folder-manage>⚙ Cartelle</button></div></div>'+
+ '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca un progetto..." aria-label="Cerca progetti">'+
+ '<button class="tab '+(state.projectFilter==="all"?"active":"")+'" data-project-filter="all">Tutti</button><button class="tab '+(state.projectFilter==="active"?"active":"")+'" data-project-filter="active">Attivi</button><button class="tab '+(state.projectFilter==="planning"?"active":"")+'" data-project-filter="planning">Pianificati</button><button class="tab '+(state.projectFilter==="archived"?"active":"")+'" data-project-filter="archived">Archivio</button><button class="button small" data-action="project-layout">'+(state.projectView==="grid"?"☰ Vista lista":"▦ Vista bento")+'</button></div>'+
+ '<div class="project-catalog '+(state.projectView==="list"?"list-layout":"")+'" id="project-cards">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun workspace trovato.</div>')+'</div>'+
+ '<div class="hint-box" style="margin-top:20px">Questo è un prototipo di navigazione e design. Le 14 aree sono derivate dalla struttura V1, ma task e percentuali mostrate qui sono dati fittizi. I contenuti originali completi saranno preservati nella V2.</div>';
+}
+
+const agendaWeek=["lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"];
+function agendaTodayIdx(){return (new Date().getDay()+6)%7}
+function taskWeekIndex(t){
+ const w=String(t.when||"").toLocaleLowerCase("it");
+ if(w==="oggi")return agendaTodayIdx();
+ if(w==="domani")return (agendaTodayIdx()+1)%7;
+ if(w==="dopodomani")return (agendaTodayIdx()+2)%7;
+ return agendaWeek.indexOf(w);
+}
+function agendaTasksForDay(idx){return tasks.filter(t=>taskWeekIndex(t)===idx)}
+function agendaTaskMarkup(t){
+ return '<div class="agenda-task">'+(state.agendaBulk?'<button class="agenda-select '+(agendaSelection.has(t.id)?'on':'')+'" data-agenda-select="'+safe(t.id)+'" aria-pressed="'+agendaSelection.has(t.id)+'" aria-label="Seleziona '+safe(t.title)+'">✓</button>':'')+'<div class="agenda-task-when">'+safe(t.time||"—")+'</div>'+
+ '<button class="check '+(t.done?'done':'')+'" data-task="'+safe(t.id)+'" aria-pressed="'+t.done+'" aria-label="Completa la task">'+(t.done?'✓':'')+'</button>'+
+ '<div class="body"><button class="text-action '+(t.done?'task-title done':'')+'" data-task-leaf="'+safe(t.id)+'">'+safe(t.title)+'</button>'+
+ '<div class="sub">'+safe(projectName(t.projectId))+'</div></div>'+
+ priorityChip(taskPriority(t))+'</div>';
+}
+function agendaDayColumns(){
+ return '<div class="agenda-week-grid">'+agendaWeek.map((w,i)=>{
+ const day=agendaTasksForDay(i),count=day.filter(t=>!t.done).length;
+ return '<button class="agenda-day-card '+(state.agendaDay===i?'selected':'')+'" data-day="'+i+'"><div class="agenda-day-title">'+w.slice(0,3).toUpperCase()+'</div>'+
+ '<div class="agenda-day-num">'+(i===agendaTodayIdx()?'OGGI':String(i+1).padStart(2,'0'))+'</div>'+
+ '<div class="agenda-day-count">'+count+' da fare</div>'+
+ '<div class="agenda-day-markers">'+day.slice(0,3).map(t=>'<i style="background:var('+(t.done?'--muted':taskPriority(t)==='alta'?'--coral':'--blue')+')"></i>').join('')+'</div></button>';
+ }).join('')+'</div>';
+}
+function viewAgenda(){
+ const pending=tasks.filter(t=>!t.done),dated=pending.filter(t=>taskWeekIndex(t)>=0),unscheduled=pending.filter(t=>taskWeekIndex(t)<0);
+ const idx=state.agendaDay, selected=agendaWeek[idx],dayItems=agendaTasksForDay(idx).filter(t=>state.agendaProject==='all'||t.projectId===state.agendaProject);
+ const list=dayItems.length?dayItems.map(agendaTaskMarkup).join(''):'<div class="empty">Nessuna task assegnata a questo giorno nella demo.</div>';
+ const dayTabs='<div class="action-row"><button class="tab '+(state.agendaMode==='week'?'active':'')+'" data-agenda-mode="week">Settimana</button>'+
+ '<button class="tab '+(state.agendaMode==='day'?'active':'')+'" data-agenda-mode="day">Giorno</button>'+
+ '<button class="tab '+(state.agendaBulk?'active':'')+'" data-agenda-bulk-toggle aria-pressed="'+state.agendaBulk+'">☑ Seleziona</button>'+
+ '<button class="button small" data-action="quick">+ Nuova attività</button></div>';
+ const projectFilter='<label class="tiny muted" for="agenda-project">Mostra progetto</label> <select class="field agenda-project-filter" id="agenda-project"><option value="all">Tutti i progetti</option>'+
+ projects.map(p=>'<option value="'+p.id+'" '+(state.agendaProject===p.id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select>';
+ const weekly=state.agendaMode==='week'?agendaDayColumns():'<div class="agenda-day-focus">'+agendaDayColumns()+'</div>';
+ const todayOrOther=idx===agendaTodayIdx()?'OGGI':'GIORNO SELEZIONATO';
+ const bulk=state.agendaBulk?'<div class="agenda-bulkbar"><b>'+agendaSelection.size+' selezionate</b><button class="button small" data-agenda-bulk-action="move" '+(!agendaSelection.size?'disabled':'')+'>Sposta</button><button class="button small" data-agenda-bulk-action="duplicate" '+(!agendaSelection.size?'disabled':'')+'>Duplica</button><button class="button small danger" data-agenda-bulk-action="delete" '+(!agendaSelection.size?'disabled':'')+'>Elimina</button><button class="button small" data-agenda-bulk-action="cancel">Annulla</button></div>':'';
+ return headline("Agenda","La stessa task vive nel progetto e si vede qui nella data prevista. Nessun clone fra schermate.","PIANIFICAZIONE / SETTIMANA")+dayTabs+
+ '<div class="agenda-command"><div><span class="eyebrow">LA TUA SETTIMANA</span><h2>'+dated.length+' task pianificate <span class="small muted">· '+unscheduled.length+' da organizzare</span></h2></div><div>'+projectFilter+'</div></div>'+
+ weekly+'<div class="agenda-main-grid"><div>'+sectionHead(selected.charAt(0).toUpperCase()+selected.slice(1),"Apri una task per cambiare progetto, data o priorità")+
+ '<div class="card"><div class="eyebrow">'+todayOrOther+'</div>'+list+'</div>'+bulk+'</div>'+
+ '<div>'+sectionHead("Organizza senza duplicare","Le modifiche si riflettono in tutti i moduli")+
+ '<div class="card"><div class="eyebrow">INBOX TEMPORALE</div><h2>'+unscheduled.length+' task senza giorno</h2>'+
+ '<p class="small muted" style="line-height:1.75;margin-top:13px">Scegli un giorno direttamente da una task. Manteniamo sempre il progetto originale.</p>'+
+ '<div>'+unscheduled.slice(0,5).map(t=>'<div class="list-item"><div class="body"><button class="text-action" data-task-leaf="'+safe(t.id)+'">'+safe(t.title)+'</button><div class="sub">'+safe(projectName(t.projectId))+'</div></div><button class="button small" data-agenda-schedule="'+safe(t.id)+'">Pianifica</button></div>').join('')+'</div>'+
+ '<div class="hint-box" style="margin-top:15px">Batch 08 rende navigabili selezione multipla, spostamento, duplicazione ed eliminazione. Drag/drop, date ISO/timezone e ricorrenze materializzate restano gap espliciti.</div></div></div></div>';
+}
+function openAgendaBulkMove(){
+ dialog("Sposta task selezionate",'<form id="agenda-bulk-move-form"><p class="small muted">'+agendaSelection.size+' task · la stessa entità cambierà giorno, senza creare copie.</p><label class="field-label" for="agenda-bulk-day">Nuovo giorno</label><select class="field" id="agenda-bulk-day">'+agendaWeek.map(x=>'<option value="'+x+'">'+x+'</option>').join('')+'<option value="Da pianificare">Da pianificare</option></select><div class="modal-actions"><button type="button" class="button" data-close>Annulla</button><button class="button primary" type="submit">Sposta nella demo</button></div></form>');
+}
+function viewFitosBase(){const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
+let body="";
+if(state.fitosTab==="today")body='<div class="grid c12"><div class="span7 hero"><div><div class="hero-label">PRONTO QUANDO VUOI</div><h2>Upper Body A</h2><p>Prossima sessione in programma: sei esercizi, recuperi configurabili e progressione basata sul catalogo.</p></div><div class="hero-row"><button class="button primary" data-action="fitos-focus-start">Avvia Focus demo</button></div></div><div class="span5 card"><div class="eyebrow">RIEPILOGO FITOS</div>'+miniStat("Allenamento","2/3","esercizi esempio","cyan","◷")+'<div class="divider"></div><div class="small muted">Nutrizione: 1.840 / 2.600 kcal</div><div class="progress" style="--pct:71%;--shade:var(--blue);margin-top:10px"><i></i></div><div style="margin-top:18px" class="small muted">Peso: 72,4 kg · Demo</div></div></div>';
+else if(state.fitosTab==="train")body='<div class="grid c2"><div class="card"><div class="eyebrow">SCHEDA DEL GIORNO</div><h2>Upper Body A</h2><div class="list-item"><span class="chip cyan">1</span><div class="body">Panca piana<div class="sub">3 × 8 · 50 kg</div></div></div><div class="list-item"><span class="chip blue">2</span><div class="body">Lat machine<div class="sub">3 × 10 · 45 kg</div></div></div><div class="list-item"><span class="chip violet">3</span><div class="body">Shoulder press<div class="sub">3 × 12 · 16 kg</div></div></div><button class="button primary" style="margin-top:12px" data-action="fitos-focus-start">Inizia sessione</button></div><div class="card"><h2>Catalogo esercizi</h2><p class="muted small" style="margin-top:12px;line-height:1.7">Nella V2: schede e catalogo con ID condivisi, storico dei set e timer recupero sempre raggiungibile.</p></div></div>';
+else if(state.fitosTab==="food")body='<div class="grid c2"><div class="card"><div class="eyebrow">OGGI</div><h2>Calorie e macro</h2><div class="statnum">1.840 / 2.600</div><div class="progress" style="--pct:71%;--shade:var(--cyan)"><i></i></div><div class="list-item">Proteine <b class="stretch">125 g</b></div><div class="list-item">Carboidrati <b class="stretch">190 g</b></div><div class="list-item">Grassi <b class="stretch">52 g</b></div></div><div class="card"><h2>Menu di oggi</h2><div class="list-item">Colazione <b class="stretch">Completata</b></div><div class="list-item">Pranzo <b class="stretch">In programma</b></div><div class="list-item">Cena <b class="stretch">In programma</b></div><p class="small muted" style="line-height:1.7;margin-top:16px">Piani settimanali, ricette e database alimenti rimarranno sezioni distinte.</p></div></div>';
+else if(state.fitosTab==="stretch")body='<div class="grid c2"><div class="card"><h2>Mobilità serale</h2><p class="small muted" style="line-height:1.8;margin:12px 0">3 esercizi · 12 minuti previsti</p><div class="list-item">Anca / flessori <b class="stretch">3 min</b></div><div class="list-item">Schiena e dorsali <b class="stretch">4 min</b></div><div class="list-item">Catena posteriore <b class="stretch">5 min</b></div><button class="button primary" style="margin-top:15px" data-action="fitos-focus-start">Avvia routine demo</button></div><div class="card"><h2>Routine e catalogo</h2><p class="small muted" style="line-height:1.8;margin-top:12px">Il nuovo FitOS mantiene le routine settimanali e il catalogo, senza mescolare i timer con il contenuto delle schede.</p></div></div>';
+else body='<div class="grid c2"><div class="card"><h2>Storico peso</h2><div class="statnum">72,4 kg</div><div class="small muted">Valore simulato</div><button class="button primary" style="margin-top:20px" data-action="weight-add">+ Registra peso (demo)</button></div><div class="card"><h2>Andamento</h2><div class="weekbar" style="margin-top:28px"><i style="--h:87%"></i><i style="--h:71%"></i><i style="--h:77%"></i><i style="--h:59%"></i><i style="--h:63%"></i><i style="--h:47%"></i><i style="--h:40%"></i></div><p class="small muted" style="margin:15px 0 0">Grafico puramente illustrativo</p></div></div>';
+return headline("FitOS","Allenati, mangia bene e osserva i progressi senza cambiare continuamente contesto.","SALUTE & PERFORMANCE")+'<div class="screen-tabs">'+tabs.map(([key,label])=>'<button class="tab '+(state.fitosTab===key?"active":"")+'" data-fitos="'+key+'">'+label+'</button>').join("")+'</div>'+body;
+}
+
+const fitosDays=[
+{day:"Lunedì",name:"Upper Body A",status:"training",items:["panca","lat","press","curl"]},
+{day:"Martedì",name:"Recupero attivo",status:"rest",items:[]},
+{day:"Mercoledì",name:"Lower Body",status:"training",items:["squat","pressleg","rdl"]},
+{day:"Giovedì",name:"Stretching e mobilità",status:"stretch",items:[]},
+{day:"Venerdì",name:"Upper Body B",status:"training",items:["lat","panca","triceps","curl"]},
+{day:"Sabato",name:"Recupero attivo",status:"rest",items:[]},
+{day:"Domenica",name:"Riposo",status:"rest",items:[]}
+];
+const fitosExercises=[
+{id:"panca",name:"Panca piana",sets:3,reps:8,kg:50,rest:120,group:"Petto",cue:"Scapole stabili e polsi allineati; movimento controllato."},
+{id:"lat",name:"Lat machine",sets:3,reps:10,kg:45,rest:90,group:"Dorso",cue:"Guida il movimento con i gomiti, senza slancio."},
+{id:"press",name:"Shoulder press",sets:3,reps:12,kg:16,rest:75,group:"Spalle",cue:"Attiva il core, evita compensi della zona lombare."},
+{id:"curl",name:"Curl manubri",sets:2,reps:12,kg:10,rest:60,group:"Bicipiti",cue:"Gomiti stabili e discesa controllata."},
+{id:"squat",name:"Squat",sets:4,reps:8,kg:60,rest:150,group:"Gambe",cue:"Mantieni equilibrio e ampiezza controllata, senza forzare."},
+{id:"pressleg",name:"Leg press",sets:3,reps:10,kg:110,rest:120,group:"Gambe",cue:"Mantieni il bacino in appoggio e controlla il ritorno."},
+{id:"rdl",name:"Stacco rumeno",sets:3,reps:10,kg:45,rest:120,group:"Catena posteriore",cue:"Movimento d'anca, schiena neutra e carico vicino al corpo."},
+{id:"triceps",name:"Pushdown tricipiti",sets:3,reps:12,kg:25,rest:60,group:"Tricipiti",cue:"Fissa la posizione delle spalle ed evita slanci."}
+];
+const fitosSyntheticHistory=[
+ {id:"hist-06",date:"2026-10-16",name:"Upper Body B",duration:2940,source:"synthetic",exercises:[{id:"lat",sets:[[47.5,10],[47.5,10],[47.5,9]]},{id:"panca",sets:[[52.5,8],[52.5,8],[52.5,7]]},{id:"triceps",sets:[[27.5,12],[27.5,11],[25,12]]},{id:"curl",sets:[[11,12],[11,11]]}]},
+ {id:"hist-05",date:"2026-10-12",name:"Upper Body A",duration:2820,source:"synthetic",exercises:[{id:"panca",sets:[[52.5,8],[52.5,7],[50,8]]},{id:"lat",sets:[[47.5,10],[47.5,9],[45,10]]},{id:"press",sets:[[17,12],[17,11],[16,12]]},{id:"curl",sets:[[11,12],[10,12]]}]},
+ {id:"hist-04",date:"2026-10-09",name:"Lower Body",duration:3300,source:"synthetic",exercises:[{id:"squat",sets:[[65,8],[65,8],[65,7],[60,8]]},{id:"pressleg",sets:[[120,10],[120,10],[120,9]]},{id:"rdl",sets:[[50,10],[50,10],[50,9]]}]},
+ {id:"hist-03",date:"2026-10-05",name:"Upper Body A",duration:2760,source:"synthetic",exercises:[{id:"panca",sets:[[50,8],[50,8],[50,8]]},{id:"lat",sets:[[45,10],[45,10],[45,10]]},{id:"press",sets:[[16,12],[16,12],[16,11]]},{id:"curl",sets:[[10,12],[10,12]]}]},
+ {id:"hist-02",date:"2026-10-02",name:"Lower Body",duration:3180,source:"synthetic",exercises:[{id:"squat",sets:[[62.5,8],[62.5,8],[60,8],[60,8]]},{id:"pressleg",sets:[[115,10],[115,10],[110,10]]},{id:"rdl",sets:[[47.5,10],[47.5,10],[45,10]]}]},
+ {id:"hist-01",date:"2026-09-28",name:"Upper Body A",duration:2700,source:"synthetic",exercises:[{id:"panca",sets:[[47.5,8],[47.5,8],[47.5,8]]},{id:"lat",sets:[[42.5,10],[42.5,10],[42.5,10]]},{id:"press",sets:[[15,12],[15,12],[15,12]]},{id:"curl",sets:[[9,12],[9,12]]}]}
+];
+function exerciseById(id){return fitosExercises.find(x=>x.id===id)}
+function historyCurrentSession(){
+ if(workoutSession.status!=="finished")return null;
+ return {id:"current-session",date:workoutSession.endedAt?.slice(0,10)||new Date().toISOString().slice(0,10),name:fitosDays[workoutSession.dayIndex].name,duration:workoutSession.elapsed,source:"current",exercises:sessionExercises().map(x=>({id:x.id,sets:(workoutSession.logs[x.id]||[]).map(s=>[s.kg,s.reps])})).filter(x=>x.sets.length)};
+}
+function historySessions(){const current=historyCurrentSession();return current?[current,...fitosSyntheticHistory]:fitosSyntheticHistory.slice()}
+function historySessionVolume(s){return s.exercises.reduce((total,x)=>total+x.sets.reduce((n,set)=>n+set[0]*set[1],0),0)}
+function historySessionSets(s){return s.exercises.reduce((total,x)=>total+x.sets.length,0)}
+function estimateE1rm(kg,reps){return Math.round((kg*(1+reps/30))*10)/10}
+function historyExerciseE1rm(s,id){const x=s.exercises.find(e=>e.id===id);return x?Math.max(...x.sets.map(set=>estimateE1rm(set[0],set[1]))):0}
+function historyDate(date){return new Date(date+"T12:00:00").toLocaleDateString("it-IT",{day:"2-digit",month:"short"})}
+function historySessionById(id){return historySessions().find(s=>s.id===id)}
+function sessionExercises(){return fitosDays[workoutSession.dayIndex].items.map(exerciseById).filter(Boolean)}
+function sessionExercise(){return sessionExercises()[workoutSession.exerciseIndex]||sessionExercises()[0]}
+function sessionFmt(seconds){seconds=Math.max(0,Math.floor(seconds||0));return Math.floor(seconds/60)+":"+String(seconds%60).padStart(2,"0")}
+function sessionElapsed(){if(workoutSession.status==="finished")return workoutSession.elapsed;if(!workoutSession.startedAt)return 0;return Math.floor((Date.now()-workoutSession.startedAt)/1000)}
+function sessionCompletedSets(){return Object.values(workoutSession.logs).reduce((n,rows)=>n+rows.length,0)}
+function sessionTotalSets(){return sessionExercises().reduce((n,x)=>n+x.sets,0)}
+function sessionProgress(){return Math.round(sessionCompletedSets()/sessionTotalSets()*100)||0}
+function stopSessionTick(){if(sessionTick)clearInterval(sessionTick);sessionTick=null}
+function ensureSessionTick(){if(sessionTick)return;sessionTick=setInterval(()=>{
+ if(workoutSession.status!=="running"){stopSessionTick();return}
+ if(workoutSession.phase==="rest"&&!workoutSession.rest.paused){workoutSession.rest.remaining=Math.max(0,Math.ceil((workoutSession.rest.deadline-Date.now())/1000));if(workoutSession.rest.remaining<=0){completeSessionRest(false);return}}
+ const elapsed=$("#session-elapsed");if(elapsed)elapsed.textContent=sessionFmt(sessionElapsed());
+ const display=$("#session-rest-display");if(display)display.textContent=sessionFmt(workoutSession.rest.remaining);
+ const ring=$("#session-rest-ring");if(ring&&workoutSession.rest.total)ring.style.setProperty("--pct",Math.max(0,workoutSession.rest.remaining/workoutSession.rest.total*100)+"%");
+ },1000)}
+function resetWorkoutSession(dayIndex=0){stopSessionTick();workoutSession.dayIndex=dayIndex;const first=sessionExercises()[0];Object.assign(workoutSession,{dayIndex,status:"ready",exerciseIndex:0,phase:"work",logs:{},skipped:{},draft:{kg:first?.kg||0,reps:first?.reps||0},rest:{total:0,remaining:0,deadline:null,paused:false},startedAt:null,endedAt:null,elapsed:0,lastSet:null,templateUpdated:false})}
+function startWorkoutSession(){if(workoutSession.status!=="ready")return;workoutSession.status="running";workoutSession.startedAt=Date.now();const x=sessionExercise();workoutSession.draft={kg:x.kg,reps:x.reps};ensureSessionTick();render()}
+function selectSessionExercise(next){const list=sessionExercises(),x=list[next];if(!x||workoutSession.status!=="running"||workoutSession.phase!=="work"||workoutSession.skipped[x.id]||(workoutSession.logs[x.id]||[]).length>=x.sets)return;workoutSession.exerciseIndex=next;workoutSession.draft={kg:x.kg,reps:x.reps};render()}
+function beginSessionRest(seconds){workoutSession.phase="rest";workoutSession.rest={total:seconds,remaining:seconds,deadline:Date.now()+seconds*1000,paused:false};ensureSessionTick();render()}
+function completeSessionRest(show=true){workoutSession.phase="work";workoutSession.rest={total:0,remaining:0,deadline:null,paused:false};if(show)notify("Recupero terminato · prossima serie pronta");render()}
+function advanceSessionExercise(){const list=sessionExercises();let next=workoutSession.exerciseIndex+1;while(next<list.length&&(workoutSession.skipped[list[next].id]||(workoutSession.logs[list[next].id]||[]).length>=list[next].sets))next++;if(next>=list.length)next=list.findIndex(x=>!workoutSession.skipped[x.id]&&(workoutSession.logs[x.id]||[]).length<x.sets);if(next<0){finishWorkoutSession();return}workoutSession.exerciseIndex=next;workoutSession.phase="work";const x=list[next];workoutSession.draft={kg:x.kg,reps:x.reps};render()}
+function logSessionSet(){if(workoutSession.status!=="running"||workoutSession.phase!=="work")return;const x=sessionExercise(),rows=workoutSession.logs[x.id]||(workoutSession.logs[x.id]=[]);const entry={index:rows.length+1,kg:workoutSession.draft.kg,reps:workoutSession.draft.reps,at:new Date().toISOString()};rows.push(entry);workoutSession.lastSet={exerciseId:x.id,exerciseIndex:workoutSession.exerciseIndex,entry};if(rows.length>=x.sets)advanceSessionExercise();else beginSessionRest(x.rest)}
+function skipSessionExercise(){if(workoutSession.status!=="running"||workoutSession.phase!=="work")return;workoutSession.skipped[sessionExercise().id]=true;workoutSession.lastSet=null;advanceSessionExercise()}
+function undoSessionSet(){const u=workoutSession.lastSet;if(!u)return;const rows=workoutSession.logs[u.exerciseId]||[];if(!rows.length)return;rows.pop();workoutSession.exerciseIndex=u.exerciseIndex;workoutSession.phase="work";workoutSession.draft={kg:u.entry.kg,reps:u.entry.reps};workoutSession.rest={total:0,remaining:0,deadline:null,paused:false};workoutSession.lastSet=null;render();notify("Ultima serie annullata")}
+function pauseSessionRest(){if(workoutSession.phase!=="rest")return;if(workoutSession.rest.paused){workoutSession.rest.paused=false;workoutSession.rest.deadline=Date.now()+workoutSession.rest.remaining*1000}else{workoutSession.rest.remaining=Math.max(0,Math.ceil((workoutSession.rest.deadline-Date.now())/1000));workoutSession.rest.paused=true;workoutSession.rest.deadline=null}render()}
+function adjustSessionRest(delta){if(workoutSession.phase!=="rest")return;workoutSession.rest.remaining=Math.max(0,workoutSession.rest.remaining+delta);workoutSession.rest.total=Math.max(workoutSession.rest.total,workoutSession.rest.remaining);if(!workoutSession.rest.paused)workoutSession.rest.deadline=Date.now()+workoutSession.rest.remaining*1000;if(workoutSession.rest.remaining===0)completeSessionRest();else render()}
+function finishWorkoutSession(){workoutSession.elapsed=sessionElapsed();workoutSession.endedAt=new Date().toISOString();workoutSession.status="finished";workoutSession.phase="finished";stopSessionTick();render()}
+function sessionProgramHtml(){const list=sessionExercises();return '<div class="focus-program-head"><div><div class="eyebrow">PROGRAMMA COMPLETO</div><h3>'+safe(fitosDays[workoutSession.dayIndex].name)+'</h3></div><span class="pill">'+sessionProgress()+'%</span></div><div class="progress" style="--pct:'+sessionProgress()+'%;--shade:var(--main);margin-bottom:12px"><i></i></div><div class="focus-program-list">'+list.map((x,i)=>{const n=(workoutSession.logs[x.id]||[]).length,done=n>=x.sets,skip=workoutSession.skipped[x.id],active=workoutSession.status==="running"&&i===workoutSession.exerciseIndex;return '<button class="focus-exercise '+(active?'active ':'')+(done?'done ':'')+(skip?'skipped ':'')+'" data-session-select="'+i+'" '+(workoutSession.status!=="running"||workoutSession.phase!=="work"||done||skip?'disabled':'')+'><div class="focus-exercise-top"><i class="focus-dot"></i><b>'+safe(x.name)+(done?' ✓':skip?' · saltato':'')+'</b></div><div class="xs muted">'+x.sets+' × '+x.reps+' · '+x.kg+' kg · rec. '+sessionFmt(x.rest)+'</div><div class="focus-setdots">'+Array.from({length:x.sets},(_,k)=>'<i class="'+(k<n?'done':'')+'"></i>').join('')+'</div></button>'}).join('')+'</div>'}
+function sessionInsightsHtml(){const x=sessionExercise(),volume=Object.values(workoutSession.logs).flat().reduce((n,s)=>n+s.kg*s.reps,0);return '<div><div class="eyebrow">SESSIONE</div><div class="focus-stat"><span class="muted">Serie completate</span><b>'+sessionCompletedSets()+' / '+sessionTotalSets()+'</b></div><div class="focus-stat"><span class="muted">Tempo trascorso</span><b id="session-elapsed">'+sessionFmt(sessionElapsed())+'</b></div><div class="focus-stat"><span class="muted">Volume registrato</span><b>'+Math.round(volume)+' kg</b></div><div class="focus-stat"><span class="muted">Stato</span><b>'+({ready:"Pronta",running:"In corso",finished:"Terminata"}[workoutSession.status])+'</b></div></div>'+(workoutSession.status==="running"?'<div><div class="eyebrow" style="margin-top:22px">TECNICA</div><h3>'+safe(x.name)+'</h3><p class="small muted" style="line-height:1.75;margin-top:10px">'+safe(x.cue)+'</p><div class="template-choice"><b class="small">Ultima prestazione demo</b><p class="xs muted" style="margin:8px 0 0">'+x.kg+' kg × '+x.reps+' · storico aggregato, non inventiamo set passati.</p></div></div>':'')+'<p class="xs muted" style="line-height:1.6;margin-top:22px">Sessione locale e temporanea. Nessun dato reale o template viene modificato automaticamente.</p>'}
+function sessionMainHtml(){
+ if(workoutSession.status==="ready")return '<div class="focus-hero"><div><div class="eyebrow">SESSION OVERVIEW · DATI DEMO</div><h1>'+safe(fitosDays[workoutSession.dayIndex].name)+'</h1><p class="muted small">'+sessionExercises().length+' esercizi · '+sessionTotalSets()+' serie · recuperi specifici per esercizio. Sessione e scheda futura sono entità separate.</p></div><div class="focus-actions"><button class="button primary" data-session-action="start">▶ Avvia sessione</button><button class="button" data-session-action="exit">Torna alla scheda</button></div></div>';
+ if(workoutSession.status==="finished"){
+  const volume=Object.values(workoutSession.logs).flat().reduce((n,s)=>n+s.kg*s.reps,0),skipped=Object.keys(workoutSession.skipped).length;
+  return '<div class="focus-hero"><div><div class="eyebrow">SESSIONE TERMINATA · DEMO</div><h1>Allenamento registrato.</h1><p class="muted small">Il riepilogo appartiene alla sessione. La scheda futura resta invariata finché non scegli esplicitamente di aggiornarla.</p></div></div><div class="session-summary"><div><strong>'+sessionCompletedSets()+'</strong><span class="xs muted">Serie completate</span></div><div><strong>'+sessionFmt(workoutSession.elapsed)+'</strong><span class="xs muted">Durata</span></div><div><strong>'+Math.round(volume)+' kg</strong><span class="xs muted">Volume</span></div></div><div class="card"><div class="eyebrow">REGISTRO SESSIONE</div><div class="session-log">'+sessionExercises().map(x=>'<div class="session-set"><b>'+safe(x.name)+'</b><span>'+((workoutSession.logs[x.id]||[]).length)+' / '+x.sets+' serie</span><span>'+(workoutSession.skipped[x.id]?'Saltato':'✓')+'</span></div>').join('')+'</div><div class="template-choice"><b>Vuoi aggiornare la scheda futura?</b><p class="small muted" style="line-height:1.6;margin:8px 0 12px">Scelta separata: in una V2 reale produrrebbe una modifica esplicita del template, mai una sovrascrittura implicita.</p><button class="button '+(workoutSession.templateUpdated?'focus-resume':'')+'" data-session-action="template" '+(workoutSession.templateUpdated?'disabled':'')+'>'+(workoutSession.templateUpdated?'✓ Aggiornamento simulato':'Usa i carichi svolti nel template')+'</button></div></div><div class="focus-actions"><button class="button primary" data-session-action="reset">Nuova sessione demo</button><button class="button" data-session-action="exit">Torna a FitOS</button></div>';
+ }
+ const x=sessionExercise(),done=(workoutSession.logs[x.id]||[]).length,setNo=Math.min(x.sets,done+1);
+ if(workoutSession.phase==="rest"){const pct=workoutSession.rest.total?Math.max(0,workoutSession.rest.remaining/workoutSession.rest.total*100):0;return '<div class="focus-hero"><div><div class="eyebrow">RECUPERO · '+safe(x.name)+'</div><h1>Serie '+done+' completata.</h1><p class="muted small">Timer basato su una scadenza reale: continua correttamente anche se la scheda del browser rallenta.</p></div></div><div class="focus-panel rest-card"><div class="rest-ring" id="session-rest-ring" style="--pct:'+pct+'%"><div><strong id="session-rest-display">'+sessionFmt(workoutSession.rest.remaining)+'</strong><small>RECUPERO</small></div></div><div class="focus-actions" style="justify-content:center"><button class="button" data-session-action="rest-minus">−15s</button><button class="button primary" data-session-action="pause">'+(workoutSession.rest.paused?'▶ Riprendi':'Ⅱ Pausa')+'</button><button class="button" data-session-action="rest-plus">+15s</button><button class="button" data-session-action="rest-skip">Salta recupero →</button></div></div>'}
+ return '<div class="focus-hero"><div><div class="eyebrow">ESERCIZIO '+(workoutSession.exerciseIndex+1)+' / '+sessionExercises().length+' · '+safe(x.group.toUpperCase())+'</div><h1>'+safe(x.name)+'</h1><p class="muted small">Serie '+setNo+' di '+x.sets+' · recupero previsto '+sessionFmt(x.rest)+' · valori effettivi modificabili per set.</p></div></div><div class="focus-counters"><div class="focus-counter"><div class="eyebrow">CARICO</div><strong>'+workoutSession.draft.kg+' kg</strong><div class="focus-counter-actions"><button data-session-action="kg-minus" aria-label="Riduci carico">−</button><button data-session-action="kg-plus" aria-label="Aumenta carico">+</button></div></div><div class="focus-counter"><div class="eyebrow">RIPETIZIONI</div><strong>'+workoutSession.draft.reps+'</strong><div class="focus-counter-actions"><button data-session-action="reps-minus" aria-label="Riduci ripetizioni">−</button><button data-session-action="reps-plus" aria-label="Aumenta ripetizioni">+</button></div></div></div><div class="focus-actions"><button class="button primary" data-session-action="complete">✓ '+(done===x.sets-1?'Completa esercizio':'Serie completata')+'</button><button class="button" data-session-action="skip">Salta esercizio →</button>'+(workoutSession.lastSet?'<button class="button" data-session-action="undo">↶ Annulla ultima serie</button>':'')+'<button class="button" data-session-action="exit">Esci e mantieni la sessione</button></div>';
+}
+function viewFitosSession(){const program=sessionProgramHtml();return '<div class="workspace-breadcrumb"><button class="crumb-link" data-session-action="exit">FitOS / Allenamento</button><span>›</span><b>Sessione guidata</b><span class="pill">NON PERSISTITA</span></div><div class="focus-mobile-program"><details><summary>☰ Programma completo · '+sessionProgress()+'%</summary><div class="focus-program-list">'+program+'</div></details></div><div class="focus-shell"><aside class="focus-panel focus-program" aria-label="Programma completo">'+program+'</aside><main class="focus-panel focus-main">'+sessionMainHtml()+'</main><aside class="focus-panel focus-insights">'+sessionInsightsHtml()+'</aside></div>'}
+function fitosTrainingHeader(){
+ const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
+ return headline("FitOS","Schede complete, catalogo esercizi, allenamenti e storico: naviga nel programma senza perdere dettagli.","SALUTE & PERFORMANCE")+
+ '<div class="screen-tabs">'+tabs.map(([id,label])=>'<button class="tab '+(state.fitosTab===id?"active":"")+'" data-fitos="'+id+'">'+label+'</button>').join("")+'</div>';
+}
+function fitosDayView(idx){
+ const day=fitosDays[idx];if(!day)return "";
+ const exercises=day.items.map(id=>exerciseById(id)).filter(Boolean);
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-fitos-week-back>Settimana allenamento</button><span>›</span><b>'+day.day+'</b></div>'+
+ '<div class="fitos-day-hero"><div class="eyebrow">SCHEDA DEL '+safe(day.day.toUpperCase())+' · DATI DEMO</div><h2>'+safe(day.name)+'</h2><p>Serie, ripetizioni, carichi e recuperi per esercizio. Le note tecniche si aprono solo cliccando sull’esercizio finale.</p>'+
+ (exercises.length?'<button class="button primary '+(workoutSession.status!=="ready"&&workoutSession.dayIndex===idx?'focus-resume':'')+'" data-action="fitos-focus-start" data-session-day="'+idx+'">'+(workoutSession.status!=="ready"&&workoutSession.dayIndex===idx?'↗ Riprendi sessione':'▶ Avvia questa scheda')+'</button>':'<span class="pill">Recupero / mobilità</span>')+'</div>'+
+ sectionHead("Programma completo",exercises.length+' esercizi · valori dimostrativi')+
+ '<div class="card">'+(exercises.length?exercises.map((x,i)=>'<button class="fitos-exercise-line" data-fitos-exercise="'+x.id+'"><span class="fitos-ex-num">'+(i+1)+'</span><div><b>'+safe(x.name)+'</b><div class="small muted">'+x.sets+' serie × '+x.reps+' ripetizioni · '+x.kg+' kg · recupero '+x.rest+'s</div></div><span class="fitos-ex-link">Dettagli ↗</span></button>').join(""):'<div class="empty">Giornata senza scheda pesi in questa simulazione. La V2 manterrà anche stretching e recupero.</div>')+'</div>'+
+ '<div class="hint-box" style="margin-top:15px">Il tasto Focus apre uno studio interattivo indipendente con programma fittizio “Upper Body A”. La V2 reale avvierà esattamente questa scheda e registrerà le serie effettive senza sovrascrivere il template.</div>';
+}
+function fitosWeekView(){
+ const sessions=fitosDays.filter(x=>x.status==="training").length;
+ return '<div class="fitos-week-summary"><div><div class="eyebrow">SCHEDE SETTIMANALI</div><h2>Il tuo programma di allenamento</h2><p class="small muted">Sette giorni, schede e recuperi distinti. Qui navigazione prima, dettaglio solo in fondo.</p></div><div class="fitos-summary-tags"><span class="pill">'+sessions+' allenamenti demo</span><span class="pill">8 esercizi catalogo</span></div></div>'+
+ '<div class="fitos-week-cards">'+fitosDays.map((d,i)=>'<button class="fitos-day-card" data-fitos-day="'+i+'"><div class="eyebrow">'+safe(d.day.toUpperCase())+'</div><h3>'+safe(d.name)+'</h3><div class="fitos-day-meta">'+(d.items.length?d.items.length+' esercizi · scheda demo':d.status==="stretch"?'Routine mobilità':'Nessuna scheda pesi')+'</div><span class="fitos-go">Apri scheda ↗</span></button>').join("")+'</div>';
+}
+function fitosCatalogView(){
+ return sectionHead("Catalogo esercizi","Ricerca, schede tecniche e cronologia — livelli separati")+
+ '<div class="fitos-catalog-grid">'+fitosExercises.map(x=>'<button class="card fitos-catalog-card" data-fitos-exercise="'+x.id+'"><div class="eyebrow">'+safe(x.group.toUpperCase())+'</div><h3>'+safe(x.name)+'</h3><div class="small muted">'+x.sets+'×'+x.reps+' · Recupero '+x.rest+'s</div><span>Apri scheda tecnica ↗</span></button>').join("")+'</div>';
+}
+function fitosHistoryDetail(session){
+ const volume=historySessionVolume(session),sets=historySessionSets(session),best=Math.max(0,...session.exercises.flatMap(x=>x.sets.map(set=>estimateE1rm(set[0],set[1]))));
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-history-back>Storico allenamenti</button><span>›</span><b>'+safe(session.name)+'</b></div><div class="history-list"><div class="history-detail-head"><div><div class="eyebrow">'+(session.source==="current"?'SESSIONE CORRENTE · TEMPORANEA':'SESSIONE SINTETICA · DEMO')+'</div><h2 style="margin-top:6px">'+safe(session.name)+'</h2><p class="small muted" style="margin-top:8px">'+historyDate(session.date)+' · '+sessionFmt(session.duration)+'</p></div><button class="button" data-history-back>← Torna allo storico</button></div><div class="history-detail-grid"><div class="history-kpi"><span class="xs muted">Serie</span><strong>'+sets+'</strong></div><div class="history-kpi"><span class="xs muted">Volume</span><strong>'+Math.round(volume)+' kg</strong></div><div class="history-kpi"><span class="xs muted">Miglior e1RM</span><strong>'+best+' kg</strong></div></div>'+session.exercises.map(row=>{const x=exerciseById(row.id),bestSet=Math.max(...row.sets.map(set=>estimateE1rm(set[0],set[1])));return '<div class="history-detail-exercise"><div class="history-detail-exercise-head"><div><div class="eyebrow">'+safe(x?.group||"ESERCIZIO")+'</div><h3>'+safe(x?.name||row.id)+'</h3></div><span class="pill">e1RM '+bestSet+' kg</span></div><div class="history-set-row muted"><span>Serie</span><span>Carico</span><span>Rip.</span><span>e1RM</span></div>'+row.sets.map((set,i)=>'<div class="history-set-row"><b>#'+(i+1)+'</b><span>'+set[0]+' kg</span><span>'+set[1]+'</span><span>'+estimateE1rm(set[0],set[1])+' kg</span></div>').join('')+'</div>'}).join('')+'<div class="history-source-note small"><b>Trasparenza dati:</b> '+(session.source==="current"?'questa riga deriva soltanto dalla sessione in memoria e scompare al reload.':'questi valori sono sintetici, costruiti unicamente per testare la UX dello storico.')+' L’e1RM è una stima illustrativa, non un test massimale.</div></div>';
+}
+function fitosHistoryView(){
+ const selected=state.fitosHistoryExercise,all=historySessions(),session=state.fitosHistorySession?historySessionById(state.fitosHistorySession):null;
+ if(session)return fitosHistoryDetail(session);
+ const filtered=selected==="all"?all:all.filter(s=>s.exercises.some(x=>x.id===selected));
+ const totalVolume=filtered.reduce((n,s)=>n+historySessionVolume(s),0),totalSets=filtered.reduce((n,s)=>n+historySessionSets(s),0);
+ const usedIds=[...new Set(all.flatMap(s=>s.exercises.map(x=>x.id)))],trend=filtered.slice().reverse();
+ const values=trend.map(s=>selected==="all"?historySessionVolume(s):historyExerciseE1rm(s,selected)),max=Math.max(1,...values);
+ const chosen=selected==="all"?null:exerciseById(selected);
+ const records=usedIds.map(id=>{const x=exerciseById(id),best=Math.max(...all.map(s=>historyExerciseE1rm(s,id)));return {id,name:x?.name||id,best}}).sort((a,b)=>b.best-a.best).slice(0,4);
+ return '<div class="history-hero"><div class="history-copy"><div class="eyebrow">STORICO FITOS · DATI SINTETICI</div><h2>Progressione leggibile, senza promesse false.</h2><p class="small muted" style="line-height:1.75">Sessioni, serie e carichi diventano navigabili. Volume ed e1RM sono calcolati sui valori demo qui sotto; nessun dato personale, backup o sincronizzazione è collegato.</p></div><div class="history-kpis"><div class="history-kpi"><span class="xs muted">Sessioni</span><strong>'+filtered.length+'</strong></div><div class="history-kpi"><span class="xs muted">Serie</span><strong>'+totalSets+'</strong></div><div class="history-kpi"><span class="xs muted">Volume</span><strong>'+Math.round(totalVolume/100)/10+' t</strong></div><div class="history-kpi"><span class="xs muted">Origine</span><strong>Demo</strong></div></div></div>'+sectionHead("Filtra progressione",chosen?chosen.name:"Tutte le sessioni")+'<div class="history-filter"><button class="tab '+(selected==="all"?'active':'')+'" data-history-exercise="all">Tutto</button>'+usedIds.map(id=>{const x=exerciseById(id);return '<button class="tab '+(selected===id?'active':'')+'" data-history-exercise="'+id+'">'+safe(x?.name||id)+'</button>'}).join('')+'</div><div class="history-grid"><div class="history-list"><div class="eyebrow">SESSIONI · APRI IL REGISTRO</div>'+(filtered.length?filtered.map(s=>'<button class="history-session" data-history-session="'+s.id+'"><span class="history-session-date">'+historyDate(s.date)+'</span><span><h3>'+safe(s.name)+(s.source==="current"?' · corrente':'')+'</h3><span class="history-session-metrics"><span class="pill">'+historySessionSets(s)+' serie</span><span class="pill">'+Math.round(historySessionVolume(s))+' kg</span>'+(selected!=="all"?'<span class="pill">e1RM '+historyExerciseE1rm(s,selected)+' kg</span>':'')+'</span></span><span class="history-session-arrow">↗</span></button>').join(''):'<div class="history-empty">Nessuna sessione demo per questo esercizio.</div>')+'</div><aside class="history-progress"><div class="eyebrow">'+(selected==="all"?'VOLUME PER SESSIONE':'e1RM STIMATO · '+safe(chosen?.name||""))+'</div><div class="history-chart" role="img" aria-label="'+(selected==="all"?'Andamento del volume per sessione demo':'Andamento e1RM stimato per '+safe(chosen?.name||"esercizio"))+'">'+trend.map((s,i)=>'<div class="history-bar" style="--h:'+Math.max(16,Math.round(values[i]/max*100))+'%"><span>'+Math.round(values[i])+(selected==="all"?' kg':'')+'</span><i>'+historyDate(s.date)+'</i></div>').join('')+'</div><p class="xs muted" style="line-height:1.6;margin:28px 0 17px">'+(selected==="all"?'Il volume somma carico × ripetizioni di ogni serie. Confronta solo sessioni simili.':'Formula Epley: carico × (1 + ripetizioni / 30). È un indicatore stimato e non una prescrizione.')+'</p><div class="eyebrow">MIGLIORI STIME DEMO</div>'+records.map((r,i)=>'<div class="history-pr"><span><strong>'+safe(r.name)+'</strong><span class="xs muted">Record nel dataset sintetico</span></span><span class="pill">'+r.best+' kg'+(i===0?' · TOP':'')+'</span></div>').join('')+'</aside></div><div class="history-source-note small"><b>Confine della demo:</b> il dataset storico è sintetico e resta immutabile. Solo una sessione completata durante questa visita può comparire temporaneamente in cima; un reload la rimuove.</div>';
+}
+function viewFitos(){
+ if(state.fitosTab!=="train")return viewFitosBase();
+ if(state.fitosWorkoutView==="session")return viewFitosSession();
+ let content;
+ if(state.fitosTrainingDay!==null) content=fitosDayView(state.fitosTrainingDay);
+ else content=state.fitosWorkoutView==="catalog"?fitosCatalogView():state.fitosWorkoutView==="history"?fitosHistoryView():fitosWeekView();
+ return fitosTrainingHeader()+
+ '<div class="fitos-level-nav">'+[["week","Settimana"],["catalog","Catalogo"],["history","Storico"],...(workoutSession.status!=="ready"?[["session","Sessione "+(workoutSession.status==="finished"?"terminata":"in corso")]]:[])].map(([id,label])=>'<button class="tab '+(state.fitosWorkoutView===id?"active":"")+'" data-fitos-view="'+id+'">'+label+'</button>').join("")+'</div>'+content;
+}
+function openExerciseSheet(id){
+ const x=exerciseById(id);if(!x)return;
+ dialog(safe(x.name),'<div class="eyebrow">CATALOGO ESERCIZI · DETTAGLIO FINALE</div>'+
+ '<div class="fitos-ex-stats"><div><span>Serie</span><b>'+x.sets+'</b></div><div><span>Ripetizioni</span><b>'+x.reps+'</b></div><div><span>Carico demo</span><b>'+x.kg+' kg</b></div><div><span>Recupero</span><b>'+x.rest+' s</b></div></div>'+
+ '<h3 style="margin:24px 0 12px">Indicazioni tecniche</h3><div class="hint-box">'+safe(x.cue)+'</div>'+
+ '<h3 style="margin:24px 0 12px">Storico e progressione</h3><p class="small muted" style="line-height:1.8">Nella V2 reale: grafico carichi e ripetizioni, storico delle sessioni, note personali, riposo personalizzato e confronto tra set. Qui non sono importati dati dal backup.</p>'+
+ '<div class="modal-actions"><button class="button primary" type="button" data-close>Chiudi</button></div>');
+ $("#dlg").classList.add("sheet");
+}
+
+function financeRows(){return tx.map(t=>'<div class="list-item"><span class="chip '+(t.type==="in"?"cyan":"coral")+'">'+(t.type==="in"?"↗":"↘")+'</span><div class="body">'+safe(t.name)+'<div class="sub">'+safe(t.date)+'</div></div><b style="color:var('+(t.type==="in"?"--good":"--coral")+')">'+(t.type==="in"?"+":"−")+" "+eur(t.amount)+'</b></div>').join("")}
+function viewFinanceBase(){return headline("Finanze","Controllo completo senza doppi conteggi o passaggi inutili.","PATRIMONIO & FLUSSI",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>')+
+'<div class="grid c12"><div class="card fin-hero colored-fin"><div class="eyebrow" style="color:var(--cyan)">PATRIMONIO NETTO · DEMO</div><div class="money">€ 24.680</div><div class="small muted">↗ + € 860 negli ultimi 30 giorni · Solo illustrazione</div><svg class="chart" viewBox="0 0 740 160" preserveAspectRatio="none" role="img" aria-label="Grafico patrimonio simulato"><defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4adad2" stop-opacity=".25"/><stop offset="1" stop-color="#4adad2" stop-opacity="0"/></linearGradient></defs><line class="chart-grid" x1="0" y1="148" x2="740" y2="148"/><path class="chart-fill" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17 L740 160 L0 160Z"/><path class="chart-line" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17"/></svg></div>'+
+'<div class="fin-metrics">'+miniStat("Entrate mese","€ 3.420","Esempio","cyan","↗")+miniStat("Uscite mese","€ 1.180","Esempio","coral","↘")+miniStat("Asset","6","Categorie","blue","◈")+miniStat("Scadenze","3","Previste","violet","◷")+'</div>'+
+'<div class="span6">'+sectionHead("Asset","Apri un asset nel prodotto definitivo")+'<div class="card"><div class="account" style="--shade:var(--cyan)"><span class="account-icon">€</span><div><h3>Liquidità</h3><span class="xs muted">Conti</span></div><b class="money-value">€ 12.640</b></div><div class="account" style="--shade:var(--blue)"><span class="account-icon">◈</span><div><h3>Investimenti</h3><span class="xs muted">Valore stimato</span></div><b class="money-value">€ 7.830</b></div><div class="account" style="--shade:var(--violet)"><span class="account-icon">◇</span><div><h3>Collezioni</h3><span class="xs muted">Valore stimato</span></div><b class="money-value">€ 4.210</b></div></div></div>'+
+'<div class="span6">'+sectionHead("Movimenti","Registrazione disponibile come demo")+'<div class="card" id="tx-list">'+financeRows()+'</div></div>'+
+'<div class="span12 hint-box"><b>Flusso V2 proposto:</b> registrare un movimento richiederà l’asset, l’importo e una conferma dell’effetto. Pagare una spesa pianificata dovrà creare la transazione e aggiornarne lo stato senza duplicazioni. Questa demo non modifica alcun saldo reale.</div></div>';
+}
+
+const incomeSources=[
+ {id:"kdp",name:"Amazon KDP",symbol:"KDP",color:"#e69b39",earned:850,paid:620,pending:230,stock:0,note:"Royalties maturate, pagamenti ricevuti e importi da incassare sono tre valori diversi."},
+ {id:"vinted",name:"Vinted",symbol:"V",color:"#0f9f90",earned:310,paid:240,pending:70,stock:740,note:"Inventario, ricavo della vendita e profitto devono essere registrati separatamente."},
+ {id:"cards",name:"Carte",symbol:"◇",color:"#6868dd",earned:1150,paid:1030,pending:120,stock:4210,note:"Il valore delle carte ancora possedute non è denaro incassato. Vanno considerati anche i costi."},
+ {id:"shop",name:"Negozio",symbol:"N",color:"#d96345",earned:1800,paid:1800,pending:0,stock:0,mode:"fixed",note:"Entrata configurata come fissa nella demo, convertibile in variabile senza modificare la storia."}
+];
+function sourceCards(){
+ return '<div class="sources">'+incomeSources.map(x=>'<button class="card source-card" style="--source:'+x.color+'" data-ux="source-detail" data-source="'+x.id+'"><div class="source-top"><span class="source-logo">'+x.symbol+'</span><span class="pill">'+(x.id==="shop"?(x.mode==="fixed"?"Fissa":"Variabile"):"Fonte reddito")+'</span></div><div><h3>'+safe(x.name)+'</h3><div class="statnum">'+eur(x.earned)+'</div><div class="xs muted">Ricavi maturati · Demo</div></div><div class="source-bottom"><span>Incassati '+eur(x.paid)+'</span><span>Dettagli ↗</span></div></button>').join("")+'</div>';
+}
+function financeTabMenu(){
+ const options=[["overview","Riepilogo"],["income","Fonti di reddito"],["assets","Asset"],["scheduled","Scadenze"]];
+ return '<div class="finance-tabs">'+options.map(([id,label])=>'<button class="tab '+(state.financeTab===id?"active":"")+'" data-ux="finance-tab" data-tab="'+id+'">'+label+'</button>').join("")+'</div>';
+}
+
+function financeSourcePage(){
+ const src=incomeSources.find(x=>x.id===state.financeSource);
+ if(!src){state.financeSource=null;return viewFinance()}
+ const received=src.paid,pending=src.pending;
+ const note=src.id==="kdp"?"Le royalty maturate possono essere incassate in un periodo successivo. Le analisi per libro/mercato saranno una funzione aggiuntiva, non dati già collegati.":src.id==="cards"?"Il valore delle carte in inventario e i ricavi delle carte vendute rappresentano dimensioni diverse. I costi e le commissioni servono per il profitto.":src.id==="vinted"?"Il ricavo della vendita non equivale al profitto e il valore delle giacenze non è liquidità bancaria.":"Una previsione ricorrente può passare da importo fisso a variabile. Previsione e incasso registrato restano entità diverse.";
+ const records=[
+ {label:"Importi ricevuti · demo",status:"Incassato",amount:received,type:"paid"},
+ {label:"Importi non ancora ricevuti · demo",status:"Da incassare",amount:pending,type:"pending"}
+ ];
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-finance-home>Finanze</button><span>›</span><button class="crumb-link" data-finance-back>Fonti di reddito</button><span>›</span><b>'+safe(src.name)+'</b></div>'+
+ '<div class="finance-source-head"><div class="finance-source-brand" style="background:'+src.color+'">'+safe(src.symbol)+'</div>'+
+ '<div class="finance-source-title"><div class="eyebrow">PAGINA FONTE ECONOMICA · DATI ESEMPLIFICATIVI</div><h1>'+safe(src.name)+'</h1><p class="small muted">Riepilogo, riconciliazione e approfondimenti nella stessa pagina. Le operazioni singole aprono pannelli finali.</p></div>'+
+ '<button class="button small" data-finance-back>← Torna alle fonti</button></div>'+
+ '<div class="finance-source-kpis">'+
+ '<div class="card"><div class="stat-label">Ricavi maturati</div><div class="statnum">'+eur(src.earned)+'</div><div class="xs muted">Non equivalgono necessariamente alla liquidità</div></div>'+
+ '<div class="card"><div class="stat-label">Già incassati</div><div class="statnum">'+eur(received)+'</div><div class="xs muted">Pagamenti ricevuti, demo</div></div>'+
+ '<div class="card"><div class="stat-label">Da incassare</div><div class="statnum">'+eur(pending)+'</div><div class="xs muted">Residuo non ancora liquidato</div></div>'+
+ '</div>'+
+ '<div class="finance-source-grid"><div>'+sectionHead("Movimenti della fonte","Clicca una riga per il dettaglio finale")+
+ '<div class="card">'+records.map(rec=>'<button class="finance-ledger-row" data-income-entry="'+rec.type+'" data-income-source="'+src.id+'"><span class="chip '+(rec.type==='paid'?'cyan':'orange')+'">'+rec.status+'</span>'+
+ '<div class="body"><b>'+rec.label+'</b><div class="sub">'+(rec.type==='paid'?'Pagamento registrato nella demo':'Credito dimostrativo in attesa')+'</div></div>'+
+ '<strong>'+eur(rec.amount)+'</strong><span class="muted">↗</span></button>').join("")+'</div>'+
+ '<div class="finance-note" style="margin-top:15px"><b>Riconciliazione:</b> gli importi qui sotto sono aggregati dimostrativi, non vere transazioni. Non vanno sommati di nuovo al saldo del conto.</div></div>'+
+ '<div>'+sectionHead("Contesto e regole","Distinzione dei dati finanziari")+
+ '<div class="card"><div class="eyebrow">DA SAPERE</div><p class="small muted" style="line-height:1.85;margin:12px 0 17px">'+safe(note)+'</p>'+
+ (src.stock?'<div class="finance-stock-metric"><span>Valore inventario stimato</span><b>'+eur(src.stock)+'</b><small>Non liquidità disponibile</small></div>':'')+
+ (src.id==='shop'?'<div class="finance-stock-metric"><span>Previsione ricorrente</span><b>'+(src.mode==='fixed'?'Importo fisso':'Importo variabile')+'</b><small>Nessun dato storico modificato</small><button class="button small" style="margin-top:12px" data-finance-shop-toggle>Cambia modalità (demo)</button></div>':'')+
+ '<button class="button small" style="margin-top:21px" data-finance-back>Vedi tutte le fonti →</button></div></div></div>';
+}
+function incomeRecordLeaf(sourceId,type){
+ const src=incomeSources.find(x=>x.id===sourceId);if(!src)return;
+ const paid=type==='paid',amount=paid?src.paid:src.pending;
+ dialog("Dettaglio "+(paid?"incasso":"credito"),'<div class="eyebrow">ULTIMO LIVELLO / OPERAZIONE · DEMO</div>'+
+ '<h2>'+safe(src.name)+'</h2><div class="statnum" style="font-size:35px">'+eur(amount)+'</div>'+
+ '<div class="finance-note" style="margin-top:12px">Questa è una voce aggregata fittizia. Nella V2 reale la scheda mostrerà ID, data, asset collegato, ricevuta, note e collegamento alla fattura o royalty. Non registra né modifica alcun movimento.</div>'+
+ '<div class="modal-actions"><button class="button primary" data-close>Chiudi</button></div>');
+ $("#dlg").classList.add("sheet");
+}
+function viewFinance(){
+ if(state.financeSource)return financeSourcePage();
+ const header=headline("Finanze","Patrimonio, redditi, incassi e spese: tutto collegato, senza confondere i valori.","ECONOMIA PERSONALE",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>');
+ let content="";
+ if(state.financeTab==="overview"){
+   const legacy=viewFinanceBase(),pos=legacy.indexOf('<div class="grid c12">');
+   content=legacy.slice(pos);
+   content+=sectionHead("Attività economiche","Seleziona una fonte per vedere gli importi distinti")+sourceCards();
+   content+='<div class="finance-note" style="margin-top:19px"><b>Distinzione importante:</b> una royalty maturata KDP non è necessariamente liquidità disponibile. Vendere una carta sposta valore dall’inventario verso gli incassi: non significa che il prezzo di vendita sia tutto profitto.</div>';
+ }else if(state.financeTab==="income"){
+   content='<p class="small muted" style="line-height:1.7">KDP, Vinted, Carte e Negozio sono <b>fonti economiche</b>, non automaticamente conti o asset. Le cifre sono puramente dimostrative.</p>'+sourceCards();
+   content+=sectionHead("Flussi del periodo","Tutti i valori sono simulati")+
+   '<div class="grid c3">'+miniStat("Ricavi maturati","€ 4.110","Non tutti sono versati","cyan","↗")+miniStat("Già incassati","€ 3.690","Accreditati/versati","blue","✓")+miniStat("Da incassare","€ 420","Non sono saldo conto","violet","◷")+'</div>';
+   content+='<div class="finance-note" style="margin-top:18px">Negozio: la previsione può essere fissa inizialmente e diventare variabile senza sovrascrivere le vecchie registrazioni. La previsione futura non è un incasso.</div>';
+ }else if(state.financeTab==="assets"){
+   content=sectionHead("Asset patrimoniali","Ciò che possiedi, distinto dalle fonti di reddito")+
+   '<div class="grid c2"><div class="card"><div class="account" style="--shade:var(--cyan)"><span class="account-icon">€</span><div><h3>Liquidità</h3><span class="xs muted">Conti e contanti</span></div><b class="money-value">€ 12.640</b></div><div class="account" style="--shade:var(--blue)"><span class="account-icon">◈</span><div><h3>Investimenti</h3><span class="xs muted">Valutazioni</span></div><b class="money-value">€ 7.830</b></div><div class="account" style="--shade:var(--violet)"><span class="account-icon">◇</span><div><h3>Carte possedute</h3><span class="xs muted">Inventario stimato</span></div><b class="money-value">€ 4.210</b></div></div><div class="card"><div class="eyebrow">PATRIMONIO NETTO · DEMO</div><div class="money">€ 24.680</div><p class="small muted" style="line-height:1.7">In questa simulazione gli importi ancora da incassare non sono inclusi nel patrimonio. La V2 definirà una politica esplicita per crediti, valutazioni e riconciliazione.</p></div></div>';
+ }else{
+   content=sectionHead("Spese pianificate","Previste, non ancora pagate")+
+   '<div class="grid c2"><div class="card"><div class="list-item"><span class="chip coral">Domani</span><div class="body">Rata prevista<div class="sub">Da associare a un asset al pagamento</div></div><b>€ 85</b></div><div class="list-item"><span class="chip blue">15 ott</span><div class="body">Software<div class="sub">Ricorrente</div></div><b>€ 29</b></div></div><div class="card"><div class="eyebrow">NEGOZIO</div><h2>Entrata attesa</h2><div class="statnum">€ 1.800</div><p class="small muted">Previsione fissa nella demo, non ancora un movimento finanziario.</p><button class="button small" data-ux="source-detail" data-source="shop">Gestisci previsione →</button></div></div>';
+ }
+ return header+financeTabMenu()+content;
+}
+
+
+let inventory=[
+ {id:"card-1",kind:"cards",title:"Carta da collezione A",detail:"Set dimostrativo · IT",quantity:1,acquisition:72,estimate:125,ask:135,status:"available"},
+ {id:"card-2",kind:"cards",title:"Carta da collezione B",detail:"Set dimostrativo · ENG",quantity:1,acquisition:25,estimate:42,ask:48,status:"available"},
+ {id:"card-3",kind:"cards",title:"Carta da collezione C",detail:"Set dimostrativo · JP",quantity:1,acquisition:15,estimate:28,ask:32,status:"sold"},
+ {id:"vinted-1",kind:"vinted",title:"Giacca vintage",detail:"Taglia M · ottime condizioni",quantity:1,acquisition:15,estimate:34,ask:34,status:"available"},
+ {id:"vinted-2",kind:"vinted",title:"Accessorio moda",detail:"Quantità gestita per articolo",quantity:3,acquisition:5,estimate:14,ask:16,status:"available"},
+ {id:"vinted-3",kind:"vinted",title:"Felpa usata",detail:"Taglia L · esempio",quantity:1,acquisition:8,estimate:26,ask:27,status:"sold"}
+];
+function inventoryStats(kind){
+ const rows=inventory.filter(x=>x.kind===kind);
+ const stock=rows.filter(x=>x.status==="available"),sold=rows.filter(x=>x.status==="sold");
+ return {stock:stock.reduce((a,x)=>a+x.quantity,0),estimated:stock.reduce((a,x)=>a+x.quantity*x.estimate,0),sold:sold.reduce((a,x)=>a+x.quantity,0)};
+}
+function viewCollections(){
+ const kind=state.collectionTab,metrics=inventoryStats(kind);
+ const filtered=inventory.filter(x=>x.kind===kind&&(state.collectionFilter==="all"||x.status===state.collectionFilter)&&x.title.toLocaleLowerCase("it").includes(state.collectionQuery.toLocaleLowerCase("it")));
+ return headline("Inventario & Collezioni","Un catalogo con schede uniche per copia o articolo. La vendita reale resta separata dal movimento sul conto.","RESELLING / COLLEZIONI",'<button class="button primary title-action" data-inventory-new>+ Articolo</button>')+
+ '<div class="screen-tabs"><button class="tab '+(kind==="cards"?"active":"")+'" data-collection="cards">Carte</button>'+
+ '<button class="tab '+(kind==="vinted"?"active":"")+'" data-collection="vinted">Vinted</button></div>'+
+ '<div class="grid c3">'+miniStat("Unità in inventario",String(metrics.stock),"Quantità demo","blue","▦")+
+ miniStat("Valore stock",eur(metrics.estimated),"Stima, non liquidità","cyan","◈")+
+ miniStat("Unità vendute",String(metrics.sold),"Da riconciliare con gli incassi","violet","↗")+'</div>'+
+ sectionHead(kind==="cards"?"Catalogo carte":"Catalogo Vinted","La singola scheda è l’ultimo livello del percorso")+
+ '<div class="inventory-toolbar"><input class="search" id="inventory-search" value="'+safe(state.collectionQuery)+'" placeholder="⌕ Cerca nell’inventario" aria-label="Filtra articoli">'+
+ '<button class="tab '+(state.collectionFilter==="all"?"active":"")+'" data-inventory-filter="all">Tutti</button>'+
+ '<button class="tab '+(state.collectionFilter==="available"?"active":"")+'" data-inventory-filter="available">Disponibili</button>'+
+ '<button class="tab '+(state.collectionFilter==="sold"?"active":"")+'" data-inventory-filter="sold">Venduti</button></div>'+
+ '<div class="card inventory-table"><div class="inventory-head"><span>Articolo</span><span>Quantità</span><span>Valore stimato</span><span>Stato</span></div>'+
+ (filtered.length?filtered.map(item=>'<button class="inventory-line" data-inventory-item="'+safe(item.id)+'"><span><b>'+safe(item.title)+'</b><small>'+safe(item.detail)+'</small></span>'+
+ '<span>'+item.quantity+'</span><span>'+eur(item.estimate*item.quantity)+'</span>'+
+ '<span class="chip '+(item.status==="sold"?"violet":"cyan")+'">'+(item.status==="sold"?"Venduto":"Disponibile")+'</span></button>').join(''):'<div class="empty">Nessun articolo corrispondente nella demo.</div>')+
+ '</div><div class="finance-note" style="margin-top:17px"><b>Inventario ≠ denaro:</b> segnare un articolo come venduto nella demo non crea automaticamente un incasso bancario, né calcola un profitto verificato. La V2 dovrà riconciliare prezzo, costo, commissioni e pagamento.</div>';
+}
+function inventoryLeaf(id){
+ const x=inventory.find(v=>v.id===id);if(!x)return;
+ dialog(safe(x.title),'<form id="inventory-item-form" data-item-id="'+safe(id)+'"><div class="eyebrow">SINGOLO ARTICOLO / DETTAGLIO FINALE</div>'+
+ '<label class="field-label" for="inventory-name">Nome</label><input id="inventory-name" class="field" maxlength="90" required value="'+safe(x.title)+'">'+
+ '<label class="field-label" for="inventory-detail">Descrizione / set / lingua</label><input id="inventory-detail" class="field" maxlength="130" value="'+safe(x.detail)+'">'+
+ '<div class="inventory-input-grid"><div><label class="field-label" for="inventory-quantity">Quantità</label><input id="inventory-quantity" class="field" type="number" min="1" max="9999" step="1" value="'+x.quantity+'"></div>'+
+ '<div><label class="field-label" for="inventory-cost">Costo unitario €</label><input id="inventory-cost" class="field" type="number" min="0" step="0.01" value="'+x.acquisition+'"></div>'+
+ '<div><label class="field-label" for="inventory-estimate">Stima unitaria €</label><input id="inventory-estimate" class="field" type="number" min="0" step="0.01" value="'+x.estimate+'"></div>'+
+ '<div><label class="field-label" for="inventory-ask">Prezzo richiesto €</label><input id="inventory-ask" class="field" type="number" min="0" step="0.01" value="'+x.ask+'"></div></div>'+
+ '<label class="field-label" for="inventory-status">Stato</label><select class="field" id="inventory-status"><option value="available" '+(x.status==="available"?"selected":"")+'>Disponibile</option><option value="sold" '+(x.status==="sold"?"selected":"")+'>Venduto (solo demo)</option></select>'+
+ '<div class="modal-actions"><button class="button" type="button" data-close>Chiudi</button><button class="button primary" type="submit">Salva articolo</button></div></form>'+
+ '<p class="small muted" style="margin-top:12px;line-height:1.6">Questa scheda modifica soltanto l’inventario fittizio locale, non registra pagamenti o incassi.</p>');
+ $("#dlg").classList.add("sheet");
+}
+function inventoryNew(){
+ dialog("Nuovo articolo",'<form id="inventory-create-form"><div class="eyebrow">CATALOGO '+(state.collectionTab==="cards"?"CARTE":"VINTED")+'</div>'+
+ '<label class="field-label" for="inventory-new-name">Nome</label><input class="field" id="inventory-new-name" maxlength="90" required>'+
+ '<label class="field-label" for="inventory-new-quantity">Quantità</label><input class="field" id="inventory-new-quantity" type="number" min="1" max="9999" step="1" value="1" required>'+
+ '<label class="field-label" for="inventory-new-estimate">Valore unitario stimato €</label><input class="field" id="inventory-new-estimate" type="number" min="0" step="0.01" value="0" required>'+
+ '<div class="modal-actions"><button type="button" class="button" data-close>Annulla</button><button type="submit" class="button primary">Aggiungi inventario demo</button></div></form>');
+}
+function inboxRows(){return inbox.length?inbox.map(i=>'<div class="list-item"><span class="chip '+(i.type==="idea"?"violet":"blue")+'">'+safe(i.type)+'</span><div class="body">'+safe(i.text)+'</div><button class="button small" data-inbox-triage="'+i.id+'">Smista</button></div>').join(""):'<div class="empty">Inbox vuota. Hai smistato tutto.</div>'}
+function viewInbox(){return headline("Inbox","Cattura senza interromperti. Decidi la destinazione quando hai tempo.","NUOVA FUNZIONE PROPOSTA")+
+'<div class="grid c12"><div class="span8"><div class="card"><label for="inbox-entry" class="eyebrow">CATTURA AL VOLO</label><div class="inbox-box"><span style="font-size:20px;color:var(--main)">↧</span><input id="inbox-entry" placeholder="Un’idea, una task, un link, una scadenza..." maxlength="180"><button class="button primary small" data-action="inbox-add">Aggiungi</button></div><p class="xs muted" style="margin:12px 0 0">Aggiungiamo solo a questa demo. In V2 la Inbox sarà collegata agli stessi servizi di Quick Add e Quick Capture.</p></div></div><div class="span4"><div class="accent-block"><div class="xs">DA ORGANIZZARE</div><div class="num">'+inbox.length+'</div><div class="detail">Cattura prima, classifica dopo</div></div></div></div>'+
+sectionHead("Da smistare","Scegli una destinazione, evitando copie")+'<div class="card">'+inboxRows()+'</div>';
+}
+function viewReview(){return headline("Review","Un riepilogo utile, non un voto alla tua produttività.","NUOVA FUNZIONE PROPOSTA")+
+'<div class="grid c3">'+miniStat("Task completate","18","Questa settimana","cyan","✓")+miniStat("Progetti attivi","4","Con attività aperte","blue","▦")+miniStat("Abitudini","76%","Media dimostrativa","violet","◎")+'</div>'+
+'<div class="grid c12" style="margin-top:20px"><div class="span7"><div class="card"><div class="eyebrow">WEEKLY REVIEW · 3 PASSAGGI</div><h2>'+["Cosa ha funzionato?","Cosa ti blocca?","Cosa conta la prossima settimana?"][state.reviewStep]+'</h2><p class="small muted" style="line-height:1.8;margin:14px 0 18px">'+["Rivedi traguardi, task e abitudini senza rincorrere numeri fine a sé stessi.","Individua il progetto in stallo e scegli un piccolo prossimo passo.","Scegli poche priorità concrete, anziché riempire l’agenda."][state.reviewStep]+'</p><div class="action-row"><button class="button primary" data-action="review-next">'+(state.reviewStep===2?"Ricomincia":"Prossimo passaggio →")+'</button><span class="pill">Passaggio '+(state.reviewStep+1)+' / 3</span></div></div></div><div class="span5"><div class="card"><h2>Idee per la settimana</h2><div class="list-item">Un progetto da sbloccare</div><div class="list-item">Una spesa da verificare</div><div class="list-item">Un’abitudine da semplificare</div><p class="xs muted" style="line-height:1.6;margin-top:15px">Suggerimenti esplicabili, facoltativi e disattivabili. Non sono raccomandazioni di un algoritmo in funzione.</p></div></div></div>';
+}
+function viewMore(){return headline("Altri strumenti","Tutti i moduli restano raggiungibili anche da smartphone.","NAVIGAZIONE")+
+'<div class="grid c2">'+[["fitos","♡ FitOS","Allenamento, nutrizione, stretching e peso"],["finance","◉ Finanze","Asset, movimenti, spese e patrimonio"],["collections","◇ Collezioni","Carte e Vinted"],["inbox","↧ Inbox","Idee, task e link da smistare"],["review","◎ Review","Revisione settimanale"],["projects","▦ Progetti","Cartelle e attività"]].map(([k,l,d])=>'<button class="card" style="text-align:left;color:var(--text)" data-nav="'+k+'"><h2>'+l+'</h2><p class="small muted" style="margin:12px 0 0">'+d+'</p></button>').join("")+'</div>';
+}
+const views={today:viewToday,projects:viewProjects,agenda:viewAgenda,fitos:viewFitos,finance:viewFinance,collections:viewCollections,inbox:viewInbox,review:viewReview,more:viewMore};
+function render(){const el=$("#view");el.innerHTML=views[state.screen]();$("#crumb-current").textContent=state.screen==="projects"&&!state.projectId&&state.folderId?folderName(state.folderId):state.screen==="projects"&&state.projectId?(projectName(state.projectId)+" / "+({"tasks":"Task","goals":"Obiettivi","recur":"Ricorrenti","expenses":"Spese","notes":"Note"}[state.projectSection]||"")):titles[state.screen];$$("[data-nav]").forEach(b=>{const on=b.dataset.nav===state.screen;b.classList.toggle("active",on);on?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current")});const n=$("#inbox-count");n.textContent=inbox.length;n.hidden=inbox.length===0}
+
+// Single navigation contract for the Visual Lab. History is user-visible state, never duplicated domain data.
+const projectTabs=new Set(["tasks","goals","recur","expenses","notes"]);
+const workoutViews=new Set(["week","catalog","history","session"]);
+const financeTabs=new Set(["overview","income","assets","scheduled"]);
+function safeSegment(value){return encodeURIComponent(String(value))}
+function fromSegment(value){try{return decodeURIComponent(value||"")}catch{return ""}}
+function routePath(){
+ switch(state.screen){
+ case "projects":return state.projectId?"/projects/workspace/"+safeSegment(state.projectId)+"/"+state.projectSection:
+    state.folderId?"/projects/folder/"+safeSegment(state.folderId):"/projects";
+ case "finance":return state.financeSource?"/finance/source/"+safeSegment(state.financeSource):"/finance/"+state.financeTab;
+ case "fitos":return state.fitosTab==="train"?(state.fitosTrainingDay!==null?
+    "/fitos/train/day/"+state.fitosTrainingDay:state.fitosWorkoutView==="history"&&state.fitosHistorySession?"/fitos/train/history/"+safeSegment(state.fitosHistorySession):"/fitos/train/"+state.fitosWorkoutView):"/fitos/"+state.fitosTab;
+ case "agenda":return "/agenda/"+state.agendaMode+"/"+state.agendaDay;
+ case "collections":return "/collections/"+state.collectionTab;
+ default:return "/"+state.screen;
+ }
+}
+function applyRoute(raw){
+ const path=String(raw||"").replace(/^#\/?/,""),p=path.split("/").filter(Boolean).map(fromSegment);
+ const module=p[0]||"today";state.screen=views[module]?module:"today";
+ if(state.screen==="projects"){
+   state.folderId=null;state.projectId=null;
+   if(p[1]==="folder"&&homeFolders.some(f=>f.id===p[2]))state.folderId=p[2];
+   if(p[1]==="workspace"&&projectById(p[2])){
+     state.projectId=p[2];state.folderId=projectById(p[2]).folderId;
+     state.projectSection=projectTabs.has(p[3])?p[3]:"tasks";
+   }
+ }
+ if(state.screen==="finance"){
+   state.financeSource=null;
+   if(p[1]==="source"&&incomeSources.some(x=>x.id===p[2])){state.financeSource=p[2];state.financeTab="income"}
+   else state.financeTab=financeTabs.has(p[1])?p[1]:"overview";
+ }
+ if(state.screen==="fitos"){
+   state.fitosTab=["today","train","food","stretch","weight"].includes(p[1])?p[1]:"today";
+   state.fitosTrainingDay=null;
+   if(state.fitosTab==="train"){
+     if(p[2]==="day"&&/^[0-6]$/.test(p[3])){state.fitosTrainingDay=Number(p[3]);state.fitosWorkoutView="week"}
+     else {state.fitosWorkoutView=workoutViews.has(p[2])?p[2]:"week";state.fitosHistorySession=p[2]==="history"&&historySessionById(p[3])?p[3]:null}
+   }
+ }
+ if(state.screen==="agenda"){
+   state.agendaMode=p[1]==="day"?"day":"week";
+   if(/^[0-6]$/.test(p[2]))state.agendaDay=Number(p[2]);
+ }
+ if(state.screen==="collections")state.collectionTab=p[1]==="vinted"?"vinted":"cards";
+}
+function syncRoute(replace=false){
+ const h="#"+routePath();
+ if(location.hash===h)return;
+ if(replace)history.replaceState(null,"",h);
+ else history.pushState(null,"",h);
+}
+function navigate(change,{replace=false,scroll=false}={}){
+ change();
+ syncRoute(replace);
+ render();
+ if(scroll)window.scrollTo(0,0);
+}
+function goto(screen){
+ if(!views[screen])return;
+ navigate(()=>{
+  state.screen=screen;
+  if(screen==="projects"){state.projectId=null;state.folderId=null}
+  if(screen==="finance"){state.financeSource=null;state.financeTab="overview"}
+ },{scroll:true});
+}
+
+function syncNav(){
+ const side=$("#primary-sidebar"),mobile=matchMedia("(max-width:720px)").matches;
+ side.dataset.pinned=String(!mobile&&state.navPinned);side.dataset.mobileOpen=String(mobile&&state.navOpen);
+ side.inert=mobile&&!state.navOpen;side.setAttribute("aria-hidden",String(mobile&&!state.navOpen));
+ document.body.classList.toggle("nav-pinned",!mobile&&state.navPinned);
+ const pin=$("[data-nav-pin]");if(pin){pin.setAttribute("aria-pressed",String(state.navPinned));pin.querySelector(".nav-pin-label").textContent=state.navPinned?"Libera":"Fissa aperta"}
+ const menu=$("#mobile-menu"),scrim=$("#nav-scrim");if(menu)menu.setAttribute("aria-expanded",String(state.navOpen));if(scrim)scrim.hidden=!state.navOpen;
+}
+function setNavOpen(open){state.navOpen=Boolean(open);syncNav();if(state.navOpen)setTimeout(()=>$("#primary-sidebar .nav")?.focus(),0)}
+function setTheme(theme){if(!["dark","light"].includes(theme))return;state.theme=theme;document.body.dataset.theme=theme;$$("[data-theme]").forEach(b=>{const yes=b.dataset.theme===theme;b.classList.toggle("on",yes);b.setAttribute("aria-pressed",String(yes))})}
+function notify(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.hidden=true},2700)}
+function dialog(title,body){$("#dlg").classList.remove("sheet");$("#dlg-body").innerHTML='<div class="modal-top"><div><div class="eyebrow" style="margin-bottom:5px">LIFEOS / EXPERIENCE LAB</div><h2 id="dlg-title">'+title+'</h2></div><button class="modal-close" aria-label="Chiudi" data-close>×</button></div>'+body;if(!$("#dlg").open)$("#dlg").showModal()}
+
+function quick(){
+ dialog("Aggiungi qualsiasi cosa",
+ '<div class="quick-modes"><button class="tab active" data-ux="quick-mode" data-mode="natural">✧ Linguaggio naturale</button><button class="tab" data-ux="quick-mode" data-mode="fast">＋ Quick Add</button></div>'+
+ '<div id="quick-natural"><form id="spoken-form"><label class="field-label" for="spoken-input">Scrivi un recap come lo diresti a voce</label><textarea class="field" id="spoken-input" rows="5" placeholder="Domani controllare le royalty KDP; lunedì chiamare il fornitore; venerdì rivedere la rata..." required></textarea><div class="capture-hint">Niente YAML. Puoi scrivere più frasi in un unico messaggio. Questa demo riconosce alcune date ed espressioni semplici, non utilizza ancora un modello linguistico.</div><div class="modal-actions"><button type="submit" class="button primary">Analizza e controlla →</button></div></form></div>'+
+ '<div id="quick-fast" hidden><form id="fast-form"><label class="field-label" for="fast-kind">Categoria</label><select class="field" id="fast-kind">'+[["task","Task"],["goal","Obiettivo"],["weekly_goal","Obiettivo settimanale"],["recurring","Ricorrente"],["project","Progetto"],["expense","Spesa pianificata"],["note","Nota"],["link","Link / risorsa"],["food","Alimento"],["exercise","Esercizio allenamento"],["stretch","Stretching"],["recipe","Ricetta"],["habit","Abitudine"],["weight","Peso"],["movement","Movimento finanziario"],["asset","Asset"],["card","Carta"],["vinted","Articolo Vinted"]].map(([id,label])=>'<option value="'+id+'">'+label+'</option>').join("")+'</select><div id="fast-fields"></div><div class="modal-actions"><button type="submit" class="button primary">Aggiungi nella demo</button></div><p class="xs muted" style="margin-top:14px;line-height:1.7">Task, obiettivi, ricorrenti, spese, note e progetti aggiornano le rispettive viste demo. Le altre categorie restano bozze in Inbox. Tutto si azzera al reload.</p></form></div>');
+ renderFastFields();
+}
+function renderFastFields(){
+ const specs={
+ task:[["title","Titolo","text"],["date","Quando (oggi, domani, lunedì...)","text"]],
+ goal:[["title","Titolo obiettivo","text"]],
+ weekly_goal:[["title","Titolo obiettivo settimanale","text"]],
+ recurring:[["title","Attività ricorrente","text"],["extra","Frequenza (es. ogni lunedì)","text"]],
+ project:[["title","Nome progetto","text"],["extra","Categoria","text"]],
+ food:[["title","Nome alimento","text"],["amount","Calorie / 100 g","number"],["extra","Proteine / 100 g","number"]],
+ exercise:[["title","Nome esercizio","text"],["amount","Serie","number"],["extra","Ripetizioni","number"]],
+ stretch:[["title","Nome esercizio","text"],["amount","Durata minuti","number"]],
+ recipe:[["title","Nome ricetta","text"],["extra","Categoria","text"]],
+ habit:[["title","Nome abitudine","text"],["amount","Target (facoltativo)","number"]],
+ weight:[["title","Peso in kg","number"],["date","Data (facoltativa)","text"]],
+ movement:[["title","Descrizione","text"],["amount","Importo €","number"],["extra","Asset","text"]],
+ asset:[["title","Nome asset","text"],["amount","Saldo iniziale €","number"]],
+ expense:[["title","Nome spesa","text"],["amount","Importo €","number"],["date","Scadenza","text"]],
+ card:[["title","Carta","text"],["extra","Serie / set","text"],["amount","Prezzo acquisto €","number"]],
+ vinted:[["title","Articolo","text"],["amount","Prezzo €","number"]],
+ note:[["title","Titolo nota","text"],["extra","Dettagli","text"]],
+ link:[["title","Titolo risorsa","text"],["extra","URL o riferimento","text"]]
+ };
+ const key=$("#fast-kind").value;
+ const projectKinds=new Set(["task","goal","weekly_goal","recurring","expense","note","link"]);
+ $("#fast-fields").innerHTML=(specs[key]||specs.task).map(([id,label,type],idx)=>'<label class="field-label" for="fast-'+id+'">'+label+'</label><input class="field" id="fast-'+id+'" type="'+type+'" '+(idx===0?"required":"")+' '+(type==="number"?'min="0" step="any"':'')+' placeholder="'+label+'">').join("")+(projectKinds.has(key)?'<label class="field-label" for="fast-project">Progetto '+(key==="task"?'(obbligatorio)':'')+'</label><select class="field" id="fast-project" '+(key==="task"?'required':'')+'>'+projectOptions(state.projectId||"",key==="task")+'</select>':"")+(key==="task"?'<label class="field-label" for="fast-priority">Priorità</label><select class="field" id="fast-priority"><option>alta</option><option selected>media</option><option>bassa</option></select>':"")+(key==="project"?'<label class="field-label" for="fast-folder">Cartella</label><select class="field" id="fast-folder">'+folderOptions(state.folderId||"altro")+'</select>':"");
+}
+
+function interpretSimpleRecap(raw){
+ const parts=raw.split(/\n|;|(?<=\.)\s+|\s+e\s+(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica)(?=\W|$))|,\s*(?=(?:oggi|domani|lunedi|lunedì|martedi|martedì|mercoledi|mercoledì|giovedi|giovedì|venerdi|venerdì|sabato|domenica|poi|ricordami)(?=\W|$))/i).map(x=>x.trim()).filter(Boolean).slice(0,15);
+ const matches=[
+ ["kdp",/\b(kdp|royalt(?:y|ies)|amazon libri|trova la calma)\b/i],
+ ["stosa",/\b(stosa|negozio|showroom|fornitore|cucine)\b/i],
+ ["vinted",/\b(vinted|reselling abiti)\b/i],
+ ["carte",/\b(carte|pok[eé]mon|ebay)\b/i],
+ ["quartzica",/\b(quartzica)\b/i],
+ ["aimade",/\b(ai made|gumroad)\b/i],
+ ["nami",/\b(nami)\b/i],
+ ["youtube",/\b(youtube)\b/i],
+ ["risparmio",/\b(risparmio|conto risparmio)\b/i],
+ ["crypto",/\b(crypto|bitcoin)\b/i],
+ ["trading",/\b(trading)\b/i],
+ ["allenamento",/\b(allenamento|palestra|scheda pesi)\b/i],
+ ["alimentazione",/\b(alimentazione|macro|ricetta|alimento)\b/i],
+ ["stretching",/\b(stretching|mobilit[aà])\b/i]
+ ];
+ return parts.map(text=>{
+   const day=text.match(/\b(oggi|domani|dopodomani|luned[iì]|marted[iì]|mercoled[iì]|gioved[iì]|venerd[iì]|sabato|domenica)(?=\W|$)/i)?.[0].toLocaleLowerCase("it")||"Da pianificare";
+   const explicit=[...matches].filter(([,re])=>re.test(text)).map(([id])=>id);
+   const projectId=explicit.length===1?explicit[0]:"";
+   let priority=/\b(urgente|urgentissima?|priorit[aà]\s*alta|alta priorità)\b/i.test(text)?"alta":/\b(priorit[aà]\s*bassa|bassa priorità|non urgente)\b/i.test(text)?"bassa":"media";
+   let kind="task";
+   if(/\b(idea|nota|appunto)\b/i.test(text))kind="note";
+   else if(/\b(pagare|bonifico|incassare|transazione)\b/i.test(text))kind="reminder";
+   return {text,day,priority,projectId,kind,ambiguous:explicit.length>1};
+ });
+}
+
+function projectOptions(selected,required=false){
+ return '<option value="">'+(required?"— Scegli un progetto —":"Nessuna destinazione")+'</option>'+projects.map(p=>'<option value="'+p.id+'" '+(selected===p.id?"selected":"")+'>'+safe(p.name)+'</option>').join("");
+}
+function showRecapPreview(items){
+ dialog("Rivedi il recap",
+ '<div class="eyebrow">CONFERMA · PROGETTO + PRIORITÀ + QUANDO</div>'+
+ '<p class="small muted" style="line-height:1.7">Le task devono essere assegnate a un progetto. Se non lo riconosco, scegli tu prima di confermare. Il testo è interpretato con regole demo, non tramite AI.</p>'+
+ '<div id="spoken-preview" class="preview-rows">'+items.map((item,i)=>
+ '<div class="preview-row" data-row="'+i+'">'+
+ '<input class="field" data-row-text="'+i+'" value="'+safe(item.text)+'" aria-label="Testo elemento '+(i+1)+'">'+
+ '<div class="preview-fields">'+
+ '<select data-row-kind="'+i+'" aria-label="Tipo elemento">'+[["task","Task"],["fitos","FitOS"],["reminder","Promemoria"],["note","Nota"]].map(([id,label])=>'<option value="'+id+'" '+(item.kind===id?"selected":"")+'>'+label+'</option>').join("")+'</select>'+
+ '<select data-row-day="'+i+'" aria-label="Quando">'+["Da pianificare","oggi","domani","dopodomani","lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"].map(day=>'<option '+(item.day===day?"selected":"")+'>'+day+'</option>').join("")+'</select>'+
+ '<button class="button small" type="button" data-ux="remove-recap" data-row="'+i+'" aria-label="Escludi elemento">×</button></div>'+
+ '<div class="preview-fields project-fields"><select data-row-project="'+i+'" aria-label="Progetto">'+projectOptions(item.projectId,true)+'</select>'+
+ '<select data-row-priority="'+i+'" aria-label="Priorità">'+["alta","media","bassa"].map(p=>'<option '+(item.priority===p?"selected":"")+'>'+p+'</option>').join("")+'</select>'+
+ '<span class="tiny muted">'+(item.ambiguous?"Più progetti possibili: controlla":"Controlla e conferma")+'</span></div>'+
+ '</div>').join("")+
+ '</div><div class="modal-actions"><button class="button" data-ux="recap-back" type="button">Indietro</button><button class="button primary" data-ux="recap-confirm" type="button">Conferma nella demo</button></div>'+
+ '<p class="xs muted" style="margin-top:13px;line-height:1.7">Le task diventano un unico record e vengono mostrate nel progetto e, secondo la data, in Oggi o Agenda. Nessun dato è salvato su server.</p>');
+}
+function searchDialog(){dialog("Vai dove vuoi",'<input class="field" id="command-q" placeholder="Cerca sezioni, progetti, task e azioni..." aria-label="Cerca"><div id="command-results" style="margin-top:12px"></div><div class="xs muted" style="margin-top:15px">Ctrl / ⌘ + K · Esc per chiudere</div>');$("#command-q").focus();renderSearch()}
+function renderSearch(){
+ const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");
+ root.replaceChildren();
+ const options=[
+  ...Object.entries(titles).filter(([k])=>k!=="more").map(([id,title])=>({id:"nav:"+id,title,sub:"Sezione"})),
+  ...homeFolders.map(f=>({id:"folder:"+f.id,title:f.name,sub:"Cartella"})),
+  ...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:folderName(p.folderId)+" · Progetto"})),
+  ...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:projectName(t.projectId)+" · "+taskPriority(t)})),
+  ...incomeSources.map(s=>({id:"source:"+s.id,title:s.name,sub:"Fonte economica"})),
+  {id:"quick",title:"Quick Add / Cattura naturale",sub:"Azione globale"}
+ ];
+ const filtered=options.filter(v=>(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q)).slice(0,12);
+ for(const item of filtered){
+  const b=document.createElement("button");b.className="search-result";b.dataset.cmd=item.id;
+  const title=document.createElement("span");title.textContent=item.title;
+  const sub=document.createElement("small");sub.textContent=item.sub;
+  b.append(title,sub);root.append(b);
+ }
+ if(!filtered.length)root.textContent="Nessun risultato trovato";
+}
+function taskLeaf(id){
+ const t=tasks.find(t=>t.id===id);if(!t)return;
+ dialog("Dettaglio task",'<form id="task-leaf-form" data-task-id="'+safe(t.id)+'">'+
+ '<div class="eyebrow">DETTAGLIO ELEMENTO / SHEET</div>'+
+ '<label class="field-label" for="leaf-title">Titolo</label><input id="leaf-title" class="field" value="'+safe(t.title)+'" maxlength="180" required>'+
+ '<label class="field-label" for="leaf-project">Progetto</label><select id="leaf-project" class="field">'+projects.map(p=>'<option value="'+p.id+'" '+(t.projectId===p.id?"selected":"")+'>'+safe(p.name)+'</option>').join("")+'</select>'+
+ '<label class="field-label" for="leaf-priority">Priorità</label><select id="leaf-priority" class="field">'+["alta","media","bassa"].map(x=>'<option '+(taskPriority(t)===x?"selected":"")+'>'+x+'</option>').join("")+'</select>'+
+ '<label class="field-label" for="leaf-when">Quando</label><select id="leaf-when" class="field">'+["oggi","domani","lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica","Da pianificare"].map(x=>'<option '+(t.when===x?"selected":"")+'>'+x+'</option>').join("")+'</select>'+
+ '<div class="modal-actions"><button class="button" type="button" data-close>Chiudi</button><button class="button primary" type="submit">Salva nella demo</button></div></form>'+
+ '<p class="xs muted" style="line-height:1.7;margin-top:12px">Stesso ID task nelle viste progetto, Oggi e Agenda. I dati non vengono salvati fuori dal prototipo.</p>');
+ $("#dlg").classList.add("sheet");
+}
+function txNew(){dialog("Registra movimento",'<form id="tx-form"><label class="field-label" for="tx-name">Descrizione</label><input id="tx-name" class="field" placeholder="Es. Acquisto materiale" required maxlength="100"><label class="field-label" for="tx-amount">Importo (€)</label><input id="tx-amount" class="field" type="number" min="0.01" step="0.01" required placeholder="25,00"><label class="field-label" for="tx-type">Direzione</label><select id="tx-type" class="field"><option value="out">Uscita</option><option value="in">Entrata</option></select><label class="field-label" for="tx-asset">Asset</label><select id="tx-asset" class="field"><option>Conto principale (demo)</option><option>Contanti (demo)</option></select><div class="hint-box" style="margin-top:18px">La V2 vera dovrà mostrare una conferma esplicita dell’effetto su saldo e storico. Questa demo non aggiorna il patrimonio.</div><div class="modal-actions"><button class="button ghost" type="button" data-close>Chiudi</button><button class="button primary" type="submit">Anteprima operazione</button></div></form>')}
+
+function openSourceSheet(id){
+ const x=incomeSources.find(s=>s.id===id);if(!x)return;
+ dialog(safe(x.name),
+ '<div class="eyebrow">FONTE DI REDDITO · DEMO</div><div class="card" style="margin-bottom:16px"><div class="stat-label">Ricavi maturati</div><div class="statnum">'+eur(x.earned)+'</div><div class="stat-row"><span class="muted">Incassati</span><b>'+eur(x.paid)+'</b></div><div class="stat-row"><span class="muted">Da incassare</span><b>'+eur(x.pending)+'</b></div></div>'+
+ (x.stock?'<div class="stat-row"><span class="muted">Valore inventario posseduto</span><b>'+eur(x.stock)+'</b></div>':'')+
+ '<p class="small muted" style="line-height:1.8;margin-top:20px">'+safe(x.note)+'</p>'+
+ (x.id==="shop"?'<div class="card" style="margin-top:14px"><div class="eyebrow">ENTRATA ATTESA</div><h2>Modalità '+(x.mode==="fixed"?"fissa":"variabile")+'</h2><p class="small muted" style="margin:13px 0">Impostazione dimostrativa, senza modificare movimenti già registrati.</p><button class="button" data-ux="toggle-shop">Passa a '+(x.mode==="fixed"?"variabile":"fissa")+'</button></div>':'')+
+ '<div class="finance-note" style="margin-top:18px">L’inventario non è un incasso; il ricavo maturato non è automaticamente denaro disponibile. Nessun dato reale viene consultato.</div>');
+ $("#dlg").classList.add("sheet");
+}
+function focusDialog(){dialog("Focus Mode · Demo",'<div style="text-align:center"><div class="eyebrow">SESSIONE NON PERSISTITA</div><div class="money" id="focus-display">25:00</div><div class="small muted">Il timer è una simulazione locale.</div></div><div class="modal-actions" style="justify-content:center"><button class="button primary" data-focus="toggle" id="focus-toggle">▶ Avvia</button><button class="button" data-focus="reset">↺ Ripristina</button></div>');updateFocus()}
+function updateFocus(){const remaining=Math.max(0,1500-state.focus);const el=$("#focus-display");if(el)el.textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0");const b=$("#focus-toggle");if(b)b.textContent=state.focusRunning?"Ⅱ Pausa":"▶ Avvia"}
+function stopTimer(){state.focusRunning=false;if(timer){clearInterval(timer);timer=null}updateFocus()}
+function parseRoute(){applyRoute(location.hash)}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button,[data-project]");if(!b)return;
+ if(b.hasAttribute("data-nav-pin")){state.navPinned=!state.navPinned;syncNav();notify(state.navPinned?"Navigazione fissata":"Navigazione compatta: passa sopra o usa Tab");return}
+ if(b.hasAttribute("data-nav-close")){state.navPinned=false;setNavOpen(false);syncNav();return}
+ if(b.id==="mobile-menu"){setNavOpen(!state.navOpen);return}
+ if(b.id==="nav-scrim"){setNavOpen(false);return}
+ if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.inventoryFilter){state.collectionFilter=b.dataset.inventoryFilter;render();return}
+ if(b.dataset.inventoryItem){inventoryLeaf(b.dataset.inventoryItem);return}
+ if(b.hasAttribute("data-inventory-new")){inventoryNew();return}
+
+ if(b.hasAttribute("data-folder-manage")){manageFolders();return}
+ if(b.hasAttribute("data-folder-create")){editFolder(null);return}
+ if(b.dataset.folderRename){editFolder(b.dataset.folderRename);return}
+ if(b.dataset.folderShift){
+   const i=homeFolders.findIndex(f=>f.id===b.dataset.folderShift),j=i+Number(b.dataset.shift);
+   if(i>=0&&j>=0&&j<homeFolders.length){[homeFolders[i],homeFolders[j]]=[homeFolders[j],homeFolders[i]];manageFolders();render()}
+   return;
+ }
+ if(b.dataset.folderDelete){
+   const f=folderById(b.dataset.folderDelete);
+   if(f&&!f.original&&folderCount(f.id)===0){
+     homeFolders.splice(homeFolders.indexOf(f),1);manageFolders();render();notify("Cartella vuota rimossa dalla demo");
+   }else notify("Non puoi eliminare una cartella originale o con progetti");
+   return;
+ }
+ if(b.dataset.projectCreate){editProject(null,b.dataset.projectCreate);return}
+ if(b.dataset.projectOrganize){editProject(b.dataset.projectOrganize);return}
+
+ if(b.dataset.fitosView){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView=b.dataset.fitosView;state.fitosTrainingDay=null;if(b.dataset.fitosView!=="history")state.fitosHistorySession=null});return}
+ if(b.dataset.fitosDay!==undefined){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosTrainingDay=Number(b.dataset.fitosDay)},{scroll:true});return}
+ if(b.hasAttribute("data-fitos-week-back")){navigate(()=>{state.fitosTab="train";state.fitosTrainingDay=null;state.fitosWorkoutView="week"});return}
+ if(b.dataset.fitosExercise){openExerciseSheet(b.dataset.fitosExercise);return}
+ if(b.dataset.historyExercise){state.fitosHistoryExercise=b.dataset.historyExercise;state.fitosHistorySession=null;render();return}
+ if(b.dataset.historySession){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView="history";state.fitosHistorySession=b.dataset.historySession},{scroll:true});return}
+ if(b.hasAttribute("data-history-back")){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView="history";state.fitosHistorySession=null},{scroll:true});return}
+ if(b.dataset.sessionSelect!==undefined){selectSessionExercise(Number(b.dataset.sessionSelect));return}
+ if(b.dataset.sessionAction){
+   const a=b.dataset.sessionAction;
+   if(a==="start")startWorkoutSession();
+   else if(a==="complete")logSessionSet();
+   else if(a==="skip")skipSessionExercise();
+   else if(a==="undo")undoSessionSet();
+   else if(a==="pause")pauseSessionRest();
+   else if(a==="rest-minus")adjustSessionRest(-15);
+   else if(a==="rest-plus")adjustSessionRest(15);
+   else if(a==="rest-skip")completeSessionRest();
+   else if(a==="kg-minus"){workoutSession.draft.kg=Math.max(0,workoutSession.draft.kg-2.5);render()}
+   else if(a==="kg-plus"){workoutSession.draft.kg+=2.5;render()}
+   else if(a==="reps-minus"){workoutSession.draft.reps=Math.max(0,workoutSession.draft.reps-1);render()}
+   else if(a==="reps-plus"){workoutSession.draft.reps+=1;render()}
+   else if(a==="template"){workoutSession.templateUpdated=true;render();notify("Aggiornamento template simulato · nessun dato persistito")}
+   else if(a==="reset"){const day=workoutSession.dayIndex;resetWorkoutSession(day);render()}
+   else if(a==="exit"){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView="week";state.fitosTrainingDay=workoutSession.dayIndex},{scroll:true})}
+   return;
+ }
+
+ if(b.dataset.agendaMode){navigate(()=>{state.agendaMode=b.dataset.agendaMode});return}
+ if(b.dataset.agendaSchedule){taskLeaf(b.dataset.agendaSchedule);return}
+ if(b.hasAttribute("data-agenda-bulk-toggle")){state.agendaBulk=!state.agendaBulk;if(!state.agendaBulk)agendaSelection.clear();render();return}
+ if(b.dataset.agendaSelect){agendaSelection.has(b.dataset.agendaSelect)?agendaSelection.delete(b.dataset.agendaSelect):agendaSelection.add(b.dataset.agendaSelect);render();return}
+ if(b.dataset.agendaBulkAction){
+   const action=b.dataset.agendaBulkAction;
+   if(action==="cancel"){agendaSelection.clear();state.agendaBulk=false;render();return}
+   if(action==="move"){openAgendaBulkMove();return}
+   if(action==="duplicate"){
+     const chosen=tasks.filter(t=>agendaSelection.has(t.id));chosen.forEach((t,i)=>tasks.unshift({...t,id:"copy-"+Date.now()+"-"+i,title:t.title+" · copia",done:false}));agendaSelection.clear();render();notify(chosen.length+" task duplicate nella demo");return;
+   }
+   if(action==="delete"){const n=agendaSelection.size;tasks=tasks.filter(t=>!agendaSelection.has(t.id));agendaSelection.clear();state.agendaBulk=false;render();notify(n+" task eliminate dalla demo");return}
+ }
+
+ if(b.dataset.projectEntityAdd){addProjectEntity(b.dataset.projectEntityAdd,b.dataset.projectId);return}
+ if(b.dataset.goalToggle){const x=projectGoals.find(v=>v.id===b.dataset.goalToggle);if(x){x.done=!x.done;render()}return}
+ if(b.dataset.recurToggle){const x=recurrences.find(v=>v.id===b.dataset.recurToggle);if(x){x.active=!x.active;render()}return}
+ if(b.dataset.expenseToggle){const x=projectExpenses.find(v=>v.id===b.dataset.expenseToggle);if(x){x.paid=!x.paid;render();notify("Stato spesa aggiornato; nessun movimento creato")};return}
+ if(b.dataset.entityDelete){const id=b.dataset.entityId;if(b.dataset.entityDelete==="goal")projectGoals=projectGoals.filter(x=>x.id!==id);if(b.dataset.entityDelete==="recur")recurrences=recurrences.filter(x=>x.id!==id);if(b.dataset.entityDelete==="note")projectNotes=projectNotes.filter(x=>x.id!==id);render();notify("Elemento rimosso dalla demo");return}
+
+ if(b.dataset.ux==="widget-config"){openWidgetConfig();return}
+ if(b.dataset.ux==="natural-open"){quick();return}
+
+ if(b.dataset.ux==="quick-mode"){const natural=b.dataset.mode==="natural";$("#quick-natural").hidden=!natural;$("#quick-fast").hidden=natural;$("[data-ux=quick-mode]").forEach(el=>el.classList.toggle("active",el===b));return}
+ if(b.dataset.ux==="recap-back"){quick();return}
+ if(b.dataset.ux==="remove-recap"){const row=b.closest("[data-row]");if(row)row.remove();return}
+ if(b.dataset.ux==="recap-confirm"){
+   const rows=$$("#spoken-preview [data-row]");
+   const parsed=rows.map(el=>({
+     title:el.querySelector("[data-row-text]").value.trim(),
+     kind:el.querySelector("[data-row-kind]").value,
+     when:el.querySelector("[data-row-day]").value,
+     projectId:el.querySelector("[data-row-project]").value,
+     priority:el.querySelector("[data-row-priority]").value
+   })).filter(x=>x.title);
+   const missing=parsed.filter(x=>x.kind==="task"&&!x.projectId);
+   if(missing.length){notify("Seleziona un progetto per ogni task prima di confermare");return}
+   let n=0;
+   for(const el of parsed){
+     if(el.kind==="task")tasks.unshift({id:"recap-"+Date.now()+"-"+n,title:el.title,projectId:el.projectId,priority:el.priority,when:el.when,done:false,time:""});
+     else inbox.unshift({id:Date.now()+n,text:el.title+" · "+(projectName(el.projectId)||"")+" · "+el.when,type:el.kind});
+     n++;
+   }
+   $("#dlg").close();state.projectId=null;goto(parsed.some(x=>x.kind==="task"&&x.when!=="oggi")?"agenda":"today");notify(n+" elementi inseriti nella demo");return;
+ }
+
+ if(b.dataset.ux==="finance-tab"){navigate(()=>{state.screen="finance";state.financeSource=null;state.financeTab=b.dataset.tab});return}
+ if(b.dataset.ux==="source-detail"){navigate(()=>{state.screen="finance";state.financeSource=b.dataset.source;state.financeTab="income"},{scroll:true});return}
+ if(b.hasAttribute("data-finance-back")){navigate(()=>{state.financeSource=null;state.financeTab="income"});return}
+ if(b.hasAttribute("data-finance-home")){navigate(()=>{state.financeSource=null;state.financeTab="overview"});return}
+ if(b.dataset.incomeEntry){incomeRecordLeaf(b.dataset.incomeSource,b.dataset.incomeEntry);return}
+ if(b.hasAttribute("data-finance-shop-toggle")){const x=incomeSources.find(v=>v.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";render();return}
+ if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
+ if(b.dataset.nav){goto(b.dataset.nav);if(matchMedia("(max-width:720px)").matches)setNavOpen(false);return}
+ if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){const old=t.done;t.done=!t.done;render();notifyUndo(t.done?"Completata · Demo":"Riaperta · Demo",()=>{t.done=old;render();notify("Azione annullata · Demo")})}return}
+ if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
+ if(b.dataset.folder){navigate(()=>{state.screen="projects";state.folderId=b.dataset.folder;state.projectId=null},{scroll:true});return}
+ if(b.dataset.project){navigate(()=>{state.screen="projects";state.projectId=b.dataset.project;state.folderId=projectById(b.dataset.project)?.folderId||null;state.projectSection="tasks"},{scroll:true});return}
+ if(b.hasAttribute("data-projects-back")){navigate(()=>{state.screen="projects";state.projectId=null;state.folderId=null},{scroll:true});return}
+ if(b.hasAttribute("data-folder-back")){navigate(()=>{const orig=projectById(state.projectId);state.folderId=orig?.folderId||state.folderId;state.projectId=null},{scroll:true});return}
+ if(b.dataset.workspaceTab){navigate(()=>{state.projectSection=b.dataset.workspaceTab});return}
+ if(b.dataset.taskLeaf){taskLeaf(b.dataset.taskLeaf);return}
+ if(b.dataset.addProjectTask){quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();const sel=$("#fast-project");if(sel)sel.value=b.dataset.addProjectTask;return}
+ if(b.dataset.projectFilter){state.projectFilter=b.dataset.projectFilter;render();return}
+ if(b.dataset.action){const a=b.dataset.action;if(a==="quick")quick();else if(a==="focus-start")focusDialog();else if(a==="fitos-focus-start"){const day=Number.isInteger(Number(b.dataset.sessionDay))?Number(b.dataset.sessionDay):(state.fitosTrainingDay??0);if(workoutSession.status==="ready"||workoutSession.status==="finished"||workoutSession.dayIndex!==day)resetWorkoutSession(day);navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView="session";state.fitosTrainingDay=null},{scroll:true})}else if(a==="tx-new")txNew();else if(a==="project-layout"){state.projectView=state.projectView==="grid"?"list":"grid";render()}else if(a==="inbox-add"){const el=$("#inbox-entry");if(el&&el.value.trim()){inbox.unshift({id:Date.now(),text:el.value.trim(),type:"idea"});render();notify("Aggiunto alla Inbox · Demo")}}else if(a==="review-next"){state.reviewStep=(state.reviewStep+1)%3;render()}else if(a==="sale-demo"){notify("Anteprima vendita: nella V2 sceglierai prezzo e metodo di incasso.")}else if(a==="weight-add"){notify("In V2: inserimento peso rapido con data e storico.")}else if(a==="move-overdue"||a==="keep-overdue"){notify(a==="move-overdue"?"Spostamento previsto; calendario non modificato.":"Task lasciata nella data originaria · Demo")}else if(views[a])goto(a);else notify("Vista giorno: in progettazione");return}
+ if(b.dataset.fitos){navigate(()=>{state.screen="fitos";state.fitosTab=b.dataset.fitos;state.fitosTrainingDay=null});return}
+ if(b.dataset.collection){navigate(()=>{state.screen="collections";state.collectionTab=b.dataset.collection});return}
+ if(b.dataset.day){navigate(()=>{state.screen="agenda";state.agendaDay=Number(b.dataset.day)});return}
+ if(b.dataset.cmd){
+ const value=b.dataset.cmd;$("#dlg").close();
+ if(value==="quick"){quick();return}
+ if(value.startsWith("nav:")){goto(value.slice(4));return}
+ if(value.startsWith("folder:")){
+  const id=value.slice(7);if(!folderById(id))return;
+  navigate(()=>{state.screen="projects";state.folderId=id;state.projectId=null},{scroll:true});return;
+ }
+ if(value.startsWith("source:")){
+  const id=value.slice(7);if(!incomeSources.some(x=>x.id===id))return;
+  navigate(()=>{state.screen="finance";state.financeSource=id;state.financeTab="income"},{scroll:true});return;
+ }
+
+ if(value.startsWith("p:")){
+   const id=value.slice(2),p=projectById(id);if(!p)return;
+   navigate(()=>{state.screen="projects";state.projectId=id;state.folderId=p.folderId;state.projectSection="tasks"},{scroll:true});return;
+ }
+ if(value.startsWith("task:")){
+   const id=value.slice(5),t=tasks.find(x=>x.id===id);if(!t)return;
+   const p=projectById(t.projectId);
+   navigate(()=>{state.screen="projects";state.projectId=t.projectId;state.folderId=p?.folderId||null;state.projectSection="tasks"},{scroll:true});
+   taskLeaf(id);return;
+ }
+ return;
+ }
+ if(b.dataset.inboxTriage){const item=inbox.find(x=>x.id===Number(b.dataset.inboxTriage));if(item){dialog("Smista elemento",'<p class="muted small">'+safe(item.text)+'</p><div class="grid c2"><button class="button" data-triage-to="task" data-triage-id="'+item.id+'">→ Task</button><button class="button" data-triage-to="note" data-triage-id="'+item.id+'">→ Nota</button></div><p class="xs muted" style="margin-top:15px">In V2 lo smistamento farà uso dello stesso servizio dei moduli destinatari.</p>')}return}
+ if(b.dataset.triageTo){const id=Number(b.dataset.triageId);const item=inbox.find(x=>x.id===id);if(item&&b.dataset.triageTo==="task"){$("#dlg").close();quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();$("#fast-title").value=item.text;state.triageId=id;return}if(item){inbox=inbox.filter(x=>x.id!==id);$("#dlg").close();render();notify("Elemento archiviato nella demo")}return}
+ if(b.dataset.focus){if(b.dataset.focus==="reset"){stopTimer();state.focus=0;updateFocus()}else{state.focusRunning?stopTimer():(state.focusRunning=true,timer=setInterval(()=>{state.focus++;updateFocus();if(state.focus>=1500){stopTimer();notify("Focus completato · Demo")}},1000),updateFocus())}return}
+ if(b.dataset.detailTab){$$("[data-detail-tab]").forEach(x=>x.classList.toggle("active",x===b));$("#project-detail-content").textContent=({tasks:"Task e priorità",goals:"Obiettivi generali e settimanali",recur:"Regole e completamenti ricorrenti",spese:"Spese collegate al progetto",notes:"Note, link e risorse"})[b.dataset.detailTab]+" del progetto, in un pannello contestuale.";return}
+});
+document.addEventListener("change",e=>{if(e.target.id==="agenda-project"){state.agendaProject=e.target.value;render()}});
+document.addEventListener("input",e=>{if(e.target.id==="inventory-search"){state.collectionQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#inventory-search");input.focus();input.setSelectionRange(pos,pos)} });
+document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if(e.key==="Escape"&&state.navOpen){setNavOpen(false);$("#mobile-menu")?.focus()}if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-project]")){e.preventDefault();navigate(()=>{state.projectId=e.target.dataset.project;state.folderId=projectById(state.projectId)?.folderId||null;state.projectSection="tasks";state.screen="projects"},{scroll:true})}});
+$("#density-toggle").addEventListener("click",e=>{const active=document.body.classList.toggle("density-compact");e.currentTarget.setAttribute("aria-pressed",String(active));e.currentTarget.textContent=active?"▤ Comoda":"▤ Compatta"});
+$("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
+document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
+document.addEventListener("submit",e=>{
+ if(e.target.id==="agenda-bulk-move-form"){
+   e.preventDefault();const when=$("#agenda-bulk-day").value;let n=0;tasks.forEach(t=>{if(agendaSelection.has(t.id)){t.when=when;n++}});agendaSelection.clear();state.agendaBulk=false;$("#dlg").close();render();notify(n+" task spostate nella demo");return;
+ }
+ if(e.target.id==="project-entity-form"){
+   e.preventDefault();const kind=e.target.dataset.entityKind,projectId=e.target.dataset.projectId,title=$("#entity-title").value.trim(),extra=$("#entity-extra")?.value.trim()||"";if(!title)return;
+   const id=kind+"-"+(++nextDemoId);
+   if(kind==="goals")projectGoals.unshift({id,projectId,title,scope:extra||"generale",done:false});
+   if(kind==="recur")recurrences.unshift({id,projectId,title,rule:extra||"Frequenza da definire",streak:0,active:true});
+   if(kind==="expenses"){const amount=Number($("#entity-amount").value);if(!Number.isFinite(amount)||amount<0){notify("Controlla l’importo");return}projectExpenses.unshift({id,projectId,title,amount,date:extra||"Da definire",paid:false})}
+   if(kind==="notes")projectNotes.unshift({id,projectId,title,body:extra,kind:$("#entity-note-kind").value});
+   $("#dlg").close();render();notify("Elemento aggiunto alla sezione progetto");return;
+ }
+ if(e.target.id==="inventory-item-form"){
+   e.preventDefault();const x=inventory.find(v=>v.id===e.target.dataset.itemId);if(!x)return;
+   const q=Number($("#inventory-quantity").value),c=Number($("#inventory-cost").value),est=Number($("#inventory-estimate").value),ask=Number($("#inventory-ask").value);
+   if(!Number.isInteger(q)||q<1||[c,est,ask].some(v=>!Number.isFinite(v)||v<0)){notify("Controlla quantità e valori");return}
+   x.title=$("#inventory-name").value.trim();x.detail=$("#inventory-detail").value.trim();x.quantity=q;x.acquisition=c;x.estimate=est;x.ask=ask;x.status=$("#inventory-status").value;
+   $("#dlg").close();render();notify("Articolo aggiornato nella demo");return;
+ }
+ if(e.target.id==="inventory-create-form"){
+   e.preventDefault();const title=$("#inventory-new-name").value.trim(),quantity=Number($("#inventory-new-quantity").value),estimate=Number($("#inventory-new-estimate").value);
+   if(!title||!Number.isInteger(quantity)||quantity<1||!Number.isFinite(estimate)||estimate<0){notify("Controlla quantità e stima");return}
+   inventory.unshift({id:"item-"+(++nextDemoId),kind:state.collectionTab,title,detail:"Nuovo articolo demo",quantity,estimate,ask:estimate,acquisition:0,status:"available"});
+   $("#dlg").close();render();notify("Articolo aggiunto al catalogo demo");return;
+ }
+
+ if(e.target.id==="folder-edit-form"){
+   e.preventDefault();
+   const name=$("#folder-name").value.trim(),id=e.target.dataset.folderId;
+   if(!name)return;
+   if(homeFolders.some(f=>f.id!==id&&f.name.toLocaleLowerCase("it")===name.toLocaleLowerCase("it"))){notify("Esiste già una cartella con questo nome");return}
+   const previous=folderById(id);
+   if(previous)previous.name=name;
+   else homeFolders.push({id:"folder-"+(++nextDemoId),name,icon:"▤",color:"blue",original:false});
+   render();manageFolders();notify(previous?"Cartella rinominata":"Cartella creata");return;
+ }
+ if(e.target.id==="project-edit-form"){
+   e.preventDefault();
+   const name=$("#project-name").value.trim(),folderId=$("#project-folder").value;
+   if(!name||!folderById(folderId)){notify("Controlla nome e cartella");return}
+   const id=e.target.dataset.projectId;
+   let p=projectById(id);
+   if(!p){p={id:"project-"+(++nextDemoId),glyph:name.trim().slice(0,2).toUpperCase(),color:"#4779ae"};projects.push(p)}
+   p.name=name;p.folderId=folderId;p.cat=$("#project-category").value.trim()||"Personale";
+   p.status=$("#project-status").value;p.desc=$("#project-desc").value.trim();
+   $("#dlg").close();
+   navigate(()=>{state.screen="projects";state.folderId=folderId;state.projectId=p.id;state.projectSection="tasks"},{scroll:true});
+   notify("Progetto organizzato nella demo");return;
+ }
+
+ if(e.target.id==="task-leaf-form"){
+   e.preventDefault();const t=tasks.find(x=>x.id===e.target.dataset.taskId);
+   if(t){t.title=$("#leaf-title").value.trim();t.projectId=$("#leaf-project").value;t.priority=$("#leaf-priority").value;t.when=$("#leaf-when").value}
+   $("#dlg").close();render();notify("Task aggiornata in tutte le viste demo");return;
+ }
+
+ if(e.target.id==="spoken-form"){
+   e.preventDefault();const text=$("#spoken-input").value.trim();if(!text)return;
+   const items=interpretSimpleRecap(text);
+   if(items.length)showRecapPreview(items);
+   else notify("Non ho rilevato elementi da aggiungere");
+ }
+ if(e.target.id==="fast-form"){
+   e.preventDefault();const kind=$("#fast-kind").value;
+   const title=$("#fast-title")?.value.trim();if(!title)return;
+   const projectId=$("#fast-project")?.value||"";
+   if(kind==="task"){if(!projectId){notify("Seleziona prima un progetto");return}const when=$("#fast-date")?.value.trim().toLocaleLowerCase("it")||"oggi";tasks.unshift({id:"fast"+Date.now(),title,projectId,priority:$("#fast-priority")?.value||"media",when,time:"",done:false})}
+   else if(kind==="goal"||kind==="weekly_goal"){if(!projectId){notify("Scegli il progetto dell’obiettivo");return}projectGoals.unshift({id:"goal-"+(++nextDemoId),projectId,title,scope:kind==="weekly_goal"?"settimanale":"generale",done:false})}
+   else if(kind==="recurring"){if(!projectId){notify("Scegli il progetto della ricorrenza");return}recurrences.unshift({id:"recur-"+(++nextDemoId),projectId,title,rule:$("#fast-extra")?.value.trim()||"Frequenza da definire",streak:0,active:true})}
+   else if(kind==="expense"){if(!projectId){notify("Scegli il progetto della spesa");return}const amount=Number($("#fast-amount")?.value);if(!Number.isFinite(amount)||amount<0){notify("Controlla l’importo");return}projectExpenses.unshift({id:"expense-"+(++nextDemoId),projectId,title,amount,date:$("#fast-date")?.value.trim()||"Da definire",paid:false})}
+   else if(kind==="note"||kind==="link"){if(!projectId){notify("Scegli il progetto della nota");return}projectNotes.unshift({id:"note-"+(++nextDemoId),projectId,title,body:$("#fast-extra")?.value.trim()||"",kind:kind==="link"?"link":"nota"})}
+   else if(kind==="project"){const folderId=$("#fast-folder")?.value||"altro";projects.push({id:"project-"+(++nextDemoId),name:title,folderId,cat:$("#fast-extra")?.value.trim()||"Personale",desc:"Progetto creato nella demo Batch 08.",color:"#4779ae",glyph:title.slice(0,2).toUpperCase(),status:"active"})}
+   else inbox.unshift({id:Date.now(),text:kind+": "+title,type:kind});
+   if(kind==="task"&&state.triageId){inbox=inbox.filter(x=>x.id!==state.triageId);state.triageId=null}$("#dlg").close();render();notify(["task","goal","weekly_goal","recurring","expense","note","link","project"].includes(kind)?"Elemento inserito nella vista demo":"Bozza "+kind+" in Inbox demo");
+ }
+ if(e.target.id==="quick-form"){e.preventDefault();const title=$("#quick-value").value.trim(),kind=$("#quick-kind").value;if(!title)return;if(kind==="task"){tasks.unshift({id:"t"+Date.now(),title,time:"",project:"Personale",done:false})}else inbox.unshift({id:Date.now(),text:title,type:"idea"});$("#dlg").close();render();notify((kind==="task"?"Task creata":"Inbox aggiornata")+" · Demo")}
+ if(e.target.id==="tx-form"){e.preventDefault();const title=$("#tx-name").value.trim(),amount=Number($("#tx-amount").value),type=$("#tx-type").value;if(!title||!Number.isFinite(amount)||amount<=0)return;$("#dlg").close();dialog("Conferma effetto · Demo",'<p class="small muted" style="line-height:1.8">Questa operazione simulata registrerebbe <b>'+safe(title)+'</b>, '+(type==="in"?"entrata":"uscita")+' di <b>'+eur(amount)+'</b>. Non modifica il patrimonio, gli asset reali o Firebase.</p><div class="modal-actions"><button class="button" data-close>Annulla</button><button class="button primary" id="confirm-demo-tx">Conferma nella demo</button></div>');$("#confirm-demo-tx").addEventListener("click",()=>{tx.unshift({id:Date.now(),name:title,type,amount,date:"Adesso"});$("#dlg").close();render();notify("Movimento aggiunto alla lista demo")})}
+});
+$("#dlg").addEventListener("close",stopTimer);
+window.addEventListener("popstate",()=>{parseRoute();render()});
+window.addEventListener("hashchange",()=>{parseRoute();render()});
+window.addEventListener("resize",()=>{if(!matchMedia("(max-width:720px)").matches)state.navOpen=false;syncNav()});
+parseRoute();render();syncNav();
+</script></body></html>
+
