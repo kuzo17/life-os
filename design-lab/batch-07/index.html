@@ -370,20 +370,20 @@ body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const titles={today:"Oggi",projects:"Progetti",agenda:"Agenda",fitos:"FitOS",finance:"Finanze",collections:"Collezioni",inbox:"Inbox",review:"Review",more:"Altri strumenti"};
 const projects=[
-{id:"quartzica",name:"Quartzica",cat:"Brand digitale",folder:"KUZO ENTERPRISE",desc:"Contenuti e crescita social.",color:"#15a87e",glyph:"Q",status:"active"},
-{id:"aimade",name:"AI Made Simple",cat:"Brand digitale",folder:"KUZO ENTERPRISE",desc:"Prodotti digitali e contenuti.",color:"#e49b31",glyph:"AI",status:"active"},
-{id:"stosa",name:"Stosa Messina",cat:"Negozio",folder:"KUZO ENTERPRISE",desc:"Social, calendario, contenuti e iniziative.",color:"#2868df",glyph:"S",status:"active"},
-{id:"kdp",name:"KDP · Trova la Calma",cat:"Editoria",folder:"Z & JPC",desc:"Libri, pubblicazioni e promozione.",color:"#d84e4e",glyph:"K",status:"active"},
-{id:"nami",name:"Nami Moretti",cat:"Avatar",folder:"Z & JPC",desc:"Produzione e attività digitali.",color:"#8653d9",glyph:"N",status:"planning"},
-{id:"youtube",name:"YouTube Asia",cat:"Video",folder:"Z & JPC",desc:"Produzione e distribuzione video.",color:"#119fb1",glyph:"Y",status:"active"},
-{id:"vinted",name:"Vinted",cat:"Reselling",folder:"RESELLING & COLLEZIONE",desc:"Inventario, inserzioni e vendite.",color:"#e26ea6",glyph:"V",status:"active"},
-{id:"carte",name:"Carte eBay",cat:"Collezione",folder:"RESELLING & COLLEZIONE",desc:"Catalogo carte, vendite e valutazioni.",color:"#ee9543",glyph:"C",status:"active"},
-{id:"risparmio",name:"Risparmio",cat:"Finanze",folder:"FINANZA & TRADING",desc:"Versamenti e crescita del capitale.",color:"#169d87",glyph:"R",status:"active"},
-{id:"crypto",name:"Crypto",cat:"Finanze",folder:"FINANZA & TRADING",desc:"Monitoraggio portafoglio.",color:"#d6a335",glyph:"₿",status:"active"},
-{id:"trading",name:"Trading",cat:"Finanze",folder:"FINANZA & TRADING",desc:"Studio, strategie e simulazioni.",color:"#7075dc",glyph:"T",status:"planning"},
-{id:"allenamento",name:"Allenamento",cat:"FitOS",folder:"Benessere",desc:"Schede, esercizi e progressione.",color:"#d65a5c",glyph:"♡",status:"active"},
-{id:"alimentazione",name:"Alimentazione",cat:"FitOS",folder:"Benessere",desc:"Piani, alimenti, ricette e macro.",color:"#df8e3b",glyph:"A",status:"active"},
-{id:"stretching",name:"Stretching",cat:"FitOS",folder:"Benessere",desc:"Mobilità e routine settimanali.",color:"#9057d5",glyph:"M",status:"active"}
+{id:"quartzica",name:"Quartzica",cat:"Brand digitale",folderId:"kuzo",desc:"Contenuti e crescita social.",color:"#15a87e",glyph:"Q",status:"active"},
+{id:"aimade",name:"AI Made Simple",cat:"Brand digitale",folderId:"kuzo",desc:"Prodotti digitali e contenuti.",color:"#e49b31",glyph:"AI",status:"active"},
+{id:"stosa",name:"Stosa Messina",cat:"Negozio",folderId:"kuzo",desc:"Social, calendario, contenuti e iniziative.",color:"#2868df",glyph:"S",status:"active"},
+{id:"kdp",name:"KDP · Trova la Calma",cat:"Editoria",folderId:"zjpc",desc:"Libri, pubblicazioni e promozione.",color:"#d84e4e",glyph:"K",status:"active"},
+{id:"nami",name:"Nami Moretti",cat:"Avatar",folderId:"zjpc",desc:"Produzione e attività digitali.",color:"#8653d9",glyph:"N",status:"planning"},
+{id:"youtube",name:"YouTube Asia",cat:"Video",folderId:"zjpc",desc:"Produzione e distribuzione video.",color:"#119fb1",glyph:"Y",status:"active"},
+{id:"vinted",name:"Vinted",cat:"Reselling",folderId:"reselling",desc:"Inventario, inserzioni e vendite.",color:"#e26ea6",glyph:"V",status:"active"},
+{id:"carte",name:"Carte eBay",cat:"Collezione",folderId:"reselling",desc:"Catalogo carte, vendite e valutazioni.",color:"#ee9543",glyph:"C",status:"active"},
+{id:"risparmio",name:"Risparmio",cat:"Finanze",folderId:"finance",desc:"Versamenti e crescita del capitale.",color:"#169d87",glyph:"R",status:"active"},
+{id:"crypto",name:"Crypto",cat:"Finanze",folderId:"finance",desc:"Monitoraggio portafoglio.",color:"#d6a335",glyph:"₿",status:"active"},
+{id:"trading",name:"Trading",cat:"Finanze",folderId:"finance",desc:"Studio, strategie e simulazioni.",color:"#7075dc",glyph:"T",status:"planning"},
+{id:"allenamento",name:"Allenamento",cat:"FitOS",folderId:"fitos",desc:"Schede, esercizi e progressione.",color:"#d65a5c",glyph:"♡",status:"active"},
+{id:"alimentazione",name:"Alimentazione",cat:"FitOS",folderId:"fitos",desc:"Piani, alimenti, ricette e macro.",color:"#df8e3b",glyph:"A",status:"active"},
+{id:"stretching",name:"Stretching",cat:"FitOS",folderId:"fitos",desc:"Mobilità e routine settimanali.",color:"#9057d5",glyph:"M",status:"active"}
 ];
 let tasks=[
 {id:"t1",title:"Controllare le royalty",projectId:"kdp",priority:"alta",when:"oggi",time:"09:30",done:true},
@@ -485,7 +485,7 @@ function projectWorkspace(){
    }[state.projectSection]||["Sezione",""];
    body='<div class="module-surface"><div class="eyebrow">STRUTTURA PREVISTA / NON ANCORA IMPLEMENTATA</div><h2>'+content[0]+'</h2><p class="small muted" style="line-height:1.8;margin:14px 0 20px">'+content[1]+'</p><div class="blueprint-rows"><div class="blueprint-row"><span>Elenco completo</span><span>→</span></div><div class="blueprint-row"><span>Filtri e ordinamento</span><span>→</span></div><div class="blueprint-row"><span>Azione contestuale sull’elemento finale</span><span>◫</span></div></div></div>';
  }
- return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><button class="crumb-link" data-folder-back>'+safe(p.folder)+'</button><span>›</span><b>'+safe(p.name)+'</b></div>'+
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><button class="crumb-link" data-folder-back>'+safe(folderName(p.folderId))+'</button><span>›</span><b>'+safe(p.name)+'</b></div>'+
  '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-folder-back>← Torna alla cartella</button></div></div>'+
  '<div class="workspace-kpis"><div class="card"><div class="stat-label">Avanzamento task nella demo</div><div class="statnum">'+(m.pct===null?"—":m.pct+"%")+'</div><div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div></div>'+
  '<div class="card"><div class="stat-label">Task</div><div class="statnum">'+m.n+'</div><div class="small muted">Singola fonte di verità</div></div>'+
@@ -493,24 +493,28 @@ function projectWorkspace(){
  nav+body;
 }
 const homeFolders=[
- {name:"KUZO ENTERPRISE",icon:"◈",color:"blue"},
- {name:"Z & JPC",icon:"✦",color:"purple"},
- {name:"RESELLING & COLLEZIONE",icon:"◇",color:"coral"},
- {name:"FINANZA & TRADING",icon:"◎",color:"teal"},
- {name:"ALTRO",icon:"▤",color:"gold"}
+ {id:"kuzo",name:"KUZO ENTERPRISE",icon:"◈",color:"blue"},
+ {id:"zjpc",name:"Z & JPC",icon:"✦",color:"purple"},
+ {id:"reselling",name:"RESELLING & COLLEZIONE",icon:"◇",color:"coral"},
+ {id:"finance",name:"FINANZA & TRADING",icon:"◎",color:"teal"},
+ {id:"altro",name:"ALTRO",icon:"▤",color:"gold"}
 ];
+let nextDemoId=100;
+function folderById(id){return homeFolders.find(x=>x.id===id)||null}
+function folderName(id){return folderById(id)?.name||(id==="fitos"?"FitOS":"Cartella sconosciuta")}
+function folderCount(id){return projects.filter(p=>p.folderId===id).length}
 function viewFolderHome(){
  return headline("Cartelle","Apri una cartella per esplorare i progetti: la navigazione non si ferma a una griglia unica.","WORKSPACE / ORGANIZZAZIONE")+
- '<div class="folder-grid-b05">'+homeFolders.map((f,i)=>'<button class="folder-card-b05 folder-'+f.color+'" data-folder="'+safe(f.name)+'"><span class="folder-icon-b05">'+f.icon+'</span><span class="folder-n-b05">0'+(i+1)+'</span><h2>'+safe(f.name)+'</h2><div class="folder-bottom-b05">'+projects.filter(p=>p.folder===f.name).length+' progetti demo <span>↗</span></div></button>').join("")+'</div>'+
+ '<div class="folder-grid-b05">'+homeFolders.map((f,i)=>'<button class="folder-card-b05 folder-'+f.color+'" data-folder="'+safe(f.id)+'"><span class="folder-icon-b05">'+f.icon+'</span><span class="folder-n-b05">0'+(i+1)+'</span><h2>'+safe(f.name)+'</h2><div class="folder-bottom-b05">'+folderCount(f.id)+' progetti demo <span>↗</span></div></button>').join("")+'</div>'+
  '<p class="small muted" style="margin:19px 0;line-height:1.7">Cartelle originali V1. I contenuti sono dimostrativi: i progetti personalizzati e il loro archivio verranno migrati privatamente, non pubblicati in questo laboratorio.</p>';
 }
 function viewProjects(){
  if(!state.projectId&&!state.folderId)return viewFolderHome();
  if(state.projectId)return projectWorkspace();
- const filtered=projects.filter(p=>p.folder===state.folderId&&(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLocaleLowerCase("it").includes(state.projectQuery.toLocaleLowerCase("it")));
+ const filtered=projects.filter(p=>p.folderId===state.folderId&&(state.projectFilter==="all"||p.status===state.projectFilter)&&p.name.toLocaleLowerCase("it").includes(state.projectQuery.toLocaleLowerCase("it")));
  const active=projects.filter(p=>p.status==="active").length;
  const completed=tasks.filter(t=>t.done).length;
- return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><b>'+safe(state.folderId)+'</b></div>'+headline(state.folderId,"Apri un progetto di questa cartella per esplorarne le sezioni.","CARTELLA / PROGETTI")+
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><b>'+safe(folderName(state.folderId))+'</b></div>'+headline(folderName(state.folderId),"Apri un progetto di questa cartella per esplorarne le sezioni.","CARTELLA / PROGETTI")+
  '<div class="grid c3">'+miniStat("Aree progetto",String(projects.length),"Stessa struttura originale","cyan","▦")+miniStat("Task demo",String(tasks.length),completed+" completate","blue","✓")+miniStat("Workspace attivi",String(active),"Stato dimostrativo","violet","◈")+'</div>'+
  '<div class="section-head"><h2>Esplora i workspace</h2><span class="hint">Pagina progetto → sezione → dettaglio elemento</span></div>'+
  '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca un progetto..." aria-label="Cerca progetti">'+
@@ -745,7 +749,7 @@ function viewMore(){return headline("Altri strumenti","Tutti i moduli restano ra
 '<div class="grid c2">'+[["fitos","♡ FitOS","Allenamento, nutrizione, stretching e peso"],["finance","◉ Finanze","Asset, movimenti, spese e patrimonio"],["collections","◇ Collezioni","Carte e Vinted"],["inbox","↧ Inbox","Idee, task e link da smistare"],["review","◎ Review","Revisione settimanale"],["projects","▦ Progetti","Cartelle e attività"]].map(([k,l,d])=>'<button class="card" style="text-align:left;color:var(--text)" data-nav="'+k+'"><h2>'+l+'</h2><p class="small muted" style="margin:12px 0 0">'+d+'</p></button>').join("")+'</div>';
 }
 const views={today:viewToday,projects:viewProjects,agenda:viewAgenda,fitos:viewFitos,finance:viewFinance,collections:viewCollections,inbox:viewInbox,review:viewReview,more:viewMore};
-function render(){const el=$("#view");el.innerHTML=views[state.screen]();$("#crumb-current").textContent=state.screen==="projects"&&!state.projectId&&state.folderId?state.folderId:state.screen==="projects"&&state.projectId?(projectName(state.projectId)+" / "+({"tasks":"Task","goals":"Obiettivi","recur":"Ricorrenti","expenses":"Spese","notes":"Note"}[state.projectSection]||"")):titles[state.screen];$$("[data-nav]").forEach(b=>{const on=b.dataset.nav===state.screen;b.classList.toggle("active",on);on?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current")});const n=$("#inbox-count");n.textContent=inbox.length;n.hidden=inbox.length===0}
+function render(){const el=$("#view");el.innerHTML=views[state.screen]();$("#crumb-current").textContent=state.screen==="projects"&&!state.projectId&&state.folderId?folderName(state.folderId):state.screen==="projects"&&state.projectId?(projectName(state.projectId)+" / "+({"tasks":"Task","goals":"Obiettivi","recur":"Ricorrenti","expenses":"Spese","notes":"Note"}[state.projectSection]||"")):titles[state.screen];$$("[data-nav]").forEach(b=>{const on=b.dataset.nav===state.screen;b.classList.toggle("active",on);on?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current")});const n=$("#inbox-count");n.textContent=inbox.length;n.hidden=inbox.length===0}
 
 // Single navigation contract for the Visual Lab. History is user-visible state, never duplicated domain data.
 const projectTabs=new Set(["tasks","goals","recur","expenses","notes"]);
@@ -770,9 +774,9 @@ function applyRoute(raw){
  const module=p[0]||"today";state.screen=views[module]?module:"today";
  if(state.screen==="projects"){
    state.folderId=null;state.projectId=null;
-   if(p[1]==="folder"&&homeFolders.some(f=>f.name===p[2]))state.folderId=p[2];
+   if(p[1]==="folder"&&homeFolders.some(f=>f.id===p[2]))state.folderId=p[2];
    if(p[1]==="workspace"&&projectById(p[2])){
-     state.projectId=p[2];state.folderId=projectById(p[2]).folder;
+     state.projectId=p[2];state.folderId=projectById(p[2]).folderId;
      state.projectSection=projectTabs.has(p[3])?p[3]:"tasks";
    }
  }
@@ -976,9 +980,9 @@ document.addEventListener("click",e=>{
  if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){const old=t.done;t.done=!t.done;render();notifyUndo(t.done?"Completata · Demo":"Riaperta · Demo",()=>{t.done=old;render();notify("Azione annullata · Demo")})}return}
  if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
  if(b.dataset.folder){navigate(()=>{state.screen="projects";state.folderId=b.dataset.folder;state.projectId=null},{scroll:true});return}
- if(b.dataset.project){navigate(()=>{state.screen="projects";state.projectId=b.dataset.project;state.folderId=projectById(b.dataset.project)?.folder||null;state.projectSection="tasks"},{scroll:true});return}
+ if(b.dataset.project){navigate(()=>{state.screen="projects";state.projectId=b.dataset.project;state.folderId=projectById(b.dataset.project)?.folderId||null;state.projectSection="tasks"},{scroll:true});return}
  if(b.hasAttribute("data-projects-back")){navigate(()=>{state.screen="projects";state.projectId=null;state.folderId=null},{scroll:true});return}
- if(b.hasAttribute("data-folder-back")){navigate(()=>{const orig=projectById(state.projectId);state.folderId=orig?.folder||state.folderId;state.projectId=null},{scroll:true});return}
+ if(b.hasAttribute("data-folder-back")){navigate(()=>{const orig=projectById(state.projectId);state.folderId=orig?.folderId||state.folderId;state.projectId=null},{scroll:true});return}
  if(b.dataset.workspaceTab){navigate(()=>{state.projectSection=b.dataset.workspaceTab});return}
  if(b.dataset.taskLeaf){taskLeaf(b.dataset.taskLeaf);return}
  if(b.dataset.addProjectTask){quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();const sel=$("#fast-project");if(sel)sel.value=b.dataset.addProjectTask;return}
@@ -993,7 +997,7 @@ document.addEventListener("click",e=>{
  if(value.startsWith("nav:")){goto(value.slice(4));return}
  if(value.startsWith("p:")){
    const id=value.slice(2),p=projectById(id);if(!p)return;
-   navigate(()=>{state.screen="projects";state.projectId=id;state.folderId=p.folder;state.projectSection="tasks"},{scroll:true});return;
+   navigate(()=>{state.screen="projects";state.projectId=id;state.folderId=p.folderId;state.projectSection="tasks"},{scroll:true});return;
  }
  if(value.startsWith("task:")){
    const id=value.slice(5),t=tasks.find(x=>x.id===id);if(!t)return;
