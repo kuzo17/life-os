@@ -287,6 +287,40 @@ body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"
 .agenda-day-focus .agenda-week-grid{max-width:840px}
 @media(max-width:1100px){.agenda-week-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.agenda-main-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.agenda-week-grid{grid-template-columns:repeat(7,minmax(145px,1fr));overflow:auto}.agenda-day-focus{overflow-x:auto}.agenda-command{align-items:stretch}.agenda-project-filter{max-width:none;width:100%}}
+
+/* Batch 06 — multi-level FitOS layout, full week / leaf exercises */
+.fitos-level-nav{display:flex;gap:8px;margin:7px 0 24px;flex-wrap:wrap}
+.fitos-week-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;flex-wrap:wrap}
+.fitos-week-summary h2{font-size:25px;margin-bottom:7px}
+.fitos-summary-tags{display:flex;gap:8px}
+.fitos-week-cards{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.fitos-day-card{grid-column:span 4;min-height:160px;text-align:left;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:15px;padding:20px;display:flex;flex-direction:column;gap:13px}
+.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 6}
+.fitos-day-card:hover{border-color:var(--main);background:var(--navActive)}
+.fitos-day-card h3{font-size:17px;letter-spacing:-.6px}
+.fitos-day-meta{font-size:11px;color:var(--muted);line-height:1.6}
+.fitos-go{font-size:10px;font-weight:900;color:var(--main);margin-top:auto}
+.fitos-day-hero{background:var(--hero);border:1px solid var(--border);border-radius:17px;padding:26px}
+.fitos-day-hero h2{font-size:30px;letter-spacing:-1px;margin-bottom:8px}
+.fitos-day-hero p{color:var(--muted);font-size:12px;line-height:1.7;margin-bottom:22px;max-width:600px}
+.fitos-exercise-line{display:flex;align-items:center;gap:16px;text-align:left;background:transparent;color:var(--text);width:100%;border:0;border-bottom:1px solid var(--border);padding:17px 3px}
+.fitos-exercise-line:last-child{border-bottom:none}
+.fitos-exercise-line:hover{color:var(--main)}
+.fitos-ex-num{font-size:20px;font-weight:900;color:var(--muted);min-width:28px}
+.fitos-exercise-line>div{flex:1}
+.fitos-exercise-line b{font-size:13px}
+.fitos-exercise-line .small{margin-top:5px}
+.fitos-ex-link{font-size:10px;font-weight:900}
+.fitos-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fitos-catalog-card{text-align:left;display:flex;flex-direction:column;gap:9px;min-height:160px}
+.fitos-catalog-card:hover{border-color:var(--main)}
+.fitos-catalog-card>span{margin-top:auto;font-weight:800;font-size:11px;color:var(--main)}
+.fitos-ex-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fitos-ex-stats>div{background:var(--panel2);padding:15px;border-radius:11px;display:flex;flex-direction:column;gap:9px}
+.fitos-ex-stats>div span{font-size:10px;color:var(--muted)}
+.fitos-ex-stats>div b{font-size:20px}
+@media(max-width:1050px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 6}.fitos-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 12;min-height:128px}.fitos-catalog-grid{grid-template-columns:1fr}.fitos-day-hero h2{font-size:24px}}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 06 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -341,7 +375,7 @@ let tasks=[
 // Agenda and project pages read tasks[] directly: no duplicated scheduled-task collection.
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
-let state={folderId:null,projectId:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",collectionTab:"cards",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
+let state={folderId:null,projectId:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",collectionTab:"cards",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
 let timer=null;let toastTimeout=null;let originFocus=null;
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
@@ -512,7 +546,7 @@ function viewAgenda(){
  '<div>'+unscheduled.slice(0,5).map(t=>'<div class="list-item"><div class="body"><button class="text-action" data-task-leaf="'+safe(t.id)+'">'+safe(t.title)+'</button><div class="sub">'+safe(projectName(t.projectId))+'</div></div><button class="button small" data-agenda-schedule="'+safe(t.id)+'">Pianifica</button></div>').join('')+'</div>'+
  '<div class="hint-box" style="margin-top:15px">La V1 include anche operazioni in massa, drag/drop e ricorrenti. Sono obblighi di parità per la V2 reale: non sono implementati qui.</div></div></div></div>';
 }
-function viewFitos(){const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
+function viewFitosBase(){const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
 let body="";
 if(state.fitosTab==="today")body='<div class="grid c12"><div class="span7 hero"><div><div class="hero-label">PRONTO QUANDO VUOI</div><h2>Upper Body A</h2><p>Prossima sessione in programma: sei esercizi, recuperi configurabili e progressione basata sul catalogo.</p></div><div class="hero-row"><button class="button primary" data-action="fitos-focus-start">Avvia Focus demo</button></div></div><div class="span5 card"><div class="eyebrow">RIEPILOGO FITOS</div>'+miniStat("Allenamento","2/3","esercizi esempio","cyan","◷")+'<div class="divider"></div><div class="small muted">Nutrizione: 1.840 / 2.600 kcal</div><div class="progress" style="--pct:71%;--shade:var(--blue);margin-top:10px"><i></i></div><div style="margin-top:18px" class="small muted">Peso: 72,4 kg · Demo</div></div></div>';
 else if(state.fitosTab==="train")body='<div class="grid c2"><div class="card"><div class="eyebrow">SCHEDA DEL GIORNO</div><h2>Upper Body A</h2><div class="list-item"><span class="chip cyan">1</span><div class="body">Panca piana<div class="sub">3 × 8 · 50 kg</div></div></div><div class="list-item"><span class="chip blue">2</span><div class="body">Lat machine<div class="sub">3 × 10 · 45 kg</div></div></div><div class="list-item"><span class="chip violet">3</span><div class="body">Shoulder press<div class="sub">3 × 12 · 16 kg</div></div></div><button class="button primary" style="margin-top:12px" data-action="fitos-focus-start">Inizia sessione</button></div><div class="card"><h2>Catalogo esercizi</h2><p class="muted small" style="margin-top:12px;line-height:1.7">Nella V2: schede e catalogo con ID condivisi, storico dei set e timer recupero sempre raggiungibile.</p></div></div>';
@@ -521,6 +555,72 @@ else if(state.fitosTab==="stretch")body='<div class="grid c2"><div class="card">
 else body='<div class="grid c2"><div class="card"><h2>Storico peso</h2><div class="statnum">72,4 kg</div><div class="small muted">Valore simulato</div><button class="button primary" style="margin-top:20px" data-action="weight-add">+ Registra peso (demo)</button></div><div class="card"><h2>Andamento</h2><div class="weekbar" style="margin-top:28px"><i style="--h:87%"></i><i style="--h:71%"></i><i style="--h:77%"></i><i style="--h:59%"></i><i style="--h:63%"></i><i style="--h:47%"></i><i style="--h:40%"></i></div><p class="small muted" style="margin:15px 0 0">Grafico puramente illustrativo</p></div></div>';
 return headline("FitOS","Allenati, mangia bene e osserva i progressi senza cambiare continuamente contesto.","SALUTE & PERFORMANCE")+'<div class="screen-tabs">'+tabs.map(([key,label])=>'<button class="tab '+(state.fitosTab===key?"active":"")+'" data-fitos="'+key+'">'+label+'</button>').join("")+'</div>'+body;
 }
+
+const fitosDays=[
+{day:"Lunedì",name:"Upper Body A",status:"training",items:["panca","lat","press","curl"]},
+{day:"Martedì",name:"Recupero attivo",status:"rest",items:[]},
+{day:"Mercoledì",name:"Lower Body",status:"training",items:["squat","pressleg","rdl"]},
+{day:"Giovedì",name:"Stretching e mobilità",status:"stretch",items:[]},
+{day:"Venerdì",name:"Upper Body B",status:"training",items:["lat","panca","triceps","curl"]},
+{day:"Sabato",name:"Recupero attivo",status:"rest",items:[]},
+{day:"Domenica",name:"Riposo",status:"rest",items:[]}
+];
+const fitosExercises=[
+{id:"panca",name:"Panca piana",sets:3,reps:8,kg:50,rest:120,group:"Petto",cue:"Scapole stabili e polsi allineati; movimento controllato."},
+{id:"lat",name:"Lat machine",sets:3,reps:10,kg:45,rest:90,group:"Dorso",cue:"Guida il movimento con i gomiti, senza slancio."},
+{id:"press",name:"Shoulder press",sets:3,reps:12,kg:16,rest:75,group:"Spalle",cue:"Attiva il core, evita compensi della zona lombare."},
+{id:"curl",name:"Curl manubri",sets:2,reps:12,kg:10,rest:60,group:"Bicipiti",cue:"Gomiti stabili e discesa controllata."},
+{id:"squat",name:"Squat",sets:4,reps:8,kg:60,rest:150,group:"Gambe",cue:"Mantieni equilibrio e ampiezza controllata, senza forzare."},
+{id:"pressleg",name:"Leg press",sets:3,reps:10,kg:110,rest:120,group:"Gambe",cue:"Mantieni il bacino in appoggio e controlla il ritorno."},
+{id:"rdl",name:"Stacco rumeno",sets:3,reps:10,kg:45,rest:120,group:"Catena posteriore",cue:"Movimento d'anca, schiena neutra e carico vicino al corpo."},
+{id:"triceps",name:"Pushdown tricipiti",sets:3,reps:12,kg:25,rest:60,group:"Tricipiti",cue:"Fissa la posizione delle spalle ed evita slanci."}
+];
+function exerciseById(id){return fitosExercises.find(x=>x.id===id)}
+function fitosTrainingHeader(){
+ const tabs=[["today","Oggi"],["train","Allenamento"],["food","Alimentazione"],["stretch","Stretching"],["weight","Peso"]];
+ return headline("FitOS","Schede complete, catalogo esercizi, allenamenti e storico: naviga nel programma senza perdere dettagli.","SALUTE & PERFORMANCE")+
+ '<div class="screen-tabs">'+tabs.map(([id,label])=>'<button class="tab '+(state.fitosTab===id?"active":"")+'" data-fitos="'+id+'">'+label+'</button>').join("")+'</div>';
+}
+function fitosDayView(idx){
+ const day=fitosDays[idx];if(!day)return "";
+ const exercises=day.items.map(id=>exerciseById(id)).filter(Boolean);
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-fitos-week-back>Settimana allenamento</button><span>›</span><b>'+day.day+'</b></div>'+
+ '<div class="fitos-day-hero"><div class="eyebrow">SCHEDA DEL '+safe(day.day.toUpperCase())+' · DATI DEMO</div><h2>'+safe(day.name)+'</h2><p>Serie, ripetizioni, carichi e recuperi per esercizio. Le note tecniche si aprono solo cliccando sull’esercizio finale.</p>'+
+ (exercises.length?'<button class="button primary" data-action="fitos-focus-start">▶ Prova Focus di esempio</button>':'<span class="pill">Recupero / mobilità</span>')+'</div>'+
+ sectionHead("Programma completo",exercises.length+' esercizi · valori dimostrativi')+
+ '<div class="card">'+(exercises.length?exercises.map((x,i)=>'<button class="fitos-exercise-line" data-fitos-exercise="'+x.id+'"><span class="fitos-ex-num">'+(i+1)+'</span><div><b>'+safe(x.name)+'</b><div class="small muted">'+x.sets+' serie × '+x.reps+' ripetizioni · '+x.kg+' kg · recupero '+x.rest+'s</div></div><span class="fitos-ex-link">Dettagli ↗</span></button>').join(""):'<div class="empty">Giornata senza scheda pesi in questa simulazione. La V2 manterrà anche stretching e recupero.</div>')+'</div>'+
+ '<div class="hint-box" style="margin-top:15px">Il tasto Focus apre uno studio interattivo indipendente con programma fittizio “Upper Body A”. La V2 reale avvierà esattamente questa scheda e registrerà le serie effettive senza sovrascrivere il template.</div>';
+}
+function fitosWeekView(){
+ const sessions=fitosDays.filter(x=>x.status==="training").length;
+ return '<div class="fitos-week-summary"><div><div class="eyebrow">SCHEDE SETTIMANALI</div><h2>Il tuo programma di allenamento</h2><p class="small muted">Sette giorni, schede e recuperi distinti. Qui navigazione prima, dettaglio solo in fondo.</p></div><div class="fitos-summary-tags"><span class="pill">'+sessions+' allenamenti demo</span><span class="pill">8 esercizi catalogo</span></div></div>'+
+ '<div class="fitos-week-cards">'+fitosDays.map((d,i)=>'<button class="fitos-day-card" data-fitos-day="'+i+'"><div class="eyebrow">'+safe(d.day.toUpperCase())+'</div><h3>'+safe(d.name)+'</h3><div class="fitos-day-meta">'+(d.items.length?d.items.length+' esercizi · scheda demo':d.status==="stretch"?'Routine mobilità':'Nessuna scheda pesi')+'</div><span class="fitos-go">Apri scheda ↗</span></button>').join("")+'</div>';
+}
+function fitosCatalogView(){
+ return sectionHead("Catalogo esercizi","Ricerca, schede tecniche e cronologia — livelli separati")+
+ '<div class="fitos-catalog-grid">'+fitosExercises.map(x=>'<button class="card fitos-catalog-card" data-fitos-exercise="'+x.id+'"><div class="eyebrow">'+safe(x.group.toUpperCase())+'</div><h3>'+safe(x.name)+'</h3><div class="small muted">'+x.sets+'×'+x.reps+' · Recupero '+x.rest+'s</div><span>Apri scheda tecnica ↗</span></button>').join("")+'</div>';
+}
+function fitosHistoryView(){
+ return '<div class="module-surface"><div class="eyebrow">STORICO / REQUISITO V1</div><h2>Storico e progressione</h2><p class="small muted" style="line-height:1.8;margin-top:13px">Lo storico reale V1 comprende prestazioni, date e progressione per esercizio. Questa schermata definisce il contenitore visivo: non inventiamo sessioni mancanti o grafici storici.</p><div class="blueprint-rows"><div class="blueprint-row"><span>Serie registrate nel tempo</span><span>→</span></div><div class="blueprint-row"><span>Carichi per esercizio</span><span>→</span></div><div class="blueprint-row"><span>Confronto sessioni e tecnica</span><span>→</span></div><div class="blueprint-row"><span>Recupero delle sessioni interrotte</span><span>→</span></div></div></div>';
+}
+function viewFitos(){
+ if(state.fitosTab!=="train")return viewFitosBase();
+ let content;
+ if(state.fitosTrainingDay!==null) content=fitosDayView(state.fitosTrainingDay);
+ else content=state.fitosWorkoutView==="catalog"?fitosCatalogView():state.fitosWorkoutView==="history"?fitosHistoryView():fitosWeekView();
+ return fitosTrainingHeader()+
+ '<div class="fitos-level-nav">'+[["week","Settimana"],["catalog","Catalogo"],["history","Storico"]].map(([id,label])=>'<button class="tab '+(state.fitosWorkoutView===id?"active":"")+'" data-fitos-view="'+id+'">'+label+'</button>').join("")+'</div>'+content;
+}
+function openExerciseSheet(id){
+ const x=exerciseById(id);if(!x)return;
+ dialog(safe(x.name),'<div class="eyebrow">CATALOGO ESERCIZI · DETTAGLIO FINALE</div>'+
+ '<div class="fitos-ex-stats"><div><span>Serie</span><b>'+x.sets+'</b></div><div><span>Ripetizioni</span><b>'+x.reps+'</b></div><div><span>Carico demo</span><b>'+x.kg+' kg</b></div><div><span>Recupero</span><b>'+x.rest+' s</b></div></div>'+
+ '<h3 style="margin:24px 0 12px">Indicazioni tecniche</h3><div class="hint-box">'+safe(x.cue)+'</div>'+
+ '<h3 style="margin:24px 0 12px">Storico e progressione</h3><p class="small muted" style="line-height:1.8">Nella V2 reale: grafico carichi e ripetizioni, storico delle sessioni, note personali, riposo personalizzato e confronto tra set. Qui non sono importati dati dal backup.</p>'+
+ '<div class="modal-actions"><button class="button primary" type="button" data-close>Chiudi</button></div>');
+ $("#dlg").classList.add("sheet");
+}
+
 function financeRows(){return tx.map(t=>'<div class="list-item"><span class="chip '+(t.type==="in"?"cyan":"coral")+'">'+(t.type==="in"?"↗":"↘")+'</span><div class="body">'+safe(t.name)+'<div class="sub">'+safe(t.date)+'</div></div><b style="color:var('+(t.type==="in"?"--good":"--coral")+')">'+(t.type==="in"?"+":"−")+" "+eur(t.amount)+'</b></div>').join("")}
 function viewFinanceBase(){return headline("Finanze","Controllo completo senza doppi conteggi o passaggi inutili.","PATRIMONIO & FLUSSI",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>')+
 '<div class="grid c12"><div class="card fin-hero colored-fin"><div class="eyebrow" style="color:var(--cyan)">PATRIMONIO NETTO · DEMO</div><div class="money">€ 24.680</div><div class="small muted">↗ + € 860 negli ultimi 30 giorni · Solo illustrazione</div><svg class="chart" viewBox="0 0 740 160" preserveAspectRatio="none" role="img" aria-label="Grafico patrimonio simulato"><defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4adad2" stop-opacity=".25"/><stop offset="1" stop-color="#4adad2" stop-opacity="0"/></linearGradient></defs><line class="chart-grid" x1="0" y1="148" x2="740" y2="148"/><path class="chart-fill" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17 L740 160 L0 160Z"/><path class="chart-line" d="M0 135 Q70 128 120 116 T250 106 T370 87 T500 65 T620 50 T740 17"/></svg></div>'+
@@ -702,6 +802,11 @@ function parseRoute(){let target=location.hash.slice(1);if(!views[target])target
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.fitosView){state.fitosWorkoutView=b.dataset.fitosView;state.fitosTrainingDay=null;render();return}
+ if(b.dataset.fitosDay!==undefined){state.fitosTrainingDay=Number(b.dataset.fitosDay);render();return}
+ if(b.hasAttribute("data-fitos-week-back")){state.fitosTrainingDay=null;state.fitosWorkoutView="week";render();return}
+ if(b.dataset.fitosExercise){openExerciseSheet(b.dataset.fitosExercise);return}
+
  if(b.dataset.agendaMode){state.agendaMode=b.dataset.agendaMode;render();return}
  if(b.dataset.agendaSchedule){taskLeaf(b.dataset.agendaSchedule);return}
 
