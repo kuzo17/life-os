@@ -941,8 +941,26 @@ function showRecapPreview(items){
  '<p class="xs muted" style="margin-top:13px;line-height:1.7">Le task diventano un unico record e vengono mostrate nel progetto e, secondo la data, in Oggi o Agenda. Nessun dato è salvato su server.</p>');
 }
 function searchDialog(){dialog("Vai dove vuoi",'<input class="field" id="command-q" placeholder="Cerca sezioni, progetti, task e azioni..." aria-label="Cerca"><div id="command-results" style="margin-top:12px"></div><div class="xs muted" style="margin-top:15px">Ctrl / ⌘ + K · Esc per chiudere</div>');$("#command-q").focus();renderSearch()}
-function renderSearch(){const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");root.replaceChildren();const options=[...Object.entries(titles).filter(([k])=>k!=="more").map(([id,n])=>({id:"nav:"+id,title:n,sub:"Sezione"})),...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:"Progetto"})),...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:"Task"})),{id:"quick",title:"Cattura rapido",sub:"Azione"}];let hits=0;for(const v of options){if(!(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q))continue;if(++hits>9)break;const b=document.createElement("button");b.className="search-result";b.dataset.cmd=v.id;const t=document.createElement("span");t.textContent=v.title;const sub=document.createElement("small");sub.textContent=v.sub;b.append(t,sub);root.append(b)}if(!hits){root.textContent="Nessun risultato trovato"}}
-
+function renderSearch(){
+ const q=($("#command-q")?.value||"").toLocaleLowerCase("it"),root=$("#command-results");
+ root.replaceChildren();
+ const options=[
+  ...Object.entries(titles).filter(([k])=>k!=="more").map(([id,title])=>({id:"nav:"+id,title,sub:"Sezione"})),
+  ...homeFolders.map(f=>({id:"folder:"+f.id,title:f.name,sub:"Cartella"})),
+  ...projects.map(p=>({id:"p:"+p.id,title:p.name,sub:folderName(p.folderId)+" · Progetto"})),
+  ...tasks.map(t=>({id:"task:"+t.id,title:t.title,sub:projectName(t.projectId)+" · "+taskPriority(t)})),
+  ...incomeSources.map(s=>({id:"source:"+s.id,title:s.name,sub:"Fonte economica"})),
+  {id:"quick",title:"Quick Add / Cattura naturale",sub:"Azione globale"}
+ ];
+ const filtered=options.filter(v=>(v.title+" "+v.sub).toLocaleLowerCase("it").includes(q)).slice(0,12);
+ for(const item of filtered){
+  const b=document.createElement("button");b.className="search-result";b.dataset.cmd=item.id;
+  const title=document.createElement("span");title.textContent=item.title;
+  const sub=document.createElement("small");sub.textContent=item.sub;
+  b.append(title,sub);root.append(b);
+ }
+ if(!filtered.length)root.textContent="Nessun risultato trovato";
+}
 function taskLeaf(id){
  const t=tasks.find(t=>t.id===id);if(!t)return;
  dialog("Dettaglio task",'<form id="task-leaf-form" data-task-id="'+safe(t.id)+'">'+
@@ -1052,6 +1070,15 @@ document.addEventListener("click",e=>{
  const value=b.dataset.cmd;$("#dlg").close();
  if(value==="quick"){quick();return}
  if(value.startsWith("nav:")){goto(value.slice(4));return}
+ if(value.startsWith("folder:")){
+  const id=value.slice(7);if(!folderById(id))return;
+  navigate(()=>{state.screen="projects";state.folderId=id;state.projectId=null},{scroll:true});return;
+ }
+ if(value.startsWith("source:")){
+  const id=value.slice(7);if(!incomeSources.some(x=>x.id===id))return;
+  navigate(()=>{state.screen="finance";state.financeSource=id;state.financeTab="income"},{scroll:true});return;
+ }
+
  if(value.startsWith("p:")){
    const id=value.slice(2),p=projectById(id);if(!p)return;
    navigate(()=>{state.screen="projects";state.projectId=id;state.folderId=p.folderId;state.projectSection="tasks"},{scroll:true});return;
