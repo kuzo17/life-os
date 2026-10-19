@@ -1,0 +1,55 @@
+/* Batch 12: shell, responsive and accessibility hardening. */
+.skip-link{
+  position:fixed;
+  left:16px;
+  top:10px;
+  z-index:200;
+  transform:translateY(-160%);
+  padding:10px 14px;
+  border-radius:10px;
+  background:var(--main);
+  color:var(--mainInk);
+  font-weight:800;
+}
+.skip-link:focus{transform:translateY(0)}
+
+.capture-contract{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:14px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--panel2);
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+}
+.capture-contract span{display:flex;align-items:center;gap:6px}
+.capture-contract b{display:grid;place-items:center;width:21px;height:21px;border-radius:7px;background:var(--main);color:var(--mainInk)}
+.capture-contract i{color:var(--faint);font-style:normal}
+.capture-copy{line-height:1.65;margin-bottom:15px}
+
+@media(max-width:720px){
+  body.nav-drawer-open{overflow:hidden}
+
+  /* Restore labels hidden by the tablet rail breakpoint. */
+  .sidebar .brand-name{display:inline;opacity:1;visibility:visible}
+  .sidebar .nav-label,.sidebar .sidefoot{display:block;opacity:1;visibility:visible}
+  .sidebar .nav>span:not(.nav-icon):not(.count){display:inline;opacity:1;visibility:visible}
+  .sidebar .count{display:inline-block}
+  .sidebar .nav{justify-content:flex-start}
+  .sidebar .brand{justify-content:flex-start}
+
+  .inbox-box{align-items:stretch;flex-wrap:wrap}
+  .inbox-box input{flex-basis:calc(100% - 34px);font-size:16px}
+  .inbox-box .button{flex:1}
+  .capture-contract{gap:7px;font-size:10px}
+  .capture-contract i{display:none}
+  .modal-inner{padding:19px}
+  .xs{font-size:11px;line-height:1.45}
+}
+
+@media(prefers-reduced-motion:reduce){.skip-link{transition:none}}

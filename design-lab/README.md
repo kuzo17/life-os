@@ -1,3 +1,17 @@
+# LifeOS — Batch 12: hardening navigazione e cattura
+
+**[Apri direttamente Batch 12](batch-12/index.html)**
+
+- Drawer mobile con etichette visibili, focus confinato, sfondo inerte e ripristino del focus.
+- Nomi accessibili per tutte le destinazioni della sidebar e link “Vai al contenuto”.
+- Contratto unico **Cattura → Controlla → Destina** per header, mobile, Oggi e Inbox.
+- Override e comportamenti di hardening separati dal prototipo principale.
+- [Dettagli, test e gap ancora aperti](batch-12/README.md).
+
+**Status:** hardening UX della demo con dati sintetici e stato volatile. Nessuna persistenza, Firebase o migrazione V1.
+
+---
+
 # LifeOS — Batch 11: sforzo e regole FitOS
 
 **[Apri direttamente Batch 11 / progressione](batch-11/index.html#/fitos/train/progression)**
