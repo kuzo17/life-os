@@ -931,12 +931,12 @@ function parseRoute(){applyRoute(location.hash)}
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
- if(b.dataset.fitosView){state.fitosWorkoutView=b.dataset.fitosView;state.fitosTrainingDay=null;render();return}
- if(b.dataset.fitosDay!==undefined){state.fitosTrainingDay=Number(b.dataset.fitosDay);render();return}
- if(b.hasAttribute("data-fitos-week-back")){state.fitosTrainingDay=null;state.fitosWorkoutView="week";render();return}
+ if(b.dataset.fitosView){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView=b.dataset.fitosView;state.fitosTrainingDay=null});return}
+ if(b.dataset.fitosDay!==undefined){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosTrainingDay=Number(b.dataset.fitosDay)},{scroll:true});return}
+ if(b.hasAttribute("data-fitos-week-back")){navigate(()=>{state.fitosTab="train";state.fitosTrainingDay=null;state.fitosWorkoutView="week"});return}
  if(b.dataset.fitosExercise){openExerciseSheet(b.dataset.fitosExercise);return}
 
- if(b.dataset.agendaMode){state.agendaMode=b.dataset.agendaMode;render();return}
+ if(b.dataset.agendaMode){navigate(()=>{state.agendaMode=b.dataset.agendaMode});return}
  if(b.dataset.agendaSchedule){taskLeaf(b.dataset.agendaSchedule);return}
 
  if(b.dataset.ux==="widget-config"){openWidgetConfig();return}
@@ -965,29 +965,44 @@ document.addEventListener("click",e=>{
    $("#dlg").close();state.projectId=null;goto(parsed.some(x=>x.kind==="task"&&x.when!=="oggi")?"agenda":"today");notify(n+" elementi inseriti nella demo");return;
  }
 
- if(b.dataset.ux==="finance-tab"){state.financeSource=null;state.financeTab=b.dataset.tab;render();return}
- if(b.dataset.ux==="source-detail"){state.financeSource=b.dataset.source;state.financeTab="income";render();window.scrollTo(0,0);return}
- if(b.hasAttribute("data-finance-back")){state.financeSource=null;state.financeTab="income";render();return}
- if(b.hasAttribute("data-finance-home")){state.financeSource=null;state.financeTab="overview";render();return}
+ if(b.dataset.ux==="finance-tab"){navigate(()=>{state.screen="finance";state.financeSource=null;state.financeTab=b.dataset.tab});return}
+ if(b.dataset.ux==="source-detail"){navigate(()=>{state.screen="finance";state.financeSource=b.dataset.source;state.financeTab="income"},{scroll:true});return}
+ if(b.hasAttribute("data-finance-back")){navigate(()=>{state.financeSource=null;state.financeTab="income"});return}
+ if(b.hasAttribute("data-finance-home")){navigate(()=>{state.financeSource=null;state.financeTab="overview"});return}
  if(b.dataset.incomeEntry){incomeRecordLeaf(b.dataset.incomeSource,b.dataset.incomeEntry);return}
  if(b.hasAttribute("data-finance-shop-toggle")){const x=incomeSources.find(v=>v.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";render();return}
  if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
- if(b.dataset.nav){if(b.dataset.nav==="finance")state.financeSource=null;if(b.dataset.nav==="projects"){state.projectId=null;state.folderId=null}goto(b.dataset.nav);return}
+ if(b.dataset.nav){goto(b.dataset.nav);return}
  if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){const old=t.done;t.done=!t.done;render();notifyUndo(t.done?"Completata · Demo":"Riaperta · Demo",()=>{t.done=old;render();notify("Azione annullata · Demo")})}return}
  if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
- if(b.dataset.folder){state.folderId=b.dataset.folder;state.projectId=null;render();return}
- if(b.dataset.project){state.projectId=b.dataset.project;state.projectSection="tasks";state.screen="projects";history.replaceState(null,"","#projects");render();window.scrollTo(0,0);return}
- if(b.hasAttribute("data-projects-back")){state.projectId=null;state.folderId=null;render();return}
- if(b.hasAttribute("data-folder-back")){const orig=projectById(state.projectId);state.folderId=orig?.folder||state.folderId;state.projectId=null;render();return}
- if(b.dataset.workspaceTab){state.projectSection=b.dataset.workspaceTab;render();return}
+ if(b.dataset.folder){navigate(()=>{state.screen="projects";state.folderId=b.dataset.folder;state.projectId=null},{scroll:true});return}
+ if(b.dataset.project){navigate(()=>{state.screen="projects";state.projectId=b.dataset.project;state.folderId=projectById(b.dataset.project)?.folder||null;state.projectSection="tasks"},{scroll:true});return}
+ if(b.hasAttribute("data-projects-back")){navigate(()=>{state.screen="projects";state.projectId=null;state.folderId=null},{scroll:true});return}
+ if(b.hasAttribute("data-folder-back")){navigate(()=>{const orig=projectById(state.projectId);state.folderId=orig?.folder||state.folderId;state.projectId=null},{scroll:true});return}
+ if(b.dataset.workspaceTab){navigate(()=>{state.projectSection=b.dataset.workspaceTab});return}
  if(b.dataset.taskLeaf){taskLeaf(b.dataset.taskLeaf);return}
  if(b.dataset.addProjectTask){quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();const sel=$("#fast-project");if(sel)sel.value=b.dataset.addProjectTask;return}
  if(b.dataset.projectFilter){state.projectFilter=b.dataset.projectFilter;render();return}
  if(b.dataset.action){const a=b.dataset.action;if(a==="quick")quick();else if(a==="focus-start")focusDialog();else if(a==="fitos-focus-start")window.location.href="../focus-study/index.html"+(state.fitosTab==="stretch"?"#stretch":"");else if(a==="tx-new")txNew();else if(a==="project-layout"){state.projectView=state.projectView==="grid"?"list":"grid";render()}else if(a==="inbox-add"){const el=$("#inbox-entry");if(el&&el.value.trim()){inbox.unshift({id:Date.now(),text:el.value.trim(),type:"idea"});render();notify("Aggiunto alla Inbox · Demo")}}else if(a==="review-next"){state.reviewStep=(state.reviewStep+1)%3;render()}else if(a==="sale-demo"){notify("Anteprima vendita: nella V2 sceglierai prezzo e metodo di incasso.")}else if(a==="weight-add"){notify("In V2: inserimento peso rapido con data e storico.")}else if(a==="move-overdue"||a==="keep-overdue"){notify(a==="move-overdue"?"Spostamento previsto; calendario non modificato.":"Task lasciata nella data originaria · Demo")}else if(views[a])goto(a);else notify("Vista giorno: in progettazione");return}
- if(b.dataset.fitos){state.fitosTab=b.dataset.fitos;render();return}
- if(b.dataset.collection){state.collectionTab=b.dataset.collection;render();return}
- if(b.dataset.day){state.agendaDay=Number(b.dataset.day);render();return}
- if(b.dataset.cmd){const value=b.dataset.cmd;$("#dlg").close();if(value==="quick")quick();else if(value.startsWith("nav:")){if(value==="nav:finance")state.financeSource=null;goto(value.slice(4))}else if(value.startsWith("p:")){goto("projects");state.projectId=value.slice(2);state.folderId=projectById(state.projectId)?.folder||null;state.projectSection="tasks";render()}else if(value.startsWith("task:"))goto("today");return}
+ if(b.dataset.fitos){navigate(()=>{state.screen="fitos";state.fitosTab=b.dataset.fitos;state.fitosTrainingDay=null});return}
+ if(b.dataset.collection){navigate(()=>{state.screen="collections";state.collectionTab=b.dataset.collection});return}
+ if(b.dataset.day){navigate(()=>{state.screen="agenda";state.agendaDay=Number(b.dataset.day)});return}
+ if(b.dataset.cmd){
+ const value=b.dataset.cmd;$("#dlg").close();
+ if(value==="quick"){quick();return}
+ if(value.startsWith("nav:")){goto(value.slice(4));return}
+ if(value.startsWith("p:")){
+   const id=value.slice(2),p=projectById(id);if(!p)return;
+   navigate(()=>{state.screen="projects";state.projectId=id;state.folderId=p.folder;state.projectSection="tasks"},{scroll:true});return;
+ }
+ if(value.startsWith("task:")){
+   const id=value.slice(5),t=tasks.find(x=>x.id===id);if(!t)return;
+   const p=projectById(t.projectId);
+   navigate(()=>{state.screen="projects";state.projectId=t.projectId;state.folderId=p?.folder||null;state.projectSection="tasks"},{scroll:true});
+   taskLeaf(id);return;
+ }
+ return;
+ }
  if(b.dataset.inboxTriage){const item=inbox.find(x=>x.id===Number(b.dataset.inboxTriage));if(item){dialog("Smista elemento",'<p class="muted small">'+safe(item.text)+'</p><div class="grid c2"><button class="button" data-triage-to="task" data-triage-id="'+item.id+'">→ Task</button><button class="button" data-triage-to="note" data-triage-id="'+item.id+'">→ Nota</button></div><p class="xs muted" style="margin-top:15px">In V2 lo smistamento farà uso dello stesso servizio dei moduli destinatari.</p>')}return}
  if(b.dataset.triageTo){const id=Number(b.dataset.triageId);const item=inbox.find(x=>x.id===id);if(item&&b.dataset.triageTo==="task"){$("#dlg").close();quick();$("#quick-natural").hidden=true;$("#quick-fast").hidden=false;$("#fast-kind").value="task";renderFastFields();$("#fast-title").value=item.text;state.triageId=id;return}if(item){inbox=inbox.filter(x=>x.id!==id);$("#dlg").close();render();notify("Elemento archiviato nella demo")}return}
  if(b.dataset.focus){if(b.dataset.focus==="reset"){stopTimer();state.focus=0;updateFocus()}else{state.focusRunning?stopTimer():(state.focusRunning=true,timer=setInterval(()=>{state.focus++;updateFocus();if(state.focus>=1500){stopTimer();notify("Focus completato · Demo")}},1000),updateFocus())}return}
