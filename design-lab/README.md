@@ -1,3 +1,17 @@
+# LifeOS — Batch 06 disponibile
+
+**[Apri Batch 06: Agenda, FitOS e Finanze navigabili](batch-06/index.html)**
+
+- Agenda: task condivise fra progetto e calendario, vista giorno/settimana, filtro e modifica dalla scheda finale.
+- FitOS: settimana → scheda giorno → esercizio, catalogo e Focus Study completo come demo separata.
+- Finanze: pagina KDP / Vinted / Carte / Negozio, quindi pannello della singola operazione.
+- Stessa identità grafica Aurora Neo-Swiss notte + Prism Bento giorno.
+- [Limiti, casi provati e funzioni della V1 ancora da integrare](batch-06/README.md).
+
+**Principio invariato:** prototipo di UI/UX senza Firebase o dati personali, non sostituisce la V1. I veri moduli V2 dovranno superare la [matrice di non-regressione](non-regression-matrix.md).
+
+---
+
 # LifeOS — Master Design Direction
 
 **Regola confermata:** nessuna perdita di funzionalità rispetto alla V1. La V2 dovrà essere superiore sia funzionalmente sia nella UX; per adesso si lavora esclusivamente nel laboratorio UI.
