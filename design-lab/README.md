@@ -1,3 +1,17 @@
+# LifeOS — Batch 11: sforzo e regole FitOS
+
+**[Apri direttamente Batch 11 / progressione](batch-11/index.html#/fitos/train/progression)**
+
+- RIR/RPE e note facoltative registrate per singola serie nella sessione volatile.
+- Undo completo di carico, ripetizioni, sforzo e nota.
+- Storico con RIR, RPE e annotazioni sintetiche.
+- Tre scenari di progressione e anteprima deload, senza applicazione automatica.
+- [Dettagli, test e gap ancora aperti](batch-11/README.md).
+
+**Status:** simulazione UX con dati sintetici e nessuna prescrizione o persistenza.
+
+---
+
 # LifeOS — Batch 10: FitOS storico e progressione
 
 **[Apri direttamente Batch 10 / storico](batch-10/index.html#/fitos/train/history)**
@@ -163,6 +177,7 @@ Mock data is intentionally synthetic and never persisted or synchronized. Non-wo
 - Only edit files inside `design-lab/` while testing visual directions.
 - **Do not merge into main or V2 application automatically.** Once a visual direction is approved, transfer *design tokens, component patterns, accessibility and layout rules* into the actual React/TypeScript design system, rebuilding UI with real domain view models.
 - Current HTML is a design prototype, **not production architecture**.
+
 
 
 
