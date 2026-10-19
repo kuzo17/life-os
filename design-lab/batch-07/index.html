@@ -350,6 +350,20 @@ body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"
 .folder-manager-glyph{width:37px;height:37px;background:var(--panel2);border-radius:10px;display:grid;place-items:center;font-size:19px}
 .folder-manager-row button{font-size:10px}
 .project-identity-actions{display:flex;gap:7px;flex-wrap:wrap}
+
+/* Batch07: inventory as a branch page, item as the leaf */
+.inventory-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.inventory-toolbar .search{margin-right:auto}
+.inventory-table{overflow-x:auto}
+.inventory-head,.inventory-line{display:grid;grid-template-columns:minmax(180px,2fr) .7fr 1fr .8fr;gap:12px;align-items:center;min-width:590px}
+.inventory-head{font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.inventory-line{padding:16px 0;width:100%;background:transparent;border:0;border-bottom:1px solid var(--border);text-align:left;color:var(--text);font-size:12px}
+.inventory-line:hover b{color:var(--main)}
+.inventory-line:last-child{border-bottom:0}
+.inventory-line small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.inventory-line .chip{width:fit-content}
+.inventory-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+@media(max-width:650px){.inventory-toolbar .search{max-width:none;width:100%}.inventory-input-grid{grid-template-columns:1fr 1fr}}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 07 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -404,7 +418,7 @@ let tasks=[
 // Agenda and project pages read tasks[] directly: no duplicated scheduled-task collection.
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
-let state={folderId:null,projectId:null,financeSource:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",collectionTab:"cards",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
+let state={folderId:null,projectId:null,financeSource:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",collectionTab:"cards",collectionFilter:"all",collectionQuery:"",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
 let timer=null;let toastTimeout=null;let originFocus=null;
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
@@ -769,11 +783,60 @@ function viewFinance(){
  return header+financeTabMenu()+content;
 }
 
-function viewCollections(){return headline("Collezioni","Inventario, valutazioni e vendite, senza mischiare le entrate con il patrimonio.","RESELLING & CARTE")+
-'<div class="screen-tabs"><button class="tab '+(state.collectionTab==="cards"?"active":"")+'" data-collection="cards">Carte</button><button class="tab '+(state.collectionTab==="vinted"?"active":"")+'" data-collection="vinted">Vinted</button></div>'+
-'<div class="grid c3">'+miniStat("In inventario",state.collectionTab==="cards"?"32":"18","Esempio","blue","◇")+miniStat("Valore stimato",state.collectionTab==="cards"?"€ 4.210":"€ 740","Esempio","cyan","◈")+miniStat("Venduto",state.collectionTab==="cards"?"6":"9","Esempio","violet","↗")+'</div>'+
-sectionHead(state.collectionTab==="cards"?"Carte da catalogo":"Articoli da catalogo","Apri una scheda per un flusso contestuale")+
-'<div class="card">'+(state.collectionTab==="cards"?'<div class="list-item"><span class="chip blue">TCG</span><div class="body">Carta collezionabile A<div class="sub">IT · valore € 125</div></div><button class="button small" data-action="sale-demo">Vendi</button></div><div class="list-item"><span class="chip violet">TCG</span><div class="body">Carta collezionabile B<div class="sub">ENG · valore € 42</div></div><button class="button small" data-action="sale-demo">Vendi</button></div>':'<div class="list-item"><span class="chip coral">Vinted</span><div class="body">Giacca vintage<div class="sub">1 pezzo · € 34</div></div><button class="button small" data-action="sale-demo">Vendi</button></div><div class="list-item"><span class="chip cyan">Vinted</span><div class="body">Accessorio moda<div class="sub">3 pezzi · € 14/cad</div></div><button class="button small" data-action="sale-demo">Vendi</button></div>')+'</div>';
+
+let inventory=[
+ {id:"card-1",kind:"cards",title:"Carta da collezione A",detail:"Set dimostrativo · IT",quantity:1,acquisition:72,estimate:125,ask:135,status:"available"},
+ {id:"card-2",kind:"cards",title:"Carta da collezione B",detail:"Set dimostrativo · ENG",quantity:1,acquisition:25,estimate:42,ask:48,status:"available"},
+ {id:"card-3",kind:"cards",title:"Carta da collezione C",detail:"Set dimostrativo · JP",quantity:1,acquisition:15,estimate:28,ask:32,status:"sold"},
+ {id:"vinted-1",kind:"vinted",title:"Giacca vintage",detail:"Taglia M · ottime condizioni",quantity:1,acquisition:15,estimate:34,ask:34,status:"available"},
+ {id:"vinted-2",kind:"vinted",title:"Accessorio moda",detail:"Quantità gestita per articolo",quantity:3,acquisition:5,estimate:14,ask:16,status:"available"},
+ {id:"vinted-3",kind:"vinted",title:"Felpa usata",detail:"Taglia L · esempio",quantity:1,acquisition:8,estimate:26,ask:27,status:"sold"}
+];
+function inventoryStats(kind){
+ const rows=inventory.filter(x=>x.kind===kind);
+ const stock=rows.filter(x=>x.status==="available"),sold=rows.filter(x=>x.status==="sold");
+ return {stock:stock.reduce((a,x)=>a+x.quantity,0),estimated:stock.reduce((a,x)=>a+x.quantity*x.estimate,0),sold:sold.reduce((a,x)=>a+x.quantity,0)};
+}
+function viewCollections(){
+ const kind=state.collectionTab,metrics=inventoryStats(kind);
+ const filtered=inventory.filter(x=>x.kind===kind&&(state.collectionFilter==="all"||x.status===state.collectionFilter)&&x.title.toLocaleLowerCase("it").includes(state.collectionQuery.toLocaleLowerCase("it")));
+ return headline("Inventario & Collezioni","Un catalogo con schede uniche per copia o articolo. La vendita reale resta separata dal movimento sul conto.","RESELLING / COLLEZIONI",'<button class="button primary title-action" data-inventory-new>+ Articolo</button>')+
+ '<div class="screen-tabs"><button class="tab '+(kind==="cards"?"active":"")+'" data-collection="cards">Carte</button>'+
+ '<button class="tab '+(kind==="vinted"?"active":"")+'" data-collection="vinted">Vinted</button></div>'+
+ '<div class="grid c3">'+miniStat("Unità in inventario",String(metrics.stock),"Quantità demo","blue","▦")+
+ miniStat("Valore stock",eur(metrics.estimated),"Stima, non liquidità","cyan","◈")+
+ miniStat("Unità vendute",String(metrics.sold),"Da riconciliare con gli incassi","violet","↗")+'</div>'+
+ sectionHead(kind==="cards"?"Catalogo carte":"Catalogo Vinted","La singola scheda è l’ultimo livello del percorso")+
+ '<div class="inventory-toolbar"><input class="search" id="inventory-search" value="'+safe(state.collectionQuery)+'" placeholder="⌕ Cerca nell’inventario" aria-label="Filtra articoli">'+
+ '<button class="tab '+(state.collectionFilter==="all"?"active":"")+'" data-inventory-filter="all">Tutti</button>'+
+ '<button class="tab '+(state.collectionFilter==="available"?"active":"")+'" data-inventory-filter="available">Disponibili</button>'+
+ '<button class="tab '+(state.collectionFilter==="sold"?"active":"")+'" data-inventory-filter="sold">Venduti</button></div>'+
+ '<div class="card inventory-table"><div class="inventory-head"><span>Articolo</span><span>Quantità</span><span>Valore stimato</span><span>Stato</span></div>'+
+ (filtered.length?filtered.map(item=>'<button class="inventory-line" data-inventory-item="'+safe(item.id)+'"><span><b>'+safe(item.title)+'</b><small>'+safe(item.detail)+'</small></span>'+
+ '<span>'+item.quantity+'</span><span>'+eur(item.estimate*item.quantity)+'</span>'+
+ '<span class="chip '+(item.status==="sold"?"violet":"cyan")+'">'+(item.status==="sold"?"Venduto":"Disponibile")+'</span></button>').join(''):'<div class="empty">Nessun articolo corrispondente nella demo.</div>')+
+ '</div><div class="finance-note" style="margin-top:17px"><b>Inventario ≠ denaro:</b> segnare un articolo come venduto nella demo non crea automaticamente un incasso bancario, né calcola un profitto verificato. La V2 dovrà riconciliare prezzo, costo, commissioni e pagamento.</div>';
+}
+function inventoryLeaf(id){
+ const x=inventory.find(v=>v.id===id);if(!x)return;
+ dialog(safe(x.title),'<form id="inventory-item-form" data-item-id="'+safe(id)+'"><div class="eyebrow">SINGOLO ARTICOLO / DETTAGLIO FINALE</div>'+
+ '<label class="field-label" for="inventory-name">Nome</label><input id="inventory-name" class="field" maxlength="90" required value="'+safe(x.title)+'">'+
+ '<label class="field-label" for="inventory-detail">Descrizione / set / lingua</label><input id="inventory-detail" class="field" maxlength="130" value="'+safe(x.detail)+'">'+
+ '<div class="inventory-input-grid"><div><label class="field-label" for="inventory-quantity">Quantità</label><input id="inventory-quantity" class="field" type="number" min="1" max="9999" step="1" value="'+x.quantity+'"></div>'+
+ '<div><label class="field-label" for="inventory-cost">Costo unitario €</label><input id="inventory-cost" class="field" type="number" min="0" step="0.01" value="'+x.acquisition+'"></div>'+
+ '<div><label class="field-label" for="inventory-estimate">Stima unitaria €</label><input id="inventory-estimate" class="field" type="number" min="0" step="0.01" value="'+x.estimate+'"></div>'+
+ '<div><label class="field-label" for="inventory-ask">Prezzo richiesto €</label><input id="inventory-ask" class="field" type="number" min="0" step="0.01" value="'+x.ask+'"></div></div>'+
+ '<label class="field-label" for="inventory-status">Stato</label><select class="field" id="inventory-status"><option value="available" '+(x.status==="available"?"selected":"")+'>Disponibile</option><option value="sold" '+(x.status==="sold"?"selected":"")+'>Venduto (solo demo)</option></select>'+
+ '<div class="modal-actions"><button class="button" type="button" data-close>Chiudi</button><button class="button primary" type="submit">Salva articolo</button></div></form>'+
+ '<p class="small muted" style="margin-top:12px;line-height:1.6">Questa scheda modifica soltanto l’inventario fittizio locale, non registra pagamenti o incassi.</p>');
+ $("#dlg").classList.add("sheet");
+}
+function inventoryNew(){
+ dialog("Nuovo articolo",'<form id="inventory-create-form"><div class="eyebrow">CATALOGO '+(state.collectionTab==="cards"?"CARTE":"VINTED")+'</div>'+
+ '<label class="field-label" for="inventory-new-name">Nome</label><input class="field" id="inventory-new-name" maxlength="90" required>'+
+ '<label class="field-label" for="inventory-new-quantity">Quantità</label><input class="field" id="inventory-new-quantity" type="number" min="1" max="9999" step="1" value="1" required>'+
+ '<label class="field-label" for="inventory-new-estimate">Valore unitario stimato €</label><input class="field" id="inventory-new-estimate" type="number" min="0" step="0.01" value="0" required>'+
+ '<div class="modal-actions"><button type="button" class="button" data-close>Annulla</button><button type="submit" class="button primary">Aggiungi inventario demo</button></div></form>');
 }
 function inboxRows(){return inbox.length?inbox.map(i=>'<div class="list-item"><span class="chip '+(i.type==="idea"?"violet":"blue")+'">'+safe(i.type)+'</span><div class="body">'+safe(i.text)+'</div><button class="button small" data-inbox-triage="'+i.id+'">Smista</button></div>').join(""):'<div class="empty">Inbox vuota. Hai smistato tutto.</div>'}
 function viewInbox(){return headline("Inbox","Cattura senza interromperti. Decidi la destinazione quando hai tempo.","NUOVA FUNZIONE PROPOSTA")+
@@ -992,6 +1055,10 @@ function parseRoute(){applyRoute(location.hash)}
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.dataset.inventoryFilter){state.collectionFilter=b.dataset.inventoryFilter;render();return}
+ if(b.dataset.inventoryItem){inventoryLeaf(b.dataset.inventoryItem);return}
+ if(b.hasAttribute("data-inventory-new")){inventoryNew();return}
+
  if(b.hasAttribute("data-folder-manage")){manageFolders();return}
  if(b.hasAttribute("data-folder-create")){editFolder(null);return}
  if(b.dataset.folderRename){editFolder(b.dataset.folderRename);return}
@@ -1097,12 +1164,27 @@ document.addEventListener("click",e=>{
  if(b.dataset.detailTab){$$("[data-detail-tab]").forEach(x=>x.classList.toggle("active",x===b));$("#project-detail-content").textContent=({tasks:"Task e priorità",goals:"Obiettivi generali e settimanali",recur:"Regole e completamenti ricorrenti",spese:"Spese collegate al progetto",notes:"Note, link e risorse"})[b.dataset.detailTab]+" del progetto, in un pannello contestuale.";return}
 });
 document.addEventListener("change",e=>{if(e.target.id==="agenda-project"){state.agendaProject=e.target.value;render()}});
+document.addEventListener("input",e=>{if(e.target.id==="inventory-search"){state.collectionQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#inventory-search");input.focus();input.setSelectionRange(pos,pos)} });
 document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-project]")){e.preventDefault();state.projectId=e.target.dataset.project;state.projectSection="tasks";state.screen="projects";render()}});
 $("#density-toggle").addEventListener("click",e=>{const active=document.body.classList.toggle("density-compact");e.currentTarget.setAttribute("aria-pressed",String(active));e.currentTarget.textContent=active?"▤ Comoda":"▤ Compatta"});
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
 document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
 document.addEventListener("submit",e=>{
+ if(e.target.id==="inventory-item-form"){
+   e.preventDefault();const x=inventory.find(v=>v.id===e.target.dataset.itemId);if(!x)return;
+   const q=Number($("#inventory-quantity").value),c=Number($("#inventory-cost").value),est=Number($("#inventory-estimate").value),ask=Number($("#inventory-ask").value);
+   if(!Number.isInteger(q)||q<1||[c,est,ask].some(v=>!Number.isFinite(v)||v<0)){notify("Controlla quantità e valori");return}
+   x.title=$("#inventory-name").value.trim();x.detail=$("#inventory-detail").value.trim();x.quantity=q;x.acquisition=c;x.estimate=est;x.ask=ask;x.status=$("#inventory-status").value;
+   $("#dlg").close();render();notify("Articolo aggiornato nella demo");return;
+ }
+ if(e.target.id==="inventory-create-form"){
+   e.preventDefault();const title=$("#inventory-new-name").value.trim(),quantity=Number($("#inventory-new-quantity").value),estimate=Number($("#inventory-new-estimate").value);
+   if(!title||!Number.isInteger(quantity)||quantity<1||!Number.isFinite(estimate)||estimate<0){notify("Controlla quantità e stima");return}
+   inventory.unshift({id:"item-"+(++nextDemoId),kind:state.collectionTab,title,detail:"Nuovo articolo demo",quantity,estimate,ask:estimate,acquisition:0,status:"available"});
+   $("#dlg").close();render();notify("Articolo aggiunto al catalogo demo");return;
+ }
+
  if(e.target.id==="folder-edit-form"){
    e.preventDefault();
    const name=$("#folder-name").value.trim(),id=e.target.dataset.folderId;
