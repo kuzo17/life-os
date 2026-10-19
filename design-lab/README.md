@@ -1,3 +1,18 @@
+# LifeOS — Batch 09: FitOS Session integrata
+
+**[Apri direttamente Batch 09 / sessione guidata](batch-09/index.html#/fitos/train/session)**
+
+- Focus Study integrato nella route FitOS: nessun salto a una demo separata.
+- Programma completo persistente, log per serie, peso/ripetizioni effettive, skip e Undo.
+- Recuperi specifici con deadline, pausa, ±15 secondi e ripresa della sessione.
+- Riepilogo con volume e registro; aggiornamento template futuro come scelta separata.
+- Layout desktop a tre pannelli e programma espandibile mobile.
+- [Dettagli, test e gap ancora aperti](batch-09/README.md).
+
+**Status:** sessione interattiva con soli dati sintetici e stato volatile. Nessun Firebase, backup privato o aggiornamento reale del template.
+
+---
+
 # LifeOS — Batch 08: navigazione compatta e parità operativa
 
 **[Apri l'anteprima Batch 08](batch-08/index.html)**
@@ -134,4 +149,5 @@ Mock data is intentionally synthetic and never persisted or synchronized. Non-wo
 - Only edit files inside `design-lab/` while testing visual directions.
 - **Do not merge into main or V2 application automatically.** Once a visual direction is approved, transfer *design tokens, component patterns, accessibility and layout rules* into the actual React/TypeScript design system, rebuilding UI with real domain view models.
 - Current HTML is a design prototype, **not production architecture**.
+
 
