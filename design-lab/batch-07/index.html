@@ -341,6 +341,15 @@ body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"
 .finance-stock-metric b{font-size:23px}
 @media(max-width:1050px){.finance-source-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.finance-source-kpis{grid-template-columns:1fr}.finance-source-kpis .card{padding:15px}.finance-source-head{gap:12px}.finance-source-brand{width:49px;height:49px;font-size:14px}.finance-ledger-row{gap:7px}}
+
+.folder-manager{display:grid;gap:7px;margin-top:15px}
+.folder-manager-row{display:flex;gap:7px;align-items:center;border:1px solid var(--border);padding:10px;border-radius:12px;flex-wrap:wrap}
+.folder-manager-row .body{flex:1;min-width:135px}
+.folder-manager-row .body b{font-size:12px}
+.folder-manager-row .sub{font-size:10px;color:var(--muted);margin-top:3px}
+.folder-manager-glyph{width:37px;height:37px;background:var(--panel2);border-radius:10px;display:grid;place-items:center;font-size:19px}
+.folder-manager-row button{font-size:10px}
+.project-identity-actions{display:flex;gap:7px;flex-wrap:wrap}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 07 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -486,25 +495,55 @@ function projectWorkspace(){
    body='<div class="module-surface"><div class="eyebrow">STRUTTURA PREVISTA / NON ANCORA IMPLEMENTATA</div><h2>'+content[0]+'</h2><p class="small muted" style="line-height:1.8;margin:14px 0 20px">'+content[1]+'</p><div class="blueprint-rows"><div class="blueprint-row"><span>Elenco completo</span><span>→</span></div><div class="blueprint-row"><span>Filtri e ordinamento</span><span>→</span></div><div class="blueprint-row"><span>Azione contestuale sull’elemento finale</span><span>◫</span></div></div></div>';
  }
  return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><button class="crumb-link" data-folder-back>'+safe(folderName(p.folderId))+'</button><span>›</span><b>'+safe(p.name)+'</b></div>'+
- '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-folder-back>← Torna alla cartella</button></div></div>'+
+ '<div class="project-identity"><div class="project-emblem" style="background:'+p.color+'">'+safe(p.glyph)+'</div><div><div class="eyebrow">WORKSPACE / '+safe(p.cat)+'</div><h1>'+safe(p.name)+'</h1><p class="muted small">'+safe(p.desc)+'</p></div><div class="project-identity-actions"><button class="button small" data-project-organize="'+id+'">⚙ Organizza</button><button class="button small" data-folder-back>← Torna alla cartella</button></div></div>'+
  '<div class="workspace-kpis"><div class="card"><div class="stat-label">Avanzamento task nella demo</div><div class="statnum">'+(m.pct===null?"—":m.pct+"%")+'</div><div class="progress" style="--pct:'+(m.pct??0)+'%;--shade:'+p.color+'"><i></i></div></div>'+
  '<div class="card"><div class="stat-label">Task</div><div class="statnum">'+m.n+'</div><div class="small muted">Singola fonte di verità</div></div>'+
- '<div class="card"><div class="stat-label">Stato</div><div class="statnum" style="font-size:18px;margin:17px 0">'+(p.status==="active"?"Attivo":"Pianificato")+'</div><div class="small muted">Label dimostrativa</div></div></div>'+
+ '<div class="card"><div class="stat-label">Stato</div><div class="statnum" style="font-size:18px;margin:17px 0">'+(p.status==="active"?"Attivo":p.status==="archived"?"Archiviato":"Pianificato")+'</div><div class="small muted">Label dimostrativa</div></div></div>'+
  nav+body;
 }
 const homeFolders=[
- {id:"kuzo",name:"KUZO ENTERPRISE",icon:"◈",color:"blue"},
- {id:"zjpc",name:"Z & JPC",icon:"✦",color:"purple"},
- {id:"reselling",name:"RESELLING & COLLEZIONE",icon:"◇",color:"coral"},
- {id:"finance",name:"FINANZA & TRADING",icon:"◎",color:"teal"},
- {id:"altro",name:"ALTRO",icon:"▤",color:"gold"}
+ {id:"kuzo",name:"KUZO ENTERPRISE",icon:"◈",color:"blue",original:true},
+ {id:"zjpc",name:"Z & JPC",icon:"✦",color:"purple",original:true},
+ {id:"reselling",name:"RESELLING & COLLEZIONE",icon:"◇",color:"coral",original:true},
+ {id:"finance",name:"FINANZA & TRADING",icon:"◎",color:"teal",original:true},
+ {id:"altro",name:"ALTRO",icon:"▤",color:"gold",original:true}
 ];
 let nextDemoId=100;
 function folderById(id){return homeFolders.find(x=>x.id===id)||null}
 function folderName(id){return folderById(id)?.name||(id==="fitos"?"FitOS":"Cartella sconosciuta")}
 function folderCount(id){return projects.filter(p=>p.folderId===id).length}
+
+function folderOptions(selected){return homeFolders.map(f=>'<option value="'+safe(f.id)+'" '+(selected===f.id?'selected':'')+'>'+safe(f.name)+'</option>').join('')}
+function manageFolders(){
+ dialog("Gestisci cartelle",'<p class="small muted" style="line-height:1.7">Cartelle con ID stabili. Puoi modificarne ordine e nome senza scollegare i progetti.</p>'+
+ '<div class="folder-manager">'+homeFolders.map((f,i)=>'<div class="folder-manager-row"><span class="folder-manager-glyph">'+f.icon+'</span>'+
+ '<div class="body"><b>'+safe(f.name)+'</b><div class="sub">'+folderCount(f.id)+' progetti</div></div>'+
+ '<button class="button small" data-folder-shift="'+f.id+'" data-shift="-1" '+(i===0?'disabled':'')+'>↑</button>'+
+ '<button class="button small" data-folder-shift="'+f.id+'" data-shift="1" '+(i===homeFolders.length-1?'disabled':'')+'>↓</button>'+
+ '<button class="button small" data-folder-rename="'+f.id+'">Rinomina</button>'+
+ (!f.original?'<button class="button small" data-folder-delete="'+f.id+'">Elimina</button>':'')+'</div>').join('')+'</div>'+
+ '<div class="modal-actions"><button class="button" data-close>Chiudi</button><button class="button primary" data-folder-create>+ Cartella</button></div>');
+}
+function editFolder(id){
+ const f=folderById(id);
+ dialog(f?"Rinomina cartella":"Nuova cartella",'<form id="folder-edit-form" data-folder-id="'+safe(f?.id||"")+'">'+
+ '<label class="field-label" for="folder-name">Nome</label><input class="field" id="folder-name" maxlength="55" required value="'+safe(f?.name||"")+'">'+
+ '<div class="modal-actions"><button class="button" type="button" data-folder-manage>Indietro</button><button class="button primary" type="submit">'+(f?"Salva nome":"Crea cartella")+'</button></div></form>');
+}
+function editProject(id,folderId){
+ const p=id?projectById(id):null;
+ dialog(p?"Organizza progetto":"Nuovo progetto",'<form id="project-edit-form" data-project-id="'+safe(p?.id||"")+'">'+
+ '<label class="field-label" for="project-name">Nome</label><input class="field" id="project-name" maxlength="80" required value="'+safe(p?.name||"")+'">'+
+ '<label class="field-label" for="project-folder">Cartella</label><select class="field" id="project-folder">'+folderOptions(p?.folderId||folderId)+'</select>'+
+ '<label class="field-label" for="project-category">Categoria</label><input class="field" id="project-category" maxlength="50" value="'+safe(p?.cat||"Personale")+'">'+
+ '<label class="field-label" for="project-status">Stato</label><select class="field" id="project-status">'+
+ [['active','Attivo'],['planning','Pianificato'],['archived','Archiviato']].map(([v,n])=>'<option value="'+v+'" '+((p?.status||"active")===v?'selected':'')+'>'+n+'</option>').join('')+'</select>'+
+ '<label class="field-label" for="project-desc">Descrizione</label><textarea class="field" id="project-desc" maxlength="240">'+safe(p?.desc||"")+'</textarea>'+
+ '<div class="modal-actions"><button type="button" class="button" data-close>Chiudi</button><button type="submit" class="button primary">Salva nella demo</button></div></form>'+
+ '<p class="small muted" style="margin-top:12px">Archiviare non elimina le task del progetto.</p>');
+}
 function viewFolderHome(){
- return headline("Cartelle","Apri una cartella per esplorare i progetti: la navigazione non si ferma a una griglia unica.","WORKSPACE / ORGANIZZAZIONE")+
+ return headline("Cartelle","Apri una cartella per esplorare i progetti: la navigazione non si ferma a una griglia unica.","WORKSPACE / ORGANIZZAZIONE",'<button class="button title-action" data-folder-manage>⚙ Gestisci cartelle</button>')+
  '<div class="folder-grid-b05">'+homeFolders.map((f,i)=>'<button class="folder-card-b05 folder-'+f.color+'" data-folder="'+safe(f.id)+'"><span class="folder-icon-b05">'+f.icon+'</span><span class="folder-n-b05">0'+(i+1)+'</span><h2>'+safe(f.name)+'</h2><div class="folder-bottom-b05">'+folderCount(f.id)+' progetti demo <span>↗</span></div></button>').join("")+'</div>'+
  '<p class="small muted" style="margin:19px 0;line-height:1.7">Cartelle originali V1. I contenuti sono dimostrativi: i progetti personalizzati e il loro archivio verranno migrati privatamente, non pubblicati in questo laboratorio.</p>';
 }
@@ -516,7 +555,7 @@ function viewProjects(){
  const completed=tasks.filter(t=>t.done).length;
  return '<div class="workspace-breadcrumb"><button class="crumb-link" data-projects-back>Cartelle</button><span>›</span><b>'+safe(folderName(state.folderId))+'</b></div>'+headline(folderName(state.folderId),"Apri un progetto di questa cartella per esplorarne le sezioni.","CARTELLA / PROGETTI")+
  '<div class="grid c3">'+miniStat("Aree progetto",String(projects.length),"Stessa struttura originale","cyan","▦")+miniStat("Task demo",String(tasks.length),completed+" completate","blue","✓")+miniStat("Workspace attivi",String(active),"Stato dimostrativo","violet","◈")+'</div>'+
- '<div class="section-head"><h2>Esplora i workspace</h2><span class="hint">Pagina progetto → sezione → dettaglio elemento</span></div>'+
+ '<div class="section-head"><h2>Esplora i workspace</h2><div class="action-row"><button class="button small" data-project-create="'+state.folderId+'">+ Nuovo progetto</button><button class="button small" data-folder-manage>⚙ Cartelle</button></div></div>'+
  '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca un progetto..." aria-label="Cerca progetti">'+
  '<button class="tab '+(state.projectFilter==="all"?"active":"")+'" data-project-filter="all">Tutti</button><button class="tab '+(state.projectFilter==="active"?"active":"")+'" data-project-filter="active">Attivi</button><button class="tab '+(state.projectFilter==="planning"?"active":"")+'" data-project-filter="planning">Pianificati</button><button class="button small" data-action="project-layout">'+(state.projectView==="grid"?"☰ Vista lista":"▦ Vista bento")+'</button></div>'+
  '<div class="project-catalog '+(state.projectView==="list"?"list-layout":"")+'" id="project-cards">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun workspace trovato.</div>')+'</div>'+
