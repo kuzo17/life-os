@@ -1,3 +1,18 @@
+# LifeOS — Batch 07: scheletro strutturale
+
+**[Apri l'anteprima Batch 07](batch-07/index.html)**
+
+- Deep link e cronologia Back/Forward per cartelle, progetti, Agenda, FitOS, Finanze e Collezioni.
+- Cartelle con ID indipendenti dai nomi: crea, rinomina, ordina. Progetti: crea, sposta, modifica e archivia, senza cancellare task.
+- Inventari Vinted/Carte con ricerca, filtri e dettagli foglia.
+- Ricerca universale che raggiunge cartelle, progetti, task e fonti economiche.
+- [Blueprint modulare dell'app](architecture/APP_ARCHITECTURE.md) + [core puro cartelle/progetti/task](architecture/workspace-core.mjs) + [test dei contratti](architecture/workspace-core.test.mjs).
+- [Dettagli di ciò che è realizzato e gap V1](batch-07/README.md).
+
+**Status:** LAB con dati completamente fittizi. Il core di dominio è separato e ancora non connesso alla UI. Nessuna scrittura al database reale o al branch V2 applicativo.
+
+---
+
 # LifeOS — Batch 06 disponibile
 
 **[Apri Batch 06: Agenda, FitOS e Finanze navigabili](batch-06/index.html)**
