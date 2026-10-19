@@ -1153,7 +1153,7 @@ document.addEventListener("click",e=>{
  if(value.startsWith("task:")){
    const id=value.slice(5),t=tasks.find(x=>x.id===id);if(!t)return;
    const p=projectById(t.projectId);
-   navigate(()=>{state.screen="projects";state.projectId=t.projectId;state.folderId=p?.folder||null;state.projectSection="tasks"},{scroll:true});
+   navigate(()=>{state.screen="projects";state.projectId=t.projectId;state.folderId=p?.folderId||null;state.projectSection="tasks"},{scroll:true});
    taskLeaf(id);return;
  }
  return;
@@ -1166,7 +1166,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{if(e.target.id==="agenda-project"){state.agendaProject=e.target.value;render()}});
 document.addEventListener("input",e=>{if(e.target.id==="inventory-search"){state.collectionQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#inventory-search");input.focus();input.setSelectionRange(pos,pos)} });
 document.addEventListener("input",e=>{if(e.target.id==="project-search"){state.projectQuery=e.target.value;const pos=e.target.selectionStart;render();const input=$("#project-search");input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==="command-q")renderSearch()});
-document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-project]")){e.preventDefault();state.projectId=e.target.dataset.project;state.projectSection="tasks";state.screen="projects";render()}});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();searchDialog()}if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-project]")){e.preventDefault();navigate(()=>{state.projectId=e.target.dataset.project;state.folderId=projectById(state.projectId)?.folderId||null;state.projectSection="tasks";state.screen="projects"},{scroll:true})}});
 $("#density-toggle").addEventListener("click",e=>{const active=document.body.classList.toggle("density-compact");e.currentTarget.setAttribute("aria-pressed",String(active));e.currentTarget.textContent=active?"▤ Comoda":"▤ Compatta"});
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
 document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
