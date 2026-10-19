@@ -1,3 +1,17 @@
+# LifeOS — Batch 10: FitOS storico e progressione
+
+**[Apri direttamente Batch 10 / storico](batch-10/index.html#/fitos/train/history)**
+
+- Sessioni sintetiche navigabili con dettaglio per esercizio e singola serie.
+- Filtri esercizio, trend di volume, e1RM stimato e migliori valori demo.
+- Deep link del dettaglio e cronologia Back/Forward coerente.
+- La sessione completata in memoria può comparire nello storico senza fingere persistenza.
+- [Dettagli, test e gap ancora aperti](batch-10/README.md).
+
+**Status:** storico UX funzionante su dati esclusivamente sintetici. Nessun Firebase, backup V1 o persistenza reale.
+
+---
+
 # LifeOS — Batch 09: FitOS Session integrata
 
 **[Apri direttamente Batch 09 / sessione guidata](batch-09/index.html#/fitos/train/session)**
@@ -149,5 +163,6 @@ Mock data is intentionally synthetic and never persisted or synchronized. Non-wo
 - Only edit files inside `design-lab/` while testing visual directions.
 - **Do not merge into main or V2 application automatically.** Once a visual direction is approved, transfer *design tokens, component patterns, accessibility and layout rules* into the actual React/TypeScript design system, rebuilding UI with real domain view models.
 - Current HTML is a design prototype, **not production architecture**.
+
 
 
