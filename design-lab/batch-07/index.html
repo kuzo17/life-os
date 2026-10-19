@@ -557,7 +557,7 @@ function viewProjects(){
  '<div class="grid c3">'+miniStat("Aree progetto",String(projects.length),"Stessa struttura originale","cyan","▦")+miniStat("Task demo",String(tasks.length),completed+" completate","blue","✓")+miniStat("Workspace attivi",String(active),"Stato dimostrativo","violet","◈")+'</div>'+
  '<div class="section-head"><h2>Esplora i workspace</h2><div class="action-row"><button class="button small" data-project-create="'+state.folderId+'">+ Nuovo progetto</button><button class="button small" data-folder-manage>⚙ Cartelle</button></div></div>'+
  '<div class="action-row" style="align-items:center"><input class="search" id="project-search" value="'+safe(state.projectQuery)+'" placeholder="⌕ Cerca un progetto..." aria-label="Cerca progetti">'+
- '<button class="tab '+(state.projectFilter==="all"?"active":"")+'" data-project-filter="all">Tutti</button><button class="tab '+(state.projectFilter==="active"?"active":"")+'" data-project-filter="active">Attivi</button><button class="tab '+(state.projectFilter==="planning"?"active":"")+'" data-project-filter="planning">Pianificati</button><button class="button small" data-action="project-layout">'+(state.projectView==="grid"?"☰ Vista lista":"▦ Vista bento")+'</button></div>'+
+ '<button class="tab '+(state.projectFilter==="all"?"active":"")+'" data-project-filter="all">Tutti</button><button class="tab '+(state.projectFilter==="active"?"active":"")+'" data-project-filter="active">Attivi</button><button class="tab '+(state.projectFilter==="planning"?"active":"")+'" data-project-filter="planning">Pianificati</button><button class="tab '+(state.projectFilter==="archived"?"active":"")+'" data-project-filter="archived">Archivio</button><button class="button small" data-action="project-layout">'+(state.projectView==="grid"?"☰ Vista lista":"▦ Vista bento")+'</button></div>'+
  '<div class="project-catalog '+(state.projectView==="list"?"list-layout":"")+'" id="project-cards">'+(filtered.length?filtered.map(projectCard).join(""):'<div class="empty">Nessun workspace trovato.</div>')+'</div>'+
  '<div class="hint-box" style="margin-top:20px">Questo è un prototipo di navigazione e design. Le 14 aree sono derivate dalla struttura V1, ma task e percentuali mostrate qui sono dati fittizi. I contenuti originali completi saranno preservati nella V2.</div>';
 }
@@ -974,6 +974,24 @@ function parseRoute(){applyRoute(location.hash)}
 document.addEventListener("click",e=>{
  const b=e.target.closest("button,[data-project]");if(!b)return;
  if(b.dataset.theme){setTheme(b.dataset.theme);return}
+ if(b.hasAttribute("data-folder-manage")){manageFolders();return}
+ if(b.hasAttribute("data-folder-create")){editFolder(null);return}
+ if(b.dataset.folderRename){editFolder(b.dataset.folderRename);return}
+ if(b.dataset.folderShift){
+   const i=homeFolders.findIndex(f=>f.id===b.dataset.folderShift),j=i+Number(b.dataset.shift);
+   if(i>=0&&j>=0&&j<homeFolders.length){[homeFolders[i],homeFolders[j]]=[homeFolders[j],homeFolders[i]];manageFolders();render()}
+   return;
+ }
+ if(b.dataset.folderDelete){
+   const f=folderById(b.dataset.folderDelete);
+   if(f&&!f.original&&folderCount(f.id)===0){
+     homeFolders.splice(homeFolders.indexOf(f),1);manageFolders();render();notify("Cartella vuota rimossa dalla demo");
+   }else notify("Non puoi eliminare una cartella originale o con progetti");
+   return;
+ }
+ if(b.dataset.projectCreate){editProject(null,b.dataset.projectCreate);return}
+ if(b.dataset.projectOrganize){editProject(b.dataset.projectOrganize);return}
+
  if(b.dataset.fitosView){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosWorkoutView=b.dataset.fitosView;state.fitosTrainingDay=null});return}
  if(b.dataset.fitosDay!==undefined){navigate(()=>{state.screen="fitos";state.fitosTab="train";state.fitosTrainingDay=Number(b.dataset.fitosDay)},{scroll:true});return}
  if(b.hasAttribute("data-fitos-week-back")){navigate(()=>{state.fitosTab="train";state.fitosTrainingDay=null;state.fitosWorkoutView="week"});return}
@@ -1058,6 +1076,30 @@ $("#density-toggle").addEventListener("click",e=>{const active=document.body.cla
 $("#open-search").addEventListener("click",searchDialog);$("#open-quick").addEventListener("click",quick);$("#mobile-quick").addEventListener("click",quick);
 document.addEventListener("change",e=>{if(e.target.id==="fast-kind")renderFastFields();if(e.target.dataset.widgetToggle){state.widgets[e.target.dataset.widgetToggle]=e.target.checked;render()}});
 document.addEventListener("submit",e=>{
+ if(e.target.id==="folder-edit-form"){
+   e.preventDefault();
+   const name=$("#folder-name").value.trim(),id=e.target.dataset.folderId;
+   if(!name)return;
+   if(homeFolders.some(f=>f.id!==id&&f.name.toLocaleLowerCase("it")===name.toLocaleLowerCase("it"))){notify("Esiste già una cartella con questo nome");return}
+   const previous=folderById(id);
+   if(previous)previous.name=name;
+   else homeFolders.push({id:"folder-"+(++nextDemoId),name,icon:"▤",color:"blue",original:false});
+   render();manageFolders();notify(previous?"Cartella rinominata":"Cartella creata");return;
+ }
+ if(e.target.id==="project-edit-form"){
+   e.preventDefault();
+   const name=$("#project-name").value.trim(),folderId=$("#project-folder").value;
+   if(!name||!folderById(folderId)){notify("Controlla nome e cartella");return}
+   const id=e.target.dataset.projectId;
+   let p=projectById(id);
+   if(!p){p={id:"project-"+(++nextDemoId),glyph:name.trim().slice(0,2).toUpperCase(),color:"#4779ae"};projects.push(p)}
+   p.name=name;p.folderId=folderId;p.cat=$("#project-category").value.trim()||"Personale";
+   p.status=$("#project-status").value;p.desc=$("#project-desc").value.trim();
+   $("#dlg").close();
+   navigate(()=>{state.screen="projects";state.folderId=folderId;state.projectId=p.id;state.projectSection="tasks"},{scroll:true});
+   notify("Progetto organizzato nella demo");return;
+ }
+
  if(e.target.id==="task-leaf-form"){
    e.preventDefault();const t=tasks.find(x=>x.id===e.target.dataset.taskId);
    if(t){t.title=$("#leaf-title").value.trim();t.projectId=$("#leaf-project").value;t.priority=$("#leaf-priority").value;t.when=$("#leaf-when").value}
