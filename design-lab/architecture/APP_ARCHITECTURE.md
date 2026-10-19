@@ -79,7 +79,7 @@ type Task = {
 
 Gli ID sono stabili. Rinominare una cartella **non cambia `folderId`**. Muovere un progetto cambia solo il riferimento al contenitore. Task e storico continuano ad appartenere allo stesso `projectId`.
 
-Il [prototipo di servizio puro](architecture/workspace-core.mjs) con esempio di queste regole si trova nella cartella attuale, ma è un componente di ricerca **non ancora collegato** al motore della UI della Batch 07.
+Il [prototipo di servizio puro](workspace-core.mjs) con esempio di queste regole si trova nella cartella attuale, ma è un componente di ricerca **non ancora collegato** al motore della UI della Batch 07.
 
 ### Task: viste derivate
 
