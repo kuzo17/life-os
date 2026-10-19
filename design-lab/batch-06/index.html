@@ -321,6 +321,26 @@ body[data-theme="light"] .folder-blue{background:#2459ed}body[data-theme="light"
 .fitos-ex-stats>div b{font-size:20px}
 @media(max-width:1050px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 6}.fitos-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.fitos-day-card,.fitos-day-card:first-child,.fitos-day-card:nth-child(5){grid-column:span 12;min-height:128px}.fitos-catalog-grid{grid-template-columns:1fr}.fitos-day-hero h2{font-size:24px}}
+
+/* Batch 06 — Finance source page and leaf-only operation details */
+.finance-source-head{display:flex;gap:17px;align-items:center;flex-wrap:wrap;margin:20px 0 24px}
+.finance-source-title{flex:1;min-width:220px}
+.finance-source-head h1{margin:5px 0 8px}
+.finance-source-brand{display:grid;place-items:center;width:69px;height:69px;border-radius:16px;color:white;font-size:20px;font-weight:900}
+.finance-source-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.finance-source-kpis .card{padding:20px}
+.finance-source-kpis .statnum{font-size:clamp(20px,2.6vw,34px)}
+.finance-source-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);gap:18px}
+.finance-ledger-row{display:flex;align-items:center;gap:12px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);width:100%;text-align:left;padding:17px 0}
+.finance-ledger-row:last-child{border-bottom:0}
+.finance-ledger-row:hover .body b{color:var(--main)}
+.finance-ledger-row .body{flex:1;min-width:0;font-size:12px}
+.finance-ledger-row .sub{margin-top:4px}
+.finance-stock-metric{padding:17px;background:var(--panel2);border-radius:13px;display:flex;flex-direction:column;gap:8px}
+.finance-stock-metric span,.finance-stock-metric small{font-size:11px;color:var(--muted)}
+.finance-stock-metric b{font-size:23px}
+@media(max-width:1050px){.finance-source-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.finance-source-kpis{grid-template-columns:1fr}.finance-source-kpis .card{padding:15px}.finance-source-head{gap:12px}.finance-source-brand{width:49px;height:49px;font-size:14px}.finance-ledger-row{gap:7px}}
 </style></head>
 <body data-theme="dark">
 <header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 06 • CONCEPT</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
@@ -375,7 +395,7 @@ let tasks=[
 // Agenda and project pages read tasks[] directly: no duplicated scheduled-task collection.
 let inbox=[{id:1,text:"Idea: pannello delle attività ricorrenti",type:"idea"},{id:2,text:"Rivedere un abbonamento prima del rinnovo",type:"task"}];
 let tx=[{id:1,name:"Pagamenti di esempio",type:"in",amount:350,date:"Oggi"},{id:2,name:"Servizio digitale",type:"out",amount:18,date:"Ieri"},{id:3,name:"Spesa personale",type:"out",amount:42,date:"Ieri"}];
-let state={folderId:null,projectId:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",collectionTab:"cards",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
+let state={folderId:null,projectId:null,financeSource:null,projectSection:"tasks",financeTab:"overview",widgets:{habits:true,fitos:true,finance:true},screen:"today",theme:"dark",projectQuery:"",projectFilter:"all",projectView:"grid",fitosTab:"today",fitosTrainingDay:null,fitosWorkoutView:"week",collectionTab:"cards",agendaDay:agendaTodayIdx(),agendaMode:"week",agendaProject:"all",reviewStep:0,focus:0,focusRunning:false,focusStarted:0};
 let timer=null;let toastTimeout=null;let originFocus=null;
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function eur(n){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(n)}
@@ -643,7 +663,47 @@ function financeTabMenu(){
  const options=[["overview","Riepilogo"],["income","Fonti di reddito"],["assets","Asset"],["scheduled","Scadenze"]];
  return '<div class="finance-tabs">'+options.map(([id,label])=>'<button class="tab '+(state.financeTab===id?"active":"")+'" data-ux="finance-tab" data-tab="'+id+'">'+label+'</button>').join("")+'</div>';
 }
+
+function financeSourcePage(){
+ const src=incomeSources.find(x=>x.id===state.financeSource);
+ if(!src){state.financeSource=null;return viewFinance()}
+ const received=src.paid,pending=src.pending;
+ const note=src.id==="kdp"?"Le royalty maturate possono essere incassate in un periodo successivo. Le analisi per libro/mercato saranno una funzione aggiuntiva, non dati già collegati.":src.id==="cards"?"Il valore delle carte in inventario e i ricavi delle carte vendute rappresentano dimensioni diverse. I costi e le commissioni servono per il profitto.":src.id==="vinted"?"Il ricavo della vendita non equivale al profitto e il valore delle giacenze non è liquidità bancaria.":"Una previsione ricorrente può passare da importo fisso a variabile. Previsione e incasso registrato restano entità diverse.";
+ const records=[
+ {label:"Importi ricevuti · demo",status:"Incassato",amount:received,type:"paid"},
+ {label:"Importi non ancora ricevuti · demo",status:"Da incassare",amount:pending,type:"pending"}
+ ];
+ return '<div class="workspace-breadcrumb"><button class="crumb-link" data-finance-home>Finanze</button><span>›</span><button class="crumb-link" data-finance-back>Fonti di reddito</button><span>›</span><b>'+safe(src.name)+'</b></div>'+
+ '<div class="finance-source-head"><div class="finance-source-brand" style="background:'+src.color+'">'+safe(src.symbol)+'</div>'+
+ '<div class="finance-source-title"><div class="eyebrow">PAGINA FONTE ECONOMICA · DATI ESEMPLIFICATIVI</div><h1>'+safe(src.name)+'</h1><p class="small muted">Riepilogo, riconciliazione e approfondimenti nella stessa pagina. Le operazioni singole aprono pannelli finali.</p></div>'+
+ '<button class="button small" data-finance-back>← Torna alle fonti</button></div>'+
+ '<div class="finance-source-kpis">'+
+ '<div class="card"><div class="stat-label">Ricavi maturati</div><div class="statnum">'+eur(src.earned)+'</div><div class="xs muted">Non equivalgono necessariamente alla liquidità</div></div>'+
+ '<div class="card"><div class="stat-label">Già incassati</div><div class="statnum">'+eur(received)+'</div><div class="xs muted">Pagamenti ricevuti, demo</div></div>'+
+ '<div class="card"><div class="stat-label">Da incassare</div><div class="statnum">'+eur(pending)+'</div><div class="xs muted">Residuo non ancora liquidato</div></div>'+
+ '</div>'+
+ '<div class="finance-source-grid"><div>'+sectionHead("Movimenti della fonte","Clicca una riga per il dettaglio finale")+
+ '<div class="card">'+records.map(rec=>'<button class="finance-ledger-row" data-income-entry="'+rec.type+'" data-income-source="'+src.id+'"><span class="chip '+(rec.type==='paid'?'cyan':'orange')+'">'+rec.status+'</span>'+
+ '<div class="body"><b>'+rec.label+'</b><div class="sub">'+(rec.type==='paid'?'Pagamento registrato nella demo':'Credito dimostrativo in attesa')+'</div></div>'+
+ '<strong>'+eur(rec.amount)+'</strong><span class="muted">↗</span></button>').join("")+'</div>'+
+ '<div class="finance-note" style="margin-top:15px"><b>Riconciliazione:</b> gli importi qui sotto sono aggregati dimostrativi, non vere transazioni. Non vanno sommati di nuovo al saldo del conto.</div></div>'+
+ '<div>'+sectionHead("Contesto e regole","Distinzione dei dati finanziari")+
+ '<div class="card"><div class="eyebrow">DA SAPERE</div><p class="small muted" style="line-height:1.85;margin:12px 0 17px">'+safe(note)+'</p>'+
+ (src.stock?'<div class="finance-stock-metric"><span>Valore inventario stimato</span><b>'+eur(src.stock)+'</b><small>Non liquidità disponibile</small></div>':'')+
+ (src.id==='shop'?'<div class="finance-stock-metric"><span>Previsione ricorrente</span><b>'+(src.mode==='fixed'?'Importo fisso':'Importo variabile')+'</b><small>Nessun dato storico modificato</small><button class="button small" style="margin-top:12px" data-finance-shop-toggle>Cambia modalità (demo)</button></div>':'')+
+ '<button class="button small" style="margin-top:21px" data-finance-back>Vedi tutte le fonti →</button></div></div></div>';
+}
+function incomeRecordLeaf(sourceId,type){
+ const src=incomeSources.find(x=>x.id===sourceId);if(!src)return;
+ const paid=type==='paid',amount=paid?src.paid:src.pending;
+ dialog("Dettaglio "+(paid?"incasso":"credito"),'<div class="eyebrow">ULTIMO LIVELLO / OPERAZIONE · DEMO</div>'+
+ '<h2>'+safe(src.name)+'</h2><div class="statnum" style="font-size:35px">'+eur(amount)+'</div>'+
+ '<div class="finance-note" style="margin-top:12px">Questa è una voce aggregata fittizia. Nella V2 reale la scheda mostrerà ID, data, asset collegato, ricevuta, note e collegamento alla fattura o royalty. Non registra né modifica alcun movimento.</div>'+
+ '<div class="modal-actions"><button class="button primary" data-close>Chiudi</button></div>');
+ $("#dlg").classList.add("sheet");
+}
 function viewFinance(){
+ if(state.financeSource)return financeSourcePage();
  const header=headline("Finanze","Patrimonio, redditi, incassi e spese: tutto collegato, senza confondere i valori.","ECONOMIA PERSONALE",'<button class="button primary title-action" data-action="tx-new">+ Movimento</button>');
  let content="";
  if(state.financeTab==="overview"){
@@ -836,10 +896,14 @@ document.addEventListener("click",e=>{
    $("#dlg").close();state.projectId=null;goto(parsed.some(x=>x.kind==="task"&&x.when!=="oggi")?"agenda":"today");notify(n+" elementi inseriti nella demo");return;
  }
 
- if(b.dataset.ux==="finance-tab"){state.financeTab=b.dataset.tab;render();return}
- if(b.dataset.ux==="source-detail"){openSourceSheet(b.dataset.source);return}
+ if(b.dataset.ux==="finance-tab"){state.financeSource=null;state.financeTab=b.dataset.tab;render();return}
+ if(b.dataset.ux==="source-detail"){state.financeSource=b.dataset.source;state.financeTab="income";render();window.scrollTo(0,0);return}
+ if(b.hasAttribute("data-finance-back")){state.financeSource=null;state.financeTab="income";render();return}
+ if(b.hasAttribute("data-finance-home")){state.financeSource=null;state.financeTab="overview";render();return}
+ if(b.dataset.incomeEntry){incomeRecordLeaf(b.dataset.incomeSource,b.dataset.incomeEntry);return}
+ if(b.hasAttribute("data-finance-shop-toggle")){const x=incomeSources.find(v=>v.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";render();return}
  if(b.dataset.ux==="toggle-shop"){const x=incomeSources.find(t=>t.id==="shop");x.mode=x.mode==="fixed"?"variable":"fixed";openSourceSheet("shop");return}
- if(b.dataset.nav){if(b.dataset.nav==="projects"){state.projectId=null;state.folderId=null}goto(b.dataset.nav);return}
+ if(b.dataset.nav){if(b.dataset.nav==="finance")state.financeSource=null;if(b.dataset.nav==="projects"){state.projectId=null;state.folderId=null}goto(b.dataset.nav);return}
  if(b.dataset.task){const t=tasks.find(x=>x.id===b.dataset.task);if(t){const old=t.done;t.done=!t.done;render();notifyUndo(t.done?"Completata · Demo":"Riaperta · Demo",()=>{t.done=old;render();notify("Azione annullata · Demo")})}return}
  if(b.hasAttribute("data-close")){$("#dlg").close();stopTimer();return}
  if(b.dataset.folder){state.folderId=b.dataset.folder;state.projectId=null;render();return}
