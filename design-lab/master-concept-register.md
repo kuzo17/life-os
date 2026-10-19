@@ -1,3 +1,18 @@
+## Batch 07 — Scheletro UI + dominio (2026-10-19)
+
+**Realizzato come PROTOTIPO, non come V2 pronta:**
+- Routing con path profondi per cartelle, workspace, Agenda, FitOS, fonti finanza, inventario; sincronizzazione History API.
+- Gestione demo cartelle con ID stabili, nome editabile, ordinamento, protezione da cancellazione se non vuote.
+- Gestione demo progetti con creazione, spostamento tra cartelle, archiviazione che mantiene i task.
+- Collezioni Carte/Vinted con pagine catalogo e item leaf, filtri di stato, quantità, costi/stime.
+- Nuovo `architecture/workspace-core.mjs` indipendente dalla UI con comandi puri e test di integrità; **non ancora integrato nell'interfaccia e non contiene Firebase**.
+
+**Decisioni di struttura da mantenere:** folderId/projectId sempre stabili; task canoniche con `dueDate` ISO nella V2 reale; navigazione a pagine nei rami e pannelli sulle foglie; valori inventario non accreditati al conto al semplice cambio stato; stessa logica per Quick Add e linguaggio naturale; priorità al 100% delle funzioni V1.
+
+**Prossimi lavori di sostanza:** collegamento reale dei moduli al layer dominio (test), dati/date ISO e ricorrenti, gestione completa delle 14 aree legacy + custom, flussi FitOS e finanza riconciliabili, test visuali con mobile. Le funzionalità ancora non implementate restano nella [matrice non regressione](non-regression-matrix.md). [Registro Batch 07](batch-07/README.md).
+
+---
+
 ## Progresso Visual Lab — Batch 06 (2026-10-19)
 
 **LAB / non implementazione V2:** abbiamo spostato la progettazione di Agenda, FitOS e Finanze da schermate dimostrative statiche a percorsi visuali a più livelli: pagina di navigazione → sottosezione → eventuale pannello finale. Abbiamo preservato i temi Aurora Neo-Swiss/Prism Bento, la home a cartelle e il modello a singola task collegata a progetto/priorità/data nella demo.
