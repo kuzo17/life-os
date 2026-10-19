@@ -1,3 +1,17 @@
+# LifeOS — Batch 08: navigazione compatta e parità operativa
+
+**[Apri l'anteprima Batch 08](batch-08/index.html)**
+
+- Rail desktop da 76 px con auto-reveal su hover/focus e pin esplicito; drawer touch accessibile con scrim, focus, `Esc` e contenuto non raggiungibile quando chiuso.
+- Workspace progetto navigabile per obiettivi generali/settimanali, ricorrenti, spese pianificate e note/link.
+- Agenda con selezione multipla, sposta, duplica ed elimina; task condivise con progetto/Oggi.
+- Quick Add ampliato alle entità chiave V1, con destinazione reale nelle viste demo dove supportata.
+- [Dettagli, riferimenti V1 e gap espliciti](batch-08/README.md).
+
+**Status:** LAB con dati sintetici e mutazioni solo in memoria. Nessuna persistenza, Firebase o migrazione; Batch 01–07 restano disponibili e invariati.
+
+---
+
 # LifeOS — Batch 07: scheletro strutturale
 
 **[Apri l'anteprima Batch 07](batch-07/index.html)**
@@ -120,3 +134,4 @@ Mock data is intentionally synthetic and never persisted or synchronized. Non-wo
 - Only edit files inside `design-lab/` while testing visual directions.
 - **Do not merge into main or V2 application automatically.** Once a visual direction is approved, transfer *design tokens, component patterns, accessibility and layout rules* into the actual React/TypeScript design system, rebuilding UI with real domain view models.
 - Current HTML is a design prototype, **not production architecture**.
+
