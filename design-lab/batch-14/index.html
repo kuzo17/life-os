@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1421">
+<title>LifeOS Experience Lab — Batch 14</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="styles/app.css" rel="stylesheet">
+<link href="styles/hardening.css" rel="stylesheet">
+<link href="styles/core.css" rel="stylesheet"></head>
+<body data-theme="dark">
+<a class="skip-link" href="#view">Vai al contenuto</a>
+<header class="lab"><div class="lab-name"><i class="spectrum"></i> LIFEOS / EXPERIENCE LAB <span class="lab-tag">BATCH 14 • MODULAR APP</span></div><div class="lab-actions"><button class="mode on" data-theme="dark">☾ Aurora Neo-Swiss</button><button class="mode" data-theme="light">☼ Prism Bento</button></div></header>
+<div class="layout">
+<aside class="sidebar" id="primary-sidebar" aria-label="Navigazione principale"><div class="brand"><span class="brand-icon">◈</span><span class="brand-name">Life<span>OS</span> <b>2.0</b></span></div>
+<div class="nav-tools"><button class="nav-tool" data-nav-pin aria-pressed="false" title="Fissa o libera la navigazione"><span aria-hidden="true">⌖</span><span class="nav-pin-label">Fissa aperta</span></button><button class="nav-tool" data-nav-close title="Chiudi navigazione"><span aria-hidden="true">×</span><span class="nav-pin-label">Chiudi</span></button></div>
+<div class="nav-label">Il tuo spazio</div>
+<button class="nav active" data-nav="today" aria-label="Oggi" title="Oggi"><span class="nav-icon" aria-hidden="true">⌂</span><span>Oggi</span></button>
+<button class="nav" data-nav="projects" aria-label="Progetti" title="Progetti"><span class="nav-icon" aria-hidden="true">▦</span><span>Progetti</span></button>
+<button class="nav" data-nav="agenda" aria-label="Agenda" title="Agenda"><span class="nav-icon" aria-hidden="true">▤</span><span>Agenda</span></button>
+<button class="nav" data-nav="fitos" aria-label="FitOS" title="FitOS"><span class="nav-icon" aria-hidden="true">♡</span><span>FitOS</span></button>
+<button class="nav" data-nav="finance" aria-label="Finanze" title="Finanze"><span class="nav-icon" aria-hidden="true">◉</span><span>Finanze</span></button>
+<div class="nav-label">Altri strumenti</div>
+<button class="nav" data-nav="collections" aria-label="Collezioni" title="Collezioni"><span class="nav-icon" aria-hidden="true">◇</span><span>Collezioni</span></button>
+<button class="nav" data-nav="inbox" aria-label="Inbox" title="Inbox"><span class="nav-icon" aria-hidden="true">↧</span><span>Inbox</span><span class="count" id="inbox-count">2</span></button>
+<button class="nav" data-nav="review" aria-label="Review" title="Review"><span class="nav-icon" aria-hidden="true">◎</span><span>Review</span></button>
+<div class="sidefoot"><b style="color:var(--text)">Design Lab · UX Study</b><div>Solo dati inventati, senza Firebase.<br>Obiettivo: meno click, più chiarezza.</div></div>
+</aside>
+<main class="workspace">
+<div class="topbar"><div class="crumb">LifeOS / <b id="crumb-current">Oggi</b> <span class="pill">DEMO</span></div><div class="topright"><button class="button core-undo" id="core-undo" aria-label="Annulla ultima operazione" hidden>↶ Annulla</button><button class="mode-toggle density-toggle" id="density-toggle" aria-pressed="false" title="Densità visiva">▤ Compatta</button><button class="button search-trigger" id="open-search" aria-label="Apri ricerca globale">⌕ Cerca <span class="faint xs"> Ctrl K</span></button><button class="button primary quick-top" id="open-quick">+ Cattura</button></div></div>
+<div id="view" tabindex="-1" aria-live="polite"></div>
+<div style="margin:30px 0 10px;color:var(--faint);font-size:11px;line-height:1.7">LifeOS Experience Lab — app modulare con dati sintetici. I contenuti sono simulati e si azzerano ricaricando.</div>
+</main></div>
+<button class="nav-scrim" id="nav-scrim" aria-label="Chiudi navigazione" hidden></button>
+<nav class="mobile-bar" aria-label="Navigazione mobile"><button data-nav="today" class="active"><span class="nav-icon">⌂</span>Oggi</button><button data-nav="projects"><span class="nav-icon">▦</span>Progetti</button><button data-nav="agenda"><span class="nav-icon">▤</span>Agenda</button><button class="mobile-plus" id="mobile-quick" aria-label="Cattura rapida">+</button><button class="mobile-menu" id="mobile-menu" aria-label="Apri tutti i moduli" aria-expanded="false"><span class="nav-icon">☷</span>Moduli</button></nav>
+<dialog class="modal" id="dlg" aria-labelledby="dlg-title"><div class="modal-inner" id="dlg-body"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="src/main.mjs"></script>
+</body></html>

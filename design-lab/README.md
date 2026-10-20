@@ -1,3 +1,16 @@
+# LifeOS — base modulare: Batch 14
+
+**[Apri la base modulare](batch-14/index.html)**
+
+- Shell HTML separata, moduli espliciti per navigazione e domini.
+- Store immutabile, comandi validati e Undo comune anche per cartelle, progetti, inventario e movimenti.
+- [Stato reale, avvio, test e limiti](batch-14/README.md).
+- [Direzione: rifattorizzare V1 prima del redesign](architecture/TECHNICAL_REFACTOR.md).
+
+**Stato:** base tecnica del laboratorio, non ancora migrazione completa V1. Nessun collegamento ai dati in uso. Le prossime attività evolvono questa base senza duplicare l’intera app.
+
+---
+
 # LifeOS — Batch 13: core operativo condiviso
 
 **[Apri direttamente Batch 13 / Review](batch-13/index.html#/review)**

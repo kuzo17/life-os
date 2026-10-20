@@ -1,0 +1,22 @@
+/* Batch 13: operational core surfaces. */
+.core-undo{color:var(--main);border-color:color-mix(in srgb,var(--main) 45%,var(--border))}
+.core-undo:not([hidden]){display:inline-flex;align-items:center;gap:6px}
+.operation-list{display:grid;gap:0}
+.operation-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+.operation-row:last-child{border-bottom:0}
+.operation-row strong{display:block;font-size:12px;margin-bottom:4px}
+.operation-row time{font-size:10px;color:var(--muted)}
+.operation-row.is-undone{opacity:.55}
+.core-contract{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.core-contract>div{padding:13px;border-radius:12px;background:var(--panel2);border:1px solid var(--border)}
+.core-contract b{display:block;font-size:11px;margin-bottom:5px;color:var(--main)}
+.core-contract span{font-size:10px;color:var(--muted);line-height:1.5}
+
+@media(max-width:720px){
+  .lab-actions .mode[data-theme]{width:40px;padding:8px;font-size:0}
+  .lab-actions .mode[data-theme="dark"]::before{content:"☾";font-size:15px}
+  .lab-actions .mode[data-theme="light"]::before{content:"☼";font-size:15px}
+  .topright .core-undo{font-size:0;padding:9px}
+  .topright .core-undo::before{content:"↶";font-size:17px}
+  .core-contract{grid-template-columns:1fr}
+}
