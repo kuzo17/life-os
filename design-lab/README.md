@@ -1,3 +1,17 @@
+# LifeOS — Batch 13: core operativo condiviso
+
+**[Apri direttamente Batch 13 / Review](batch-13/index.html#/review)**
+
+- Primo servizio di dominio separato per Cattura, Inbox, Progetti, Agenda e Oggi.
+- Cattura multipla atomica e smistamento Inbox → Task senza duplicazioni.
+- Azioni Agenda bulk e stati progetto con una pila Undo condivisa.
+- Registro operativo volatile visibile nella Review.
+- [Dettagli, test e gap ancora aperti](batch-13/README.md).
+
+**Status:** core operativo dimostrativo, solo in memoria. Nessuna persistenza, Firebase o migrazione V1.
+
+---
+
 # LifeOS — Batch 12: hardening navigazione e cattura
 
 **[Apri direttamente Batch 12](batch-12/index.html)**
