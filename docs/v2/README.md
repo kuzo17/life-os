@@ -1,6 +1,8 @@
-# LifeOS V2 — Product blueprint
+# LifeOS V2 — documentazione e direzione di sviluppo
 
-**Status:** design + inventory, not production-ready.
+**Direzione corrente — 21 ottobre 2026:** [piano principale](DELIVERY_PLAN.md) e [registro operativo](DELIVERY_STATUS.md). Prima rifattorizzazione tecnica e trasferimento delle capacità V1; poi redesign e nuove funzioni. La documentazione esistente viene riutilizzata, non rifatta.
+
+**Stato:** documentazione e base tecnica parziale del laboratorio; migrazione V1 non completata, non pronta a sostituire l’app in uso.
 **Baseline V1:** `main@e58a77e3e00445474d93008d15ecf3a171f2a783`.
 **Rule:** never change V1, `main`, `v1-stable`, Firebase Auth/Rules, or production RTDB while designing V2.
 
@@ -14,23 +16,20 @@ Rebuild the *full observable capability* of V1 (not its HTML) in a modern, teste
 - Screen design and acceptance: [UX specification](ux.md).
 - Clickable first-pass mock: [prototype](../../v2-prototype/index.html) (static UI-only; fake numbers, zero Firebase integration).
 
-## Architecture candidate
+## Scelte del piano corrente
 
-- React 19 + TypeScript + Vite, React Router, TanStack Query for server-state, Zod for command validation; state stays close to feature.
-- Cloud Firestore as candidate primary store with Google Firebase Auth; use separate staging and production Firebase projects.
-- Domain services and repository interfaces separate business rules from components and Firebase-specific SDK.
-- Test using Vitest + Testing Library, Playwright, Firebase Emulator Suite.
-- Accessible custom design-system components and tokens; PWA implemented after auth/offline strategy is tested.
-- No runtime migrations without signed-off preview, reconciliation counts, backups and idempotency checks.
+- Sorgente unica prevista in `app/`, da istituire nella fase F1; batch conservate come riferimenti.
+- React + TypeScript + Vite e routing mantenuto, con versioni compatibili fissate al setup. Non sono ancora configurati nella base attuale.
+- Dominio e casi d’uso indipendenti da UI e SDK; porte repository e adattatori separati.
+- Nessun cambio automatico del database esistente. Firestore era un candidato storico, non un requisito approvato della rifattorizzazione.
+- Vitest, Testing Library, Playwright e contratti dati/emulatore; UI accessibile fin dall’implementazione.
+- Stato effettivo, priorità, decisioni aperte e criteri di uscita sono nel piano e nel registro. Nessuna migrazione sui dati reali senza riconciliazione, backup e passaggio autorizzato.
 
 ## Delivery gates
 
-1. Catalog every V1 feature and persistent key including dynamic keys / inline callbacks.
-2. Snapshot/validate real Firebase export **and** local LifeOS backup supplied privately by user. Neither has been provided to this work environment.
-3. Approve UI shell and 3 primary screens (Today, Projects, Finance) against prototype.
-4. Build full V2 staging, no production DB writes.
-5. Import idempotently, reconcile records and financial sums; test multi-device/offline/restore.
-6. Approve and deploy deliberately, with rollback.
+La sequenza vincolante è F0–F9 nel [piano](DELIVERY_PLAN.md#6-sequenza-di-lavoro-e-criteri-di-uscita): continuità, progetto applicativo, primo percorso V1 persistente, domini, copertura trasversale, sync/accessi, redesign, migrazione e rilascio.
+
+L’inventario e il mapping già presenti sono input dell’implementazione. Si aggiungono i casi mancanti quando si lavora sul relativo dominio. La disponibilità e la validità dei backup privati vanno verificate al gate dati reali e non impediscono il lavoro su fixture sintetiche.
 
 ## Current limitations
 

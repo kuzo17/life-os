@@ -1,10 +1,12 @@
 # LifeOS V2 — UX direction and acceptance
 
+> Aggiornamento 21 ottobre 2026: la sequenza operativa è nel [piano principale](DELIVERY_PLAN.md). Le sezioni mock/design di questo file restano materiale di riferimento. L’implementazione tecnica e la parità precedono il redesign definitivo; accessibilità e uso mobile restano criteri di ogni modulo.
+
 ## Product design thesis
 A personal command center with a *premium editorial* visual identity, significantly more polished than V1. Dark and light themes are first-class; no template-dashboard clutter. Crisp typography, strong information hierarchy, deliberate spacing, contextual color, meaningful microinteractions, low-noise charts.
 
 ## Layout
-- Desktop: persistent left sidebar (Today, Projects, Agenda, FitOS, Finance), top global search and quick-create action; content max-width with adaptable grids.
+- Desktop: compact left rail with hover/focus reveal and explicit pin (Today, Projects, Agenda, FitOS, Finance), global search and quick-create action; wide content area with adaptable grids. A permanently expanded sidebar is not the default.
 - Mobile: clear stacked cards, bottom navigation, quick add reachable with one thumb; drawers instead of crowded dialogs; responsive typography.
 - All surfaces: focus states, keyboard access, error/retry states, reduced-motion support, touch targets >= 44px when practical.
 

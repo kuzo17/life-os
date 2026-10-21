@@ -1,0 +1,178 @@
+# LifeOS — Registro operativo dello sviluppo
+
+**Aggiornato:** 21 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.0](DELIVERY_PLAN.md).
+
+Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non vengono convertite in dichiarazioni di parità. Le autorizzazioni per produzione, dati reali e nuovi servizi rimangono quelle del piano e dell’utente.
+
+## 1. Stato al punto di partenza
+
+- Branch di lavoro: `lifeos-visual-lab`.
+- Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
+- Baseline di implementazione esaminata: `774de73d552a2e3e755fdd9713794d66229545de`.
+- Fase completata in questa consegna: **F0 — consolidamento della direzione**. Prossima fase: **F1**, non ancora avviata.
+- Sorgente attuale recuperabile: `design-lab/batch-14/`.
+- Sorgente di destinazione prevista: `app/`, da istituire una sola volta in F1.
+- React/TypeScript/Vite: **non ancora configurati**.
+- Persistenza/sync nella nuova base: **non implementate**.
+- Migrazione e riconciliazione di dati reali: **non eseguite**.
+- Disponibilità e validità dei backup privati: **da verificare privatamente prima del relativo gate**; non blocca le implementazioni con fixture sintetiche.
+- Nessuna nuova capacità V1 viene dichiarata rilasciata da questo piano.
+
+### Evidenza già disponibile
+
+| Riferimento | Risultato | Limite |
+|---|---|---|
+| `docs/v2/legacy-functions.md` | Inventario di 429 definizioni nominali con baseline e righe | Callback/registry e collegamenti ai nuovi test da integrare per capacità |
+| `design-lab/non-regression-matrix.md` | Copertura delle aree V1 | Checklist, non stato di migrazione |
+| `design-lab/batch-14/tests/domain.test.mjs` | Transazioni, rollback, ID, Undo, isolamento su fixture | Sottoinsieme sintetico e volatile |
+| `design-lab/batch-14/tests/architecture.test.mjs` | Shell separata e moduli senza dipendenze circolari | Non verifica un progetto React/TypeScript o l’intera V1 |
+| `design-lab/batch-14/tests/browser.cjs` | 41 destinazioni più flussi principali, temi e mobile | Prova del laboratorio, non persistenza o dati reali |
+| Commit `774de73` | Base modulare pubblicata e codice recuperabile | Primo consolidamento tecnico, non rilascio V2 |
+
+## 2. Stati da usare
+
+Le attività usano **da iniziare / in corso / verificata / bloccata**. Una voce bloccata riporta il vincolo esatto e le attività indipendenti che possono continuare.
+
+Per una capacità utente annotare anche:
+
+- **Implementazione:** documentata, laboratorio, parziale, verificata localmente.
+- **Dati:** volatili, locali duraturi, sincronizzati in emulatore, verificati in staging autorizzato.
+- **Parità:** non verificata, casi parziali, casi obbligatori verificati, riconciliata sui dati reali.
+- **Rilascio:** non rilasciata, candidata, rilasciata, stabilizzata.
+
+Esempio corretto oggi per Task: `laboratorio/parziale · volatile · casi parziali · non rilasciata`. Non usare “Task completa” per riassumerlo.
+
+## 3. Backlog principale con dipendenze
+
+Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale risultato LAB è materiale di partenza, non completamento dell’attività. Il dettaglio di accettazione è nella fase corrispondente del piano.
+
+| ID | Fase | Capacità/consegna | Dipendenze | Stato iniziale |
+|---|---|---|---|---|
+| PLAN-001 | F0 | Piano, registro, istruzioni e riallineamento documenti | Documenti V1 esistenti | Verificata: consegna documentale |
+| ARCH-001 | F1 | Sorgente unica `app/`, toolchain e consolidamento Batch 14 | PLAN-001 | Da iniziare |
+| ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Da iniziare |
+| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Da iniziare |
+| DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | Da iniziare |
+| DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Da iniziare |
+| LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Da iniziare |
+| TASK-001 | F2 | Task/Oggi/Progetti/Agenda sullo stesso record persistente | LEG-001, DATA-002, ARCH-002 | LAB parziale da trasferire |
+| TASK-002 | F2 | Scadute, ordinamenti, priorità/orari e operazioni bulk | TASK-001 | LAB parziale da trasferire |
+| PROJ-001 | F3 | Cartelle, progetti speciali/custom, override, ordine, archivio | TASK-001 | LAB parziale da trasferire |
+| GOAL-001 | F3 | Goals generali/settimanali, cicli, debiti e recuperi | PROJ-001 | LAB incompleto da trasferire |
+| RECUR-001 | F3 | Regole, occorrenze, completamenti, eccezioni e streak | DATA-001, TASK-001 | Da iniziare sulla semantica V1 |
+| HABIT-001 | F3 | Checkbox/min/max, target, correzioni e storico | DATA-002 | Da iniziare |
+| TODAY-001 | F3 | Dashboard derivata da task/goals/habits/FitOS verificati | Domini pertinenti; completamento progressivo | LAB da collegare a dati verificati |
+| TRAIN-001 | F4 | Cataloghi, piani, sessioni guidate, log e resume | DATA-002, ARCH-002 | LAB avanzato da trasferire |
+| STRETCH-001 | F4 | Routine, focus, timer, completamenti e storico | DATA-002; pattern TRAIN-001 | Da iniziare |
+| FOOD-001 | F4 | Alimenti, ricette, grammi, macro e dipendenze | DATA-002 | Da iniziare |
+| FOOD-002 | F4 | 11 slot, piani settimanali, consumi/snapshot e target | FOOD-001 | Da iniziare |
+| WEIGHT-001 | F4 | Peso per data, correzioni, unità e trend | DATA-002 | Da iniziare |
+| FIN-001 | F5 | Asset, saldi iniziali, ledger e storni/idempotenza | DATA-001/002; decisioni numeriche | LAB visivo da trasferire |
+| FIN-002 | F5 | Spese e rate con pagamento unico e fine mese | FIN-001, PROJ-001 | LAB incompleto da trasferire |
+| CARD-001 | F5 | Copie fisiche, costi/stime/stati e vendite | FIN-001 | Inventario LAB da trasferire |
+| VINTED-001 | F5 | Quantità, inventario, vendite legacy e margini | FIN-001 | Inventario LAB da trasferire |
+| FIN-003 | F5 | Risparmio, crypto, valutazioni e patrimonio | FIN-001, CARD-001, VINTED-001 | Da trasferire |
+| INCOME-001 | F5 | KDP/negozio, maturato/credito/payout e forecast storico | FIN-001 | LAB visivo da trasferire |
+| CAPTURE-001 | F2/F6 | Registry V1 completo, form, preview, comandi e Inbox | Minimo TASK-001; poi domini destinatari | LAB parziale da trasferire |
+| SEARCH-001 | F6 | Ricerca aggiornata, azioni e deep link ai record | Domini verificati e ARCH-002 | LAB da trasferire |
+| SETTINGS-001 | F6 | Preferenze, ordinamenti, impostazioni e versioni | DATA-002 | LAB parziale da trasferire |
+| BACKUP-001 | F6 | Export/import versionati e round-trip sintetico | Schemi dei domini e DATA-002 | Da iniziare |
+| SYNC-001 | F2/F7 | Coda duratura, revisioni, retry e conflitti per dominio | Contratti iniziali F2; domini verificati | Da iniziare |
+| AUTH-001 | F7 | Utenti, accessi e regole negate/consentite in emulatore | DATA-001, SYNC-001 | Da iniziare |
+| PWA-001 | F7 | Offline, riapertura, aggiornamento cache e recupero | SYNC-001, BACKUP-001 | Da trasferire e verificare |
+| UX-001 | F1/F8 | Componenti accessibili, temi Aurora/Prism e personalizzazione | Minimo F1; consolidamento F8 | Direzione LAB recuperabile |
+| UX-002 | F8 | Usabilità e miglioramenti P1 selezionati | Capacità obbligatorie e F7 | Backlog, non baseline completata |
+| MIG-001 | F9 | Dry-run privato, mapping, conteggi e riconciliazione | BACKUP-001, domini verificati, backup privati | Da iniziare al gate dati reali |
+| REL-001 | F9 | Build candidata, ripristino, rollback e passaggio | MIG-001, AUTH-001, SYNC-001, UX-001 | Da iniziare; passaggio non autorizzato |
+| REL-002 | F9 | Stabilizzazione sui dispositivi e consegna gestione | REL-001 | Da iniziare |
+
+## 4. Prossimi tre incrementi concreti
+
+La richiesta attuale è pianificare: questa consegna non installa toolchain, non crea `app/` e non collega database. Il piano guida la successiva implementazione senza richiedere una nuova discussione teorica.
+
+### INC-01 — Istituire il progetto applicativo e il controllo qualità
+
+**Comprende:** ARCH-001, ARCH-002 e QA-001; contratti iniziali DATA-001.
+
+**Operazioni:** selezionare versioni compatibili; creare progetto e lockfile; trasferire il core puro con test, senza inglobare l’HTML; montare shell/route e componenti minimi; esporre script di verifica e preview della build. Registrare ogni pezzo recuperato. Aggiornare i punti d’ingresso perché nessuno continui a sviluppare il vecchio laboratorio come app definitiva.
+
+**Dimostrazione richiesta:** installazione pulita → typecheck/lint/test/build → avvio della build → navigazione e gestione errore; ambiente sintetico e nessuna connessione alla produzione.
+
+### INC-02 — Contratto Task V1, date e adattatori
+
+**Comprende:** DATA-001, LEG-001 e parte DATA-002.
+
+**Operazioni:** usare le funzioni Agenda/progetto già catalogate; associare i casi a righe della baseline; decidere task libere/progetto, identità, date e orfani; creare fixture sintetiche che riproducano il formato V1; implementare trasformazione deterministica e repository in memoria/locale. Provare il contratto remoto in emulatore senza dati reali.
+
+**Dimostrazione richiesta:** stesso input → stessi ID/mapping; nessun record perso o inventato; casi invalidi segnalati; record riletti dopo riapertura; secondo import senza duplicazioni.
+
+### INC-03 — Primo percorso utente persistente
+
+**Comprende:** TASK-001, TASK-002 e minimo CAPTURE-001.
+
+**Operazioni:** collegare form e viste ai casi d’uso; creare, modificare, completare, pianificare e spostare; introdurre bulk con gestione errore; mostrare lo stato del salvataggio. Lavorare su dati sintetici nella forma legacy e nel modello nuovo.
+
+**Dimostrazione richiesta:** cattura → progetto → Agenda → modifica → salvataggio → chiusura/riapertura → ricerca del medesimo record → export/ripristino. Verificare giorni/timezone, errori e doppio invio. Il risultato viene chiamato “percorso verificato localmente”, non “migrazione privata completata”.
+
+Dopo INC-03 aggiornare l’ordine dettagliato di F3–F9 con le informazioni ottenute. Se un problema di storage o modello emerge, correggere il contratto prima di replicarlo negli altri domini.
+
+## 5. Questioni da chiudere al momento giusto
+
+| ID | Punto | Quando | Come procedere prima della chiusura |
+|---|---|---|---|
+| DEC-006 | Task senza progetto e semantica dei record orfani | INC-02 | Conservare i casi V1 nelle fixture; non forzare una destinazione generica |
+| DEC-007 | Autorità locale/remota e revisione/conflitti | Contratto INC-02, consolidamento F7 | Implementare e testare le porte, senza promettere sync reale |
+| DEC-008 | Preview della build e hosting finale | INC-01 / prima di F9 | Usare preview locale; niente deploy sulla produzione attuale |
+| DEC-009 | Ambiente remoto, utenti e regole di accesso | Emulatore F2/F7; reale prima di staging | Dati sintetici, nessuna credenziale o accesso alla produzione |
+| NUM-001 | Conversione monetaria e arrotondamenti legacy | Prima di FIN-001 | Preservare gli originali nei fixture e rendere espliciti i casi ambigui |
+| DATA-PRIVATE-001 | Provenienza/validità dei backup privati | Prima di MIG-001 | Sviluppare e verificare con fixture sintetiche |
+
+Le decisioni ordinarie si documentano e si attuano entro l’ambito autorizzato. Chiedere all’utente solo quando manca una scelta di prodotto sostanziale o serve nuova autorità su dati, servizi o rilascio.
+
+## 6. Rischi principali e risposta prevista
+
+| ID | Rischio | Risposta / prova |
+|---|---|---|
+| R-01 | Tornare a produrre demo invece della migrazione | Sorgente unica, ID di backlog e criteri del piano per ogni commit |
+| R-02 | Perdere capacità nascoste in callback/registry | Copertura supplementare legata al modulo e fixture di caratterizzazione |
+| R-03 | Trasformare le semplificazioni LAB in restrizioni V1 | Confronto con sorgente/contratti, differenze deliberate registrate |
+| R-04 | Perdere dati in reload, errore o conflitto | Storage duraturo, test di riavvio/errore, coda e ripristino |
+| R-05 | Duplicare incassi/spese o ricostruire saldi falsi | Ledger, idempotenza, opening balance e riconciliazione |
+| R-06 | Inventare storico fitness/nutrizione | Provenienza, snapshot futuri e limiti legacy espliciti |
+| R-07 | Divergenza tra documenti e implementazione | Registro aggiornato nello stesso incremento e avvisi sui documenti storici |
+| R-08 | Fine del lavoro rinviata da nuove idee | Baseline obbligatoria distinta dal backlog P1/P2 |
+| R-09 | Confondere preview e produzione | Ambiente/build identificati e passaggio esplicitamente autorizzato |
+
+## 7. Modello di scheda per una capacità
+
+Quando una voce entra in lavorazione, aggiungere una scheda con questi campi qui o in un documento di dominio collegato:
+
+```text
+ID / titolo:
+Fase e dipendenze:
+Capacità V1 e riferimento alla baseline:
+Input/dati legacy e risultato atteso:
+Materiale recuperato dal laboratorio:
+Nuovi moduli/casi d’uso/adattatori:
+Scenari di accettazione e casi di errore:
+Implementazione / Dati / Parità / Rilascio:
+Prove eseguite (comando, scenario o report) e risultato:
+Commit / preview della build:
+Limiti, difetti e differenze deliberate:
+Prossimo passo:
+```
+
+## 8. Regole di aggiornamento
+
+Aggiornare questo file nello stesso incremento del codice: fase corrente, attività realmente iniziate/chiuse, prove, decisioni emerse, limiti e prossimo blocco. Per la documentazione usare controlli di coerenza e link; per il codice usare i test appropriati alla modifica.
+
+Non riportare “test superati” senza esecuzione; distinguere una prova precedente dalla verifica della modifica corrente. Non ricontrollare tutta l’app dopo un semplice cambiamento di testo. Non annotare dati sensibili nei report pubblici.
+
+Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del piano da zero. Conservare ID e cronologia; cambiare lo stato con motivazione. Non riscrivere gli esiti storici come se fossero sempre stati diversi.
+
+### Registro delle consegne
+
+| Data | Attività | Esito e riferimenti |
+|---|---|---|
+| 2026-10-20 | Base Batch 14 | Commit `774de73`: separazione modulare e prove sul laboratorio; persistenza e parità completa ancora assenti |
+| 2026-10-21 | PLAN-001 | Piano v1.0, registro e istruzioni completati; documenti precedenti riallineati. Verificati 14 documenti, 89 link locali, 10 fasi e 37 ID di backlog univoci; modifiche soltanto documentali. Il commit che introduce il piano identifica la consegna. |

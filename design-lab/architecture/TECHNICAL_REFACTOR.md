@@ -1,5 +1,7 @@
 # LifeOS — rifattorizzazione tecnica prima del redesign
 
+> Questo documento registra la direzione iniziale del 20 ottobre. Dal 21 ottobre 2026 la sequenza completa e le decisioni correnti sono nel [piano principale](../../docs/v2/DELIVERY_PLAN.md), con stato nel [registro operativo](../../docs/v2/DELIVERY_STATUS.md).
+
 ## Obiettivo corretto
 
 Far evolvere l’app esistente conservando capacità osservabili, identità dei record e dati. Prima l’affidabilità tecnica e la parità, poi estetica e funzioni aggiuntive. Le batch UI sono riferimenti e fixture di sviluppo, non prodotti separati da continuare a espandere.
@@ -29,7 +31,7 @@ Nessuna percentuale del laboratorio rappresenta la quota di V1 trasferita. Una c
 4. Prima di cambiare un comportamento V1, aggiungere esempi e scenari di verifica. Correggere i bug documentando la differenza voluta.
 5. Introdurre un repository compatibile con i dati esistenti prima di valutare un cambio di database. Il precedente candidato Firestore non è una decisione approvata per questa rifattorizzazione.
 6. Usare fixture sintetiche nel repository. I dati personali e i backup rimangono fuori da GitHub.
-7. Continuare sulla base modulare Batch 14. Le prossime consegne sono incrementi della stessa applicazione, senza nuove copie integrali.
+7. Recuperare selettivamente la base Batch 14 nel consolidamento unico `app/` della fase F1; poi mantenere soltanto quella sorgente. Le prossime consegne sono incrementi della stessa applicazione, senza nuove copie integrali.
 
 ## Sequenza operativa
 

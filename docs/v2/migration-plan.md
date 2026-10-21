@@ -1,5 +1,7 @@
 # LifeOS V1 → V2 — Import and reconciliation protocol
 
+> Il [piano principale](DELIVERY_PLAN.md) governa la sequenza corrente. Questo protocollo resta il riferimento per dati e riconciliazione; disponibilità e validità dei backup vanno accertate privatamente al relativo gate. Gli ambienti remoti richiedono autorizzazione dedicata; fixture ed emulatori non toccano la produzione.
+
 ## Source boundaries
 - Never mutate original Firebase JSON export or LifeOS local-storage export.
 - Never commit backups containing private inventory/finance/nutrition data to public GitHub.

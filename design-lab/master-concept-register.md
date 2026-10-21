@@ -1,3 +1,5 @@
+> **Direzione corrente — 21 ottobre 2026:** il [piano principale](../docs/v2/DELIVERY_PLAN.md) sostituisce il processo storico design-first e governa sequenza, architettura e consegna. Questo registro conserva vincoli di prodotto e idee; i suoi stati storici non rappresentano l’implementazione corrente. [Stato effettivo](../docs/v2/DELIVERY_STATUS.md).
+
 ## Batch 07 — Scheletro UI + dominio (2026-10-19)
 
 **Realizzato come PROTOTIPO, non come V2 pronta:**
@@ -32,13 +34,13 @@ Vedi [Batch 06](batch-06/README.md) per test statici e limiti. Tutti i concept e
 
 # LifeOS — Master Concept Register / Visual Lab
 
-**Version:** 2026-10-10 · **Owner decision:** design-first phase, functionality preserved as a hard constraint.
+**Versione storica:** 2026-10-10 · **Fase originaria:** design-first, superata il 21 ottobre 2026 dalla priorità tecnica e dal trasferimento V1; conservazione delle funzioni sempre vincolante.
 
 ## NON-NEGOTIABLE CONTRACT
 
 1. **100% V1 feature parity** as an acceptance baseline, not the ambition ceiling. Existing features are never replaced by a pretty but less capable screen.
 2. **V1 audit before implementation, not after**. `non-regression-matrix.md` and `fitos-focus-parity-audit.md` form the starting checklist; V1 code inventory and real backup-data mapping still need finishing.
-3. **Design mode only in Visual Lab.** No write to `main` or `lifeos-v2`; isolated branch `lifeos-visual-lab`, artificial data, no Firebase access or credentials.
+3. **Sviluppo isolato dal prodotto in uso.** Branch `lifeos-visual-lab`, sorgente unica prevista `app/`, batch conservate come riferimenti; nessuna modifica a `main` o `lifeos-v2`, nessun accesso a Firebase di produzione o dato privato nelle preview pubbliche. Ambiente reale e passaggio seguono i gate del piano corrente.
 4. **Modes of one app:** Aurora Neo-Swiss night and Prism Bento day; common tokens, components, interaction semantics and navigational structure.
 5. **Pages for branches, sheets for leaves:** the navigation hierarchy should expand through pages in middle levels; side sheets/modals belong mostly to leaf item viewing/editing. Exceptions: global quick actions.
 6. **Task single source of truth:** each task must keep stable `projectId`, priority, date, source metadata, state, and optional goal/recurrence link; Oggi, Agenda, search and project view are *views of the same record*, not duplicated task databases.
@@ -60,7 +62,7 @@ Vedi [Batch 06](batch-06/README.md) per test statici e limiti. Tutti i concept e
 | D-09 | Adapt dashboard without unpredictable auto-reordering | stable muscle memory | Approved principle |
 | D-10 | FitOS must match full V1 guided workouts, then improve | Focus V1 is already sophisticated | Mandatory |
 | D-11 | UI exploration separated from production data | privacy and preservation | Mandatory |
-| D-12 | Design-first now; per-module peak review later | preserve momentum without losing ideas | Current plan |
+| D-12 | Design-first nella fase originaria | Scelta storica, sostituita da tecnica/parità prima del redesign | Superata dal piano del 21 ottobre 2026 |
 
 ## Status legend
 
@@ -178,9 +180,9 @@ Vedi [Batch 06](batch-06/README.md) per test statici e limiti. Tutti i concept e
 - More robust offline queuing and multi-device reconciliation.
 - Bulk data management: safe import previews, conflict tables, audit trail.
 
-## Design-first sprint process
+## Processo storico design-first (superato)
 
-**Right now:** design tokens → IA/navigation → project/task dashboard → agenda/finance/fitos module frames → mobile patterns → micro-interactions → check A11y.
+**Sequenza della fase storica:** design tokens → IA/navigation → project/task dashboard → agenda/finance/fitos module frames → mobile patterns → micro-interactions → check A11y. La sequenza corrente è F0–F9 nel piano principale.
 
 **Later, each module individually:** V1 source audit → parity test scenarios → design signoff → data model and migration → staging implementation → performance tests → explicit release approval.
 

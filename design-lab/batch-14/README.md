@@ -32,7 +32,7 @@ La priorità è rifattorizzare LifeOS esistente, preservando funzioni e dati. I 
 | Stile e temi esistenti | `styles/` |
 | Verifica del comportamento e dei confini | `tests/` |
 
-Questa è la base da evolvere: le prossime attività devono modificare i suoi moduli, evitando di ricopiare tutta l’app in un’altra batch.
+**Consolidamento pianificato il 21 ottobre 2026:** il [piano principale](../../docs/v2/DELIVERY_PLAN.md) prevede un unico trasferimento selettivo verso `app/` con React/TypeScript/Vite nella fase F1. Da quel momento questa batch resta un riferimento congelato e si mantiene soltanto la sorgente unica. Nessuna nuova batch deve ricopiare l’app completa.
 
 ## Avvio e verifiche
 

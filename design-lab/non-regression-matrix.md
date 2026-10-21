@@ -1,5 +1,7 @@
 # LifeOS V1 → V2 — Feature Parity Gate (non-regression matrix)
 
+> [Piano operativo corrente](../docs/v2/DELIVERY_PLAN.md) · [stato e prove](../docs/v2/DELIVERY_STATUS.md). Questa matrice conserva i requisiti di parità; non è un elenco di funzioni già migrate.
+
 **Status:** working checklist. Baseline source `main@e58a77e3e00445474d93008d15ecf3a171f2a783`. “Spec” describes functionality; none of these statuses assert V2 implementation.
 
 **Rule:** no module can be considered shipped unless its complete V1 feature set has been (a) identified, (b) specified, (c) implemented or explicitly replaced with an equivalent that covers the same need, (d) validated against backup data, and (e) tested end-to-end. UI-only mockups are **never** proof of feature parity.

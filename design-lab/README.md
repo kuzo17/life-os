@@ -1,3 +1,11 @@
+# LifeOS — laboratorio e materiale recuperabile
+
+**Direzione corrente:** [piano di sviluppo fino alla consegna](../docs/v2/DELIVERY_PLAN.md) · [stato e prossimi incrementi](../docs/v2/DELIVERY_STATUS.md).
+
+Dal consolidamento F1 la sorgente applicativa unica sarà `app/`. Le batch sono riferimenti e non verranno replicate in nuove app complete.
+
+---
+
 # LifeOS — base modulare: Batch 14
 
 **[Apri la base modulare](batch-14/index.html)**

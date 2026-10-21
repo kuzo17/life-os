@@ -1,5 +1,7 @@
 # LifeOS V2 — Blueprint dello scheletro applicativo
 
+> Blueprint storico. Il [piano principale del 21 ottobre 2026](../../docs/v2/DELIVERY_PLAN.md) ne consolida principi, scelta degli strumenti, sorgente unica e sequenza. Gli esempi sotto restano proposte/contratti da verificare e non dimostrano implementazione; le precedenti aperture sul framework sono sostituite dalle decisioni del piano corrente.
+
 **Stato:** proposta architetturale; non sostituisce la V1 e non è stata distribuita nell'app V2. Baseline funzionale: `main`, [non-regression-matrix.md](../non-regression-matrix.md) e [master-concept-register.md](../master-concept-register.md). La Batch 07 mette alla prova alcune di queste scelte con dati esclusivamente fittizi.
 
 ## 1. Principi inderogabili

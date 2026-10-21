@@ -1,5 +1,7 @@
 # LifeOS V2 — Data schema candidate 0.1
 
+> Direzione corrente: [piano principale, contratti e persistenza](DELIVERY_PLAN.md#5-regole-dei-dati-e-del-comportamento). Questo è un modello logico candidato. Namespace Firestore e note specifiche del backend non autorizzano un cambio da RTDB; contratti, compatibilità e ambiguità vengono consolidati per dominio con test.
+
 This is the **logical model**, not an already deployed Firestore schema. Parent path `users/{uid}` is an owner namespace with owner-only Rules; never rely on a client-side UID check.
 
 ## Common invariants
