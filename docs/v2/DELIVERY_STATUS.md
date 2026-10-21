@@ -9,7 +9,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 - Branch di lavoro: `lifeos-visual-lab`.
 - Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
 - Baseline del materiale LAB recuperabile: `774de73d552a2e3e755fdd9713794d66229545de`.
-- Consegna corrente: **INC-01 / F1**, base applicativa verificata localmente. Primo CI: difetto di hover iniziale su Chromium Linux identificato, correzione in verifica. Prossimo blocco dopo chiusura QA-001: **INC-02 / F2**.
+- Consegna completata: **INC-01 / F1**, base applicativa verificata in locale Windows e in CI Ubuntu. [Run riuscito sul codice `81e909a`](https://github.com/kuzo17/life-os/actions/runs/39604511767). Prossimo blocco: **INC-02 / F2**, non ancora avviato.
 - Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
 - React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
 - Persistenza/sync nella nuova base: **non implementate**.
@@ -29,6 +29,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | Commit `774de73` | Base modulare pubblicata e codice recuperabile | Primo consolidamento tecnico, non rilascio V2 |
 | `app/` e consegna INC-01 | Base React/TypeScript, contratti repository, comandi e test del workspace sintetico | Nessun import legacy, storage duraturo, sync o parità completa |
 | Controlli INC-01 del 21 ottobre | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E su cinque profili: PASS locale | Windows con mobile emulato; nessuna certificazione hardware/produzione; CI remota separata |
+| CI sul codice `81e909a`, [run 39604511767](https://github.com/kuzo17/life-os/actions/runs/39604511767) | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E: PASS Ubuntu | Non verifica dati personali, Firebase o dispositivi reali |
 
 ## 2. Stati da usare
 
@@ -52,7 +53,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 | PLAN-001 | F0 | Piano, registro, istruzioni e riallineamento documenti | Documenti V1 esistenti | Verificata: consegna documentale |
 | ARCH-001 | F1 | Sorgente unica `app/`, toolchain e consolidamento Batch 14 | PLAN-001 | Verificata localmente in INC-01 |
 | ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Verificata localmente in INC-01 |
-| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | In corso: controlli locali verificati; primo CI ha identificato hover iniziale Chromium Linux, correzione da riconfermare in CI |
+| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Verificata: Windows e CI Ubuntu; primo difetto CI corretto e caso mantenuto nella suite |
 | DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | In corso: primo contratto F1; semantica V1 e mapping ancora F2 |
 | DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Da iniziare |
 | LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Da iniziare |
@@ -93,7 +94,7 @@ INC-01 attua il piano nella sorgente unica. Il prossimo blocco principale è INC
 
 ### INC-01 — Istituire il progetto applicativo e il controllo qualità
 
-**Esito:** implementato e verificato localmente. [Scheda di consegna](increments/INC-01.md), avvio in `app/README.md`. Primo CI eseguito: correzione del reveal iniziale in verifica, distinto dalle prove locali riuscite.
+**Esito:** completato e verificato in locale Windows e CI Ubuntu sul codice `81e909a`. [Scheda di consegna](increments/INC-01.md), avvio in `app/README.md`. Il primo difetto emerso in CI è corretto, con scenario di regressione nella suite. Il prossimo lavoro è INC-02.
 
 **Comprende:** ARCH-001, ARCH-002 e QA-001; contratti iniziali DATA-001.
 
@@ -180,3 +181,4 @@ Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del pi
 | 2026-10-20 | Base Batch 14 | Commit `774de73`: separazione modulare e prove sul laboratorio; persistenza e parità completa ancora assenti |
 | 2026-10-21 | PLAN-001 | Piano v1.0, registro e istruzioni completati; documenti precedenti riallineati. Verificati 14 documenti, 89 link locali, 10 fasi e 37 ID di backlog univoci; modifiche soltanto documentali. Il commit che introduce il piano identifica la consegna. |
 | 2026-10-21 | INC-01 / ARCH-001/002, QA-001, parte DATA-001 | Sorgente unica, recupero selettivo del core, componenti/route e contratto repository volatile. Installazione pulita, typecheck/lint, 22 test, build e 35 E2E locali: PASS. Workflow di sola verifica predisposto; esito remoto distinto. Nessuna capacità V1 completa o dato reale migrato. |
+| 2026-10-21 | Chiusura QA-001 / INC-01 | Primo CI: caso iniziale hover Chromium Linux individuato. Codice `81e909a`: correzione hover/pin e report sintetici in caso di errore; 22 test e 35 E2E riconfermati Windows e Ubuntu CI, run `39604511767` riuscito. F1 chiusa, nessun cambio ai gate di persistenza/parità/rilascio. |
