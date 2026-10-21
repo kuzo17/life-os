@@ -65,6 +65,8 @@ test('tutte le destinazioni, errori recuperabili e cronologia', async ({ page })
 });
 
 test('sidebar hover, pin e tastiera oppure dialog mobile con focus', async ({ page }) => {
+  // Anche con puntatore iniziale sul bordo, niente reveal prima di un movimento effettivo.
+  await page.mouse.move(0, 0);
   await page.goto('/#/today');
   await expect(page.getByRole('heading', { level: 1, name: 'Oggi' })).toBeVisible();
   const menu = page.getByRole('button', { name: 'Menu', exact: true });
@@ -103,6 +105,7 @@ test('sidebar hover, pin e tastiera oppure dialog mobile con focus', async ({ pa
     await expect(page.getByRole('link', { name: 'Oggi', exact: true })).toBeFocused();
     await expect(rail).toHaveCSS('width', '258px');
     await page.getByRole('button', { name: 'Fissa la navigazione' }).click();
+    await expect(page.getByRole('button', { name: 'Sgancia la navigazione' })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('heading', { level: 1, name: 'Oggi' }).focus();
     await page.mouse.move(800, 300);
     await expect(rail).toHaveCSS('width', '258px');

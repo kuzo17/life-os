@@ -6,7 +6,7 @@ import { useRuntime, useWorkspace } from './workspace-context';
 
 export function Shell() {
   const [pinned, setPinned] = useState(false);
-  const [hoverEnabled, setHoverEnabled] = useState(true);
+  const [hoverEnabled, setHoverEnabled] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [message, setMessage] = useState('');
   const [undoing, setUndoing] = useState(false);
@@ -30,10 +30,13 @@ export function Shell() {
 
   return <div className="app" data-theme={theme} data-pinned={pinned}>
     <a className="skip-link" tabIndex={0} href="#main-content" onClick={event => { event.preventDefault(); main.current?.focus(); }}>Salta al contenuto</a>
-    <aside className="navigation-rail" aria-label="Barra laterale" data-hover-enabled={hoverEnabled} onPointerLeave={() => setHoverEnabled(true)}>
+    <aside className="navigation-rail" aria-label="Barra laterale" data-hover-enabled={hoverEnabled}
+      onPointerMove={event => { if (event.pointerType === 'mouse') setHoverEnabled(true); }}
+      onPointerLeave={() => setHoverEnabled(false)}>
       <div className="brand"><span className="brand-symbol" aria-hidden="true">L</span><span className="nav-text">Life<span>OS</span></span></div>
       <Navigation onNavigate={() => { setHoverEnabled(false); main.current?.focus(); }} />
-      <button className="pin-button" aria-pressed={pinned} aria-label={pinned ? 'Sgancia la navigazione' : 'Fissa la navigazione'} onClick={() => setPinned(value => !value)}>
+      <button className="pin-button" type="button" aria-pressed={pinned} aria-label={pinned ? 'Sgancia la navigazione' : 'Fissa la navigazione'}
+        onPointerDown={event => event.currentTarget.focus()} onClick={() => setPinned(value => !value)}>
         <span className="nav-glyph" aria-hidden="true">⌁</span><span className="nav-text">{pinned ? 'Sgancia' : 'Fissa navigazione'}</span>
       </button>
     </aside>

@@ -33,3 +33,13 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm test:e2e:install --with-deps
       - run: pnpm verify
+      - name: Report sintetici in caso di fallimento
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: app-quality-${{ github.run_id }}
+          path: |
+            app/playwright-report/
+            app/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -77,9 +77,13 @@ Eseguite il 21 ottobre 2026 con Node 24.19.0 e pnpm 11.25.0:
 | Rete osservata durante gli E2E | Nessuna richiesta esterna; nessun errore console/runtime |
 | Controllo visivo | Schermate desktop dark/light e mobile sintetiche ispezionate |
 | `pnpm audit --json` | Nessun advisory noto segnalato il giorno della verifica; non è una garanzia di assenza di vulnerabilità |
-| Workflow GitHub Actions | Predisposto e versionato; esito remoto da verificare separatamente |
+| Primo workflow GitHub Actions | [Run 39603361973](https://github.com/kuzo17/life-os/actions/runs/39603361973): setup/typecheck/lint/22 test/build riusciti; 32/35 E2E, difetto di hover iniziale Chromium Linux identificato; correzione in verifica |
 
 I test hanno evidenziato e fatto correggere il blocco dei pulsanti sotto la rail dopo navigazione, il giro Tab mobile e le lettere parzialmente visibili nella rail chiusa. Non sono stati introdotti retry per nascondere questi difetti.
+
+Il primo CI Linux ha mostrato anche la rail già aperta senza movimento del mouse, con puntatore iniziale a `(0, 0)`. Il reveal ora si attiva su movimento effettivo di un puntatore mouse, non sul solo `:hover` presente al montaggio; tastiera e pin restano indipendenti. Il caso viene mantenuto nella suite, senza spostare artificialmente il puntatore fuori dalla rail per far passare la precondizione.
+
+Il pulsante pin acquisisce esplicitamente focus sul pointer-down: evita che la differenza di focus al click in WebKit faccia richiudere la rail tra pressione e rilascio. La suite controlla anche `aria-pressed`. In caso di fallimento CI, report e trace esclusivamente sintetici vengono conservati per sette giorni.
 
 Gli screenshot e i trace sintetici vengono generati in `app/test-results/`, esclusa da Git. La preview locale è la build, non il server di sviluppo. Non viene pubblicata una falsa preview raw.githack dei sorgenti TypeScript.
 

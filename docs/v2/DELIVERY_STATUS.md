@@ -9,7 +9,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 - Branch di lavoro: `lifeos-visual-lab`.
 - Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
 - Baseline del materiale LAB recuperabile: `774de73d552a2e3e755fdd9713794d66229545de`.
-- Consegna corrente: **INC-01 / F1**, base applicativa verificata localmente; workflow CI predisposto, esito remoto non ancora verificato. Prossimo blocco: **INC-02 / F2**.
+- Consegna corrente: **INC-01 / F1**, base applicativa verificata localmente. Primo CI: difetto di hover iniziale su Chromium Linux identificato, correzione in verifica. Prossimo blocco dopo chiusura QA-001: **INC-02 / F2**.
 - Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
 - React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
 - Persistenza/sync nella nuova base: **non implementate**.
@@ -52,7 +52,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 | PLAN-001 | F0 | Piano, registro, istruzioni e riallineamento documenti | Documenti V1 esistenti | Verificata: consegna documentale |
 | ARCH-001 | F1 | Sorgente unica `app/`, toolchain e consolidamento Batch 14 | PLAN-001 | Verificata localmente in INC-01 |
 | ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Verificata localmente in INC-01 |
-| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Controlli locali verificati; workflow CI predisposto, esito remoto da verificare |
+| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | In corso: controlli locali verificati; primo CI ha identificato hover iniziale Chromium Linux, correzione da riconfermare in CI |
 | DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | In corso: primo contratto F1; semantica V1 e mapping ancora F2 |
 | DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Da iniziare |
 | LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Da iniziare |
@@ -93,7 +93,7 @@ INC-01 attua il piano nella sorgente unica. Il prossimo blocco principale è INC
 
 ### INC-01 — Istituire il progetto applicativo e il controllo qualità
 
-**Esito:** implementato e verificato localmente. [Scheda di consegna](increments/INC-01.md), avvio in `app/README.md`. Workflow CI versionato, ma l’esito remoto non è incluso nelle prove locali.
+**Esito:** implementato e verificato localmente. [Scheda di consegna](increments/INC-01.md), avvio in `app/README.md`. Primo CI eseguito: correzione del reveal iniziale in verifica, distinto dalle prove locali riuscite.
 
 **Comprende:** ARCH-001, ARCH-002 e QA-001; contratti iniziali DATA-001.
 
