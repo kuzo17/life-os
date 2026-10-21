@@ -21,9 +21,9 @@ Non ripartire dall’audit generale. Integrare i vuoti concreti emersi nel modul
 
 ## Una sola implementazione
 
-- La destinazione prevista è `app/`, da istituire una volta in F1 con React/TypeScript/Vite e il recupero selettivo della base Batch 14.
-- Fino a quel consolidamento, Batch 14 è materiale tecnico recuperabile, non la V2 completata.
-- Dopo il consolidamento mantenere soltanto `app/`. Le batch sono riferimenti storici; non creare nuove copie complete dell’app o nuove serie di demo come sostituto del trasferimento V1.
+- La sorgente attiva è `app/`, istituita in INC-01 con React/TypeScript/Vite e recupero selettivo della base Batch 14. Leggere anche `app/README.md` per avvio e controlli.
+- Batch 14 e precedenti sono congelate: materiale recuperabile, non V2 completata. Mantenere soltanto `app/`; non creare nuove copie complete dell’app o nuove serie di demo come sostituto del trasferimento V1.
+- Conservare versioni compatibili e lockfile; aggiornamenti di dipendenze sono modifiche da verificare, non un passaggio automatico a `latest`.
 - Separare UI, casi d’uso, dominio e adattatori dati. Nessun componente che ingloba l’HTML V1, nessun nuovo `app.js` globale con tutte le regole.
 - Usare identità canoniche e testare le operazioni trasversali. Non trasformare le limitazioni del prototipo in regressioni rispetto alla V1.
 

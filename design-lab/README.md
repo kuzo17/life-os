@@ -2,20 +2,20 @@
 
 **Direzione corrente:** [piano di sviluppo fino alla consegna](../docs/v2/DELIVERY_PLAN.md) · [stato e prossimi incrementi](../docs/v2/DELIVERY_STATUS.md).
 
-Dal consolidamento F1 la sorgente applicativa unica sarà `app/`. Le batch sono riferimenti e non verranno replicate in nuove app complete.
+Da INC-01 la sorgente applicativa unica è [`app/`](../app/README.md). Tutte le batch sono riferimenti congelati e non verranno replicate in nuove app complete. [Consegna tecnica e provenienza](../docs/v2/increments/INC-01.md).
 
 ---
 
 # LifeOS — base modulare: Batch 14
 
-**[Apri la base modulare](batch-14/index.html)**
+**[Apri il riferimento storico Batch 14](batch-14/index.html)**
 
 - Shell HTML separata, moduli espliciti per navigazione e domini.
 - Store immutabile, comandi validati e Undo comune anche per cartelle, progetti, inventario e movimenti.
 - [Stato reale, avvio, test e limiti](batch-14/README.md).
 - [Direzione: rifattorizzare V1 prima del redesign](architecture/TECHNICAL_REFACTOR.md).
 
-**Stato:** base tecnica del laboratorio, non ancora migrazione completa V1. Nessun collegamento ai dati in uso. Le prossime attività evolvono questa base senza duplicare l’intera app.
+**Stato:** riferimento tecnico congelato, non migrazione completa V1. Nessun collegamento ai dati in uso. Il suo materiale utile viene trasferito selettivamente nella sorgente unica, non sviluppato in una seconda app attiva.
 
 ---
 

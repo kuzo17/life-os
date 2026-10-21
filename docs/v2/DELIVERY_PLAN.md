@@ -1,6 +1,6 @@
 # LifeOS — Piano principale di sviluppo e consegna
 
-**Versione:** 1.0 · **Data:** 21 ottobre 2026 · **Stato:** direzione operativa da applicare e aggiornare durante il lavoro.
+**Versione:** 1.1 · **Data:** 21 ottobre 2026 · **Stato:** direzione operativa da applicare e aggiornare durante il lavoro.
 
 **Obiettivo:** trasformare LifeOS esistente in una sola applicazione modulare, affidabile e mantenibile, preservandone le capacità e i dati; successivamente completare il redesign e i miglioramenti di prodotto.
 
@@ -61,7 +61,7 @@ Si recuperano i documenti, i test utili, le regole indipendenti dalla UI e le de
 
 ### 4.1 Una sola sorgente applicativa
 
-La sorgente di destinazione sarà `app/`, sul branch `lifeos-visual-lab`. Verrà istituita nella fase F1 attraverso un trasferimento controllato dei componenti recuperabili della Batch 14 e un punto d’ingresso React/TypeScript. Questo è un solo consolidamento di percorso e strumenti; non avvia una nuova serie di app dimostrative.
+La sorgente attiva è `app/`, sul branch `lifeos-visual-lab`, istituita in [INC-01](increments/INC-01.md) con un trasferimento selettivo del nucleo recuperabile della Batch 14 e un punto d’ingresso React/TypeScript. Questo è un solo consolidamento di percorso e strumenti; non avvia una nuova serie di app dimostrative. Il sottoinsieme F1 è sintetico e volatile: non equivale al trasferimento V1 completo.
 
 Le batch precedenti, inclusa la 14, restano riferimenti congelati e riproducibili. Da F1 il codice mantenuto è soltanto quello in `app/`. Niente Batch 15/16 con una copia completa dell’app, niente due implementazioni attive dello stesso dominio. Ogni modulo recuperato ha provenienza e test indicati nel registro; a trasferimento concluso il vecchio modulo non viene più sviluppato.
 
@@ -302,13 +302,13 @@ La consegna include istruzioni per ambiente, dipendenze/lockfile, verifica, buil
 | ID | Decisione | Stato |
 |---|---|---|
 | DEC-001 | Prima architettura e parità, poi redesign e P1 | Fissata dalla richiesta utente |
-| DEC-002 | Un’unica sorgente `app/`; batch congelate dopo consolidamento F1 | Scelta di questo piano, da realizzare in F1 |
-| DEC-003 | React + TypeScript + Vite, con componenti e dominio indipendente | Scelta di questo piano; setup non ancora eseguito |
+| DEC-002 | Un’unica sorgente `app/`; batch congelate dopo consolidamento F1 | Attuata in INC-01; capacità successive solo nella sorgente unica |
+| DEC-003 | React + TypeScript + Vite, con componenti e dominio indipendente | Configurati in INC-01; versioni e lockfile in `app/` |
 | DEC-004 | Nessun cambio automatico da RTDB a Firestore | Fissata per la rifattorizzazione |
 | DEC-005 | Date/identità/importi canonici; compatibilità tramite adattatori | Direzione fissata; dettagli e conversioni testati per modulo |
 | DEC-006 | Semantica task senza progetto e record orfani | Da chiudere sul sorgente e fixture in F2 |
 | DEC-007 | Autorità locale/remota, revisioni e conflitti per tipo di comando | Contratto iniziale in F1/F2; verifica completa F7 |
-| DEC-008 | Strategia di preview/build e hosting finale | Preview tecnica in F1; hosting finale prima di F9 |
+| DEC-008 | Strategia di preview/build e hosting finale | INC-01: build locale, hash router e base relativa; hosting finale prima di F9 |
 | DEC-009 | Account, mapping utente, ambiente remoto e accessi | Emulatore predisposto; ambiente reale solo autorizzato |
 | DEC-010 | Design Aurora/Prism, sidebar compatta e navigazione accessibile | Direzioni di prodotto da conservare |
 
@@ -340,3 +340,4 @@ Consultati il 21 ottobre 2026; supportano le scelte degli strumenti, mentre l’
 | Versione | Data | Cambiamento |
 |---|---|---|
 | 1.0 | 2026-10-21 | Consolidamento della direzione tecnica, sorgente unica, sequenza F0–F9 e criteri di avanzamento; supera il processo storico design-first |
+| 1.1 | 2026-10-21 | INC-01 istituisce `app/`, congela le batch e attua toolchain/preview; parità V1, storage duraturo e backend restano gate separati |

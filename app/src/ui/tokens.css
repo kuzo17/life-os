@@ -1,0 +1,16 @@
+/* Palette recuperata dalla Batch 14; token e componenti condivisi, non copia del suo CSS. */
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; color: #f3f7fb; background: #0a111e; }
+.app, .fatal-error {
+  color-scheme: dark;
+  --bg: #0a111e; --aside: #0b1421; --panel: #111d2c; --panel2: #182738;
+  --border: #34485c; --text: #f3f7fb; --muted: #b1bfd0; --main: #39dfce;
+  --main-ink: #06262b; --blue: #6e9cff; --hero: #11293a; --nav-active: #163646;
+  --warning: #edc083; --shadow: 0 18px 45px #01050d33;
+}
+.app[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6f3; --aside: #fff; --panel: #fff; --panel2: #eef2f0;
+  --border: #c5d2cc; --text: #18272c; --muted: #50666b; --main: #075f64;
+  --main-ink: #fff; --blue: #2357ed; --hero: #e3f4eb; --nav-active: #e8f3ed;
+  --warning: #805113; --shadow: 0 13px 26px #163b310a;
+}

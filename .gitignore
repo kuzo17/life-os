@@ -1,0 +1,8 @@
+app/node_modules/
+app/dist/
+app/.cache/
+app/test-results/
+app/playwright-report/
+app/coverage/
+app/.env*
+!app/.env.example

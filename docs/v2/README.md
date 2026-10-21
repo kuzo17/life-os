@@ -2,7 +2,7 @@
 
 **Direzione corrente — 21 ottobre 2026:** [piano principale](DELIVERY_PLAN.md) e [registro operativo](DELIVERY_STATUS.md). Prima rifattorizzazione tecnica e trasferimento delle capacità V1; poi redesign e nuove funzioni. La documentazione esistente viene riutilizzata, non rifatta.
 
-**Stato:** documentazione e base tecnica parziale del laboratorio; migrazione V1 non completata, non pronta a sostituire l’app in uso.
+**Stato:** base React/TypeScript F1 in [`app/`](../../app/README.md), con fixture volatili e trasferimento selettivo dal laboratorio; migrazione V1 non completata, non pronta a sostituire l’app in uso. [Consegna INC-01](increments/INC-01.md).
 **Baseline V1:** `main@e58a77e3e00445474d93008d15ecf3a171f2a783`.
 **Rule:** never change V1, `main`, `v1-stable`, Firebase Auth/Rules, or production RTDB while designing V2.
 
@@ -18,8 +18,8 @@ Rebuild the *full observable capability* of V1 (not its HTML) in a modern, teste
 
 ## Scelte del piano corrente
 
-- Sorgente unica prevista in `app/`, da istituire nella fase F1; batch conservate come riferimenti.
-- React + TypeScript + Vite e routing mantenuto, con versioni compatibili fissate al setup. Non sono ancora configurati nella base attuale.
+- Sorgente unica attiva in `app/`; batch congelate e conservate come riferimenti.
+- React + TypeScript + Vite e routing mantenuto, configurati in INC-01 con versioni compatibili e lockfile.
 - Dominio e casi d’uso indipendenti da UI e SDK; porte repository e adattatori separati.
 - Nessun cambio automatico del database esistente. Firestore era un candidato storico, non un requisito approvato della rifattorizzazione.
 - Vitest, Testing Library, Playwright e contratti dati/emulatore; UI accessibile fin dall’implementazione.

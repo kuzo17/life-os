@@ -1,22 +1,21 @@
 # LifeOS — Registro operativo dello sviluppo
 
-**Aggiornato:** 21 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.0](DELIVERY_PLAN.md).
+**Aggiornato:** 21 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.1](DELIVERY_PLAN.md).
 
 Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non vengono convertite in dichiarazioni di parità. Le autorizzazioni per produzione, dati reali e nuovi servizi rimangono quelle del piano e dell’utente.
 
-## 1. Stato al punto di partenza
+## 1. Stato corrente
 
 - Branch di lavoro: `lifeos-visual-lab`.
 - Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
-- Baseline di implementazione esaminata: `774de73d552a2e3e755fdd9713794d66229545de`.
-- Fase completata in questa consegna: **F0 — consolidamento della direzione**. Prossima fase: **F1**, non ancora avviata.
-- Sorgente attuale recuperabile: `design-lab/batch-14/`.
-- Sorgente di destinazione prevista: `app/`, da istituire una sola volta in F1.
-- React/TypeScript/Vite: **non ancora configurati**.
+- Baseline del materiale LAB recuperabile: `774de73d552a2e3e755fdd9713794d66229545de`.
+- Consegna corrente: **INC-01 / F1**, base applicativa verificata localmente; workflow CI predisposto, esito remoto non ancora verificato. Prossimo blocco: **INC-02 / F2**.
+- Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
+- React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
 - Persistenza/sync nella nuova base: **non implementate**.
 - Migrazione e riconciliazione di dati reali: **non eseguite**.
 - Disponibilità e validità dei backup privati: **da verificare privatamente prima del relativo gate**; non blocca le implementazioni con fixture sintetiche.
-- Nessuna nuova capacità V1 viene dichiarata rilasciata da questo piano.
+- Nessuna capacità V1 viene dichiarata completa o rilasciata da INC-01. [Provenienza, scenari e limiti](increments/INC-01.md).
 
 ### Evidenza già disponibile
 
@@ -28,6 +27,8 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | `design-lab/batch-14/tests/architecture.test.mjs` | Shell separata e moduli senza dipendenze circolari | Non verifica un progetto React/TypeScript o l’intera V1 |
 | `design-lab/batch-14/tests/browser.cjs` | 41 destinazioni più flussi principali, temi e mobile | Prova del laboratorio, non persistenza o dati reali |
 | Commit `774de73` | Base modulare pubblicata e codice recuperabile | Primo consolidamento tecnico, non rilascio V2 |
+| `app/` e consegna INC-01 | Base React/TypeScript, contratti repository, comandi e test del workspace sintetico | Nessun import legacy, storage duraturo, sync o parità completa |
+| Controlli INC-01 del 21 ottobre | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E su cinque profili: PASS locale | Windows con mobile emulato; nessuna certificazione hardware/produzione; CI remota separata |
 
 ## 2. Stati da usare
 
@@ -40,22 +41,22 @@ Per una capacità utente annotare anche:
 - **Parità:** non verificata, casi parziali, casi obbligatori verificati, riconciliata sui dati reali.
 - **Rilascio:** non rilasciata, candidata, rilasciata, stabilizzata.
 
-Esempio corretto oggi per Task: `laboratorio/parziale · volatile · casi parziali · non rilasciata`. Non usare “Task completa” per riassumerlo.
+Esempio corretto oggi per Task: `parziale F1 su fixture · volatile · parità V1 non verificata · non rilasciata`. Non usare “Task completa” per riassumerlo.
 
 ## 3. Backlog principale con dipendenze
 
 Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale risultato LAB è materiale di partenza, non completamento dell’attività. Il dettaglio di accettazione è nella fase corrispondente del piano.
 
-| ID | Fase | Capacità/consegna | Dipendenze | Stato iniziale |
+| ID | Fase | Capacità/consegna | Dipendenze | Stato corrente |
 |---|---|---|---|---|
 | PLAN-001 | F0 | Piano, registro, istruzioni e riallineamento documenti | Documenti V1 esistenti | Verificata: consegna documentale |
-| ARCH-001 | F1 | Sorgente unica `app/`, toolchain e consolidamento Batch 14 | PLAN-001 | Da iniziare |
-| ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Da iniziare |
-| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Da iniziare |
-| DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | Da iniziare |
+| ARCH-001 | F1 | Sorgente unica `app/`, toolchain e consolidamento Batch 14 | PLAN-001 | Verificata localmente in INC-01 |
+| ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Verificata localmente in INC-01 |
+| QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Controlli locali verificati; workflow CI predisposto, esito remoto da verificare |
+| DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | In corso: primo contratto F1; semantica V1 e mapping ancora F2 |
 | DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Da iniziare |
 | LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Da iniziare |
-| TASK-001 | F2 | Task/Oggi/Progetti/Agenda sullo stesso record persistente | LEG-001, DATA-002, ARCH-002 | LAB parziale da trasferire |
+| TASK-001 | F2 | Task/Oggi/Progetti/Agenda sullo stesso record persistente | LEG-001, DATA-002, ARCH-002 | Viste F1 e due comandi su fixture volatili; percorso V1 persistente ancora da realizzare |
 | TASK-002 | F2 | Scadute, ordinamenti, priorità/orari e operazioni bulk | TASK-001 | LAB parziale da trasferire |
 | PROJ-001 | F3 | Cartelle, progetti speciali/custom, override, ordine, archivio | TASK-001 | LAB parziale da trasferire |
 | GOAL-001 | F3 | Goals generali/settimanali, cicli, debiti e recuperi | PROJ-001 | LAB incompleto da trasferire |
@@ -88,9 +89,11 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 
 ## 4. Prossimi tre incrementi concreti
 
-La richiesta attuale è pianificare: questa consegna non installa toolchain, non crea `app/` e non collega database. Il piano guida la successiva implementazione senza richiedere una nuova discussione teorica.
+INC-01 attua il piano nella sorgente unica. Il prossimo blocco principale è INC-02; non riaprire da zero scelta del framework o audit generale. Nessun collegamento ai dati reali è autorizzato da questo avanzamento.
 
 ### INC-01 — Istituire il progetto applicativo e il controllo qualità
+
+**Esito:** implementato e verificato localmente. [Scheda di consegna](increments/INC-01.md), avvio in `app/README.md`. Workflow CI versionato, ma l’esito remoto non è incluso nelle prove locali.
 
 **Comprende:** ARCH-001, ARCH-002 e QA-001; contratti iniziali DATA-001.
 
@@ -176,3 +179,4 @@ Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del pi
 |---|---|---|
 | 2026-10-20 | Base Batch 14 | Commit `774de73`: separazione modulare e prove sul laboratorio; persistenza e parità completa ancora assenti |
 | 2026-10-21 | PLAN-001 | Piano v1.0, registro e istruzioni completati; documenti precedenti riallineati. Verificati 14 documenti, 89 link locali, 10 fasi e 37 ID di backlog univoci; modifiche soltanto documentali. Il commit che introduce il piano identifica la consegna. |
+| 2026-10-21 | INC-01 / ARCH-001/002, QA-001, parte DATA-001 | Sorgente unica, recupero selettivo del core, componenti/route e contratto repository volatile. Installazione pulita, typecheck/lint, 22 test, build e 35 E2E locali: PASS. Workflow di sola verifica predisposto; esito remoto distinto. Nessuna capacità V1 completa o dato reale migrato. |
