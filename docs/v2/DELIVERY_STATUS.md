@@ -9,11 +9,11 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 - Branch di lavoro: `lifeos-visual-lab`.
 - Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
 - Baseline del materiale LAB recuperabile: `774de73d552a2e3e755fdd9713794d66229545de`.
-- Consegna completata: **INC-01 / F1**. **INC-02** prosegue con [catalogo progetti e contratto emulatore](increments/INC-02-catalog-emulator.md), verificati in locale sul sottoinsieme sintetico; verifica CI del nuovo checkpoint in attesa. F2 non completa. Prossimo blocco funzionale: **INC-03**, percorso Task completo.
+- Consegna completata: **INC-01 / F1** e checkpoint dati **INC-02**, [catalogo progetti e contratto emulatore](increments/INC-02-catalog-emulator.md) verificati sul sottoinsieme sintetico in locale e CI Ubuntu. [Run completo riuscito 39927033049](https://github.com/kuzo17/life-os/actions/runs/39927033049): 43 test, 10 test emulatore e 65 E2E. F2 non completa. Prossimo blocco funzionale: **INC-03**, percorso Task completo.
 - Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
 - React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
 - Persistenza nella nuova base: **IndexedDB locale su fixture sintetiche**. Contratto RTDB separato: **verificato su emulatore ufficiale solo loopback**, senza connessione dall'interfaccia. Autenticazione, coda e sincronizzazione remota: **non implementate**.
-- Codice INC-02 pubblicato: `3c281a6`; verifica locale del 21 ottobre e **CI Ubuntu del 23 ottobre riuscita**, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118), con 33 test e 65 E2E. Solo branch di laboratorio, nessun deploy.
+- Prima consegna locale INC-02: `3c281a6`, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118). Checkpoint catalogo/emulatore: codice app `fdf02a3`, pipeline `d9ba206`, [run 39927033049](https://github.com/kuzo17/life-os/actions/runs/39927033049) interamente riuscito. Solo branch di laboratorio, nessun deploy.
 - Migrazione e riconciliazione di dati reali: **non eseguite**.
 - Disponibilità e validità dei backup privati: **da verificare privatamente prima del relativo gate**; non blocca le implementazioni con fixture sintetiche.
 - Nessuna capacità V1 viene dichiarata completa o rilasciata da INC-01. [Provenienza, scenari e limiti](increments/INC-01.md).
@@ -33,8 +33,9 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | CI sul codice `81e909a`, [run 39604511767](https://github.com/kuzo17/life-os/actions/runs/39604511767) | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E: PASS Ubuntu | Non verifica dati personali, Firebase o dispositivi reali |
 | INC-02, controlli del 21 ottobre | `pnpm verify`: PASS Windows; 33 test unit/component/contratto, build e 65 E2E con riavvio processo browser e profilo sintetico | Niente remoto, import completo o dispositivi fisici |
 | INC-02, [CI del 23 ottobre](https://github.com/kuzo17/life-os/actions/runs/39921317118), codice `3c281a6` | Installazione da lockfile, typecheck/lint, 33 test, build e 65 E2E: PASS Ubuntu | Non chiude il contratto remoto/emulatore o la migrazione reale |
-| Checkpoint catalogo/emulatore INC-02 del 23 ottobre | Typecheck/lint/build e 43 test PASS; 10 test RTDB ufficiale PASS; 39 E2E Chromium/Firefox/mobile Chromium PASS | WebKit locale bloccato da Code Integrity prima dell'app (26 casi); nessuna protezione modificata. CI nuova completa in attesa |
+| Checkpoint catalogo/emulatore INC-02 del 23 ottobre, locale | Typecheck/lint/build e 43 test PASS; 10 test RTDB ufficiale PASS; 39 E2E Chromium/Firefox/mobile Chromium PASS | WebKit locale bloccato da Code Integrity prima dell'app (26 casi); nessuna protezione modificata. Casi WebKit verificati in CI Ubuntu |
 | Prima CI catalogo/emulatore, [run 39925411607](https://github.com/kuzo17/life-os/actions/runs/39925411607) | 43 test e 65 E2E PASS Ubuntu sul codice `fdf02a3` | Job fallito nel successivo setup Java per selettore build abbreviato; corretta stringa completa disponibile `21.0.13+9.0.LTS`, nuova CI in attesa |
+| CI finale catalogo/emulatore, [run 39927033049](https://github.com/kuzo17/life-os/actions/runs/39927033049), `d9ba206` | Entrambi i job PASS Ubuntu: app (typecheck/lint, 43 test, build, 65 E2E) e contratto emulatore (10 test) | Dati sintetici, mobile emulato; niente autenticazione, sync reale, import privato o parità completa |
 
 ## 2. Stati da usare
 
@@ -60,7 +61,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 | ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Verificata localmente in INC-01 |
 | QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Verificata: Windows e CI Ubuntu; primo difetto CI corretto e caso mantenuto nella suite |
 | DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | In corso: schema 2 Task con orario/priorità/ordine, date civili e task libere; contratto totale V1 ancora parziale |
-| DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Verificata localmente per schema 2: contratto comune memoria/locale/RTDB emulato; IndexedDB reale nei browser. Conferma persa distinta da rifiuto. Non include coda/sync o backend UI |
+| DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Verificata in locale e CI Ubuntu per schema 2: contratto comune memoria/locale/RTDB emulato; IndexedDB reale nei browser. Conferma persa distinta da rifiuto. Non include coda/sync o backend UI |
 | LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Verificata su fixture per estratti Agenda giornalieri e catalogo PD/custom/override, con quarantena e originali. Metadati catalogo nel report, non ancora nello schema UI; nessun import completo/privato |
 | TASK-001 | F2 | Task/Oggi/Progetti/Agenda sullo stesso record persistente | LEG-001, DATA-002, ARCH-002 | Viste e due comandi con salvataggio locale sintetico; creazione/modifica completa e percorso INC-03 ancora da realizzare |
 | TASK-002 | F2 | Scadute, ordinamenti, priorità/orari e operazioni bulk | TASK-001 | LAB parziale da trasferire |
@@ -95,7 +96,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 
 ## 4. Prossimi tre incrementi concreti
 
-INC-01 attua il piano nella sorgente unica; INC-02 prepara i contratti dati e legacy. Il prossimo blocco funzionale è INC-03, dopo la verifica CI del checkpoint catalogo/emulatore. Non riaprire da zero scelta del framework o audit generale. Nessun collegamento ai dati reali è autorizzato da questo avanzamento.
+INC-01 attua il piano nella sorgente unica; INC-02 prepara i contratti dati e legacy, verificati anche in CI. Il prossimo blocco funzionale è INC-03. Non riaprire da zero scelta del framework o audit generale. Nessun collegamento ai dati reali è autorizzato da questo avanzamento.
 
 ### INC-01 — Istituire il progetto applicativo e il controllo qualità
 
@@ -192,3 +193,4 @@ Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del pi
 | 2026-10-21 | Primo blocco INC-02 / DATA-001/002, LEG-001 | Schema 2, caratterizzazione e mapper Agenda circoscritto, IndexedDB locale, conferma dopo commit, Undo di sessione con effetto salvato e gestione conflitti/errori. `pnpm verify`: 33 test e 65 E2E PASS Windows; pin WebKit corretto sulla base degli eventi. Schermate desktop/mobile ispezionate. CI remota in attesa. INC-02/F2 ancora aperte per catalogo/mapping completo e contratto remoto in emulatore; nessun dato reale toccato. |
 | 2026-10-23 | Pubblicazione e verifica INC-02 locale | Codice `3c281a6`, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118): installazione pulita, typecheck/lint, 33 test, build e 65 E2E PASS Ubuntu. Preview locale della stessa build verificata HTTP 200. `main` e `lifeos-v2` invariati; nessun rilascio o dato reale migrato. Prossimo sotto-blocco: catalogo progetti V1 e contratto remoto in emulatore, prima di INC-03. |
 | 2026-10-23 | Catalogo/emulatore INC-02 | Catalogo PD/custom/override, originali e quarantena; repository condiviso e codec RTDB, CAS/replay/inizializzazione ripetuta/ACK incerto su emulatore ufficiale. 43 test e 10 test emulatore PASS; 39 E2E locali PASS, WebKit bloccato dal sistema prima dell'app. CI nuova completa in attesa. Nessuna dipendenza npm aggiunta; Java portabile solo cache; prossima implementazione INC-03. |
+| 2026-10-23 | Chiusura checkpoint contratti INC-02 | Prima CI: app 43/65 PASS, selettore Java corretto. Verifiche rese indipendenti in due job; codice app invariato dopo `fdf02a3`. [Run finale 39927033049](https://github.com/kuzo17/life-os/actions/runs/39927033049), pipeline `d9ba206`: 43 test, 10 test emulatore e 65 E2E PASS Ubuntu. Preview HTTP 200 con build finale; branch protetti invariati. Prossimo: INC-03; F2, dati privati e rilascio restano aperti. |

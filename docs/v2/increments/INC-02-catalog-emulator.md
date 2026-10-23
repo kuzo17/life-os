@@ -1,6 +1,6 @@
 # INC-02 — Catalogo progetti e contratto emulatore
 
-**Stato:** in corso · 23 ottobre 2026 · LEG-001, DATA-002, contratto iniziale DEC-007/009/011.
+**Stato:** checkpoint verificato in locale e CI Ubuntu · 23 ottobre 2026 · LEG-001, DATA-002, contratto iniziale DEC-007/009/011. Non chiude F2 o la migrazione dell'app.
 
 ## Ambito e decisioni prima del codice
 
@@ -40,14 +40,16 @@ Verifiche locali del 23 ottobre: typecheck/lint e build, **43 test unit/componen
 
 Il nuovo esito `uncertain` non sostiene che la scrittura sia fallita: chiede rilettura prima del retry. Non implementa una coda duratura né idempotenza generale dei comandi di creazione futuri. `emulated` è distinto da dati locali duraturi e da conferma remota reale; l'architettura verifica che l'adattatore di prova non sia raggiungibile da `main.tsx`.
 
-La matrice locale completa non è verde su Windows: i **26 casi WebKit** non arrivano all'app, perché Code Integrity blocca `ngtcp2.dll` del browser di test (uscita `0xC0E90002`, eventi 3033/3077). Nessuna esclusione o protezione di sistema è stata modificata. I **39 casi Chromium/Firefox/mobile Chromium PASS**, eseguiti separatamente; la CI mantiene tutti i **65 casi**, nessuno skip/retry. Esito CI ancora in attesa sul commit di consegna.
+La matrice locale completa non è verde su Windows: i **26 casi WebKit** non arrivano all'app, perché Code Integrity blocca `ngtcp2.dll` del browser di test (uscita `0xC0E90002`, eventi 3033/3077). Nessuna esclusione o protezione di sistema è stata modificata. I **39 casi Chromium/Firefox/mobile Chromium PASS**, eseguiti separatamente; tutti i **65 casi PASS in CI Ubuntu**, nessuno skip/retry.
 
-Prima CI sul codice `fdf02a3`, [run 39925411607](https://github.com/kuzo17/life-os/actions/runs/39925411607): **43 test e 65 E2E PASS Ubuntu**, compresi i 26 WebKit non avviabili localmente. Il job complessivo è fallito dopo queste prove, perché `setup-java` non risolve la forma abbreviata `21.0.13+9`: il catalogo della action espone `21.0.13+9.0.LTS`. Selettore corretto alla stringa completa disponibile, senza cambiare codice app o disattivare test. Ripetizione CI del contratto emulatore in attesa.
+Prima CI sul codice `fdf02a3`, [run 39925411607](https://github.com/kuzo17/life-os/actions/runs/39925411607): **43 test e 65 E2E PASS Ubuntu**, compresi i 26 WebKit non avviabili localmente. Il job complessivo è fallito dopo queste prove, perché `setup-java` non risolve la forma abbreviata `21.0.13+9`: il catalogo della action espone `21.0.13+9.0.LTS`. Selettore corretto alla stringa completa disponibile, senza cambiare codice app o disattivare test.
 
 La CI aggiunge Java Temurin `21.0.13+9.0.LTS` con action fissata e i due comandi emulatore; nessun deploy. Il runtime portabile locale è Temurin JRE `21.0.12.1+1`, verificato con SHA-256 e conservato solo in cache; Java installato non è stato sostituito. Nessuna dipendenza npm aggiunta/aggiornata e nessun backup/configurazione privati in Git.
 
 **Affinamento QA prima della modifica workflow:** la ripetizione CI resta a lungo nella preparazione browser, prima del test Java. Separare nello stesso workflow due job indipendenti: controlli app/browser e contratto emulatore. Entrambi devono riuscire; nessun caso viene rimosso. Il job app esegue typecheck/lint/unit/build prima di scaricare i browser. Motivazione: isolamento degli errori e feedback sul contratto indipendente dal download dei browser, non aggiramento dei controlli. Nessun cambiamento al codice applicativo dopo `fdf02a3`.
 
-**Stato:** mapping degli estratti e contratto di repository verificati localmente · app ancora solo IndexedDB sintetico · parità V1 parziale · non rilasciata. Import completo dei backup, schema metadata persistente, interfaccia F3, autenticazione, sync multi-device, coda e riconciliazione privata rimangono gate distinti.
+**Conferma finale:** [run 39927033049](https://github.com/kuzo17/life-os/actions/runs/39927033049), pipeline `d9ba206`, entrambi i job riusciti: **43 test unit/component/contratto, 65 E2E e 10 test emulatore PASS Ubuntu**. La ripetizione intermedia `39925996095` è stata sostituita e annullata automaticamente dal nuovo workflow parallelo. Questa registrazione finale modifica soltanto documenti, non il codice app o il workflow già verificati. Preview della stessa build confermata HTTP 200; schermata mobile light ispezionata. Nessuna modifica a `main` o `lifeos-v2`.
+
+**Stato capacità:** mapping degli estratti e contratto di repository verificati in locale e CI · app ancora solo IndexedDB sintetico · parità V1 parziale · non rilasciata. Import completo dei backup, schema metadata persistente, interfaccia F3, autenticazione, sync multi-device, coda e riconciliazione privata rimangono gate distinti.
 
 **Prossimo incremento:** INC-03, creazione/modifica/pianificazione e operazioni multiple sullo stesso record, Quick Add minimo, prova export/ripristino sintetico. Questi mapper non sono presentati come importatore completo o come merge tra backup V1 successivi.
