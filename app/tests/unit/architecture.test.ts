@@ -62,4 +62,12 @@ it('import risolti, grafo aciclico e confini tra dominio, dati, casi d’uso e U
     visited.add(file);
   }
   for (const file of graph.keys()) visit(file, []);
+  const runtimeReachable = new Set<string>();
+  function reachable(file: string) {
+    if (runtimeReachable.has(file)) return;
+    runtimeReachable.add(file);
+    for (const dependency of graph.get(file) ?? []) reachable(dependency);
+  }
+  reachable(resolve(sourceRoot, 'main.tsx'));
+  for (const file of runtimeReachable) expect(file.replaceAll('\\', '/')).not.toContain('/adapters/rtdb/');
 });

@@ -16,6 +16,8 @@
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "test:e2e": "node tools/browser-tests.mjs",
     "test:e2e:install": "node tools/browser-tests.mjs --install",
+    "test:emulator:install": "node tools/emulator-tests.mjs --install",
+    "test:emulator": "node tools/emulator-tests.mjs",
     "verify": "pnpm check && pnpm test:e2e"
   },
   "dependencies": {

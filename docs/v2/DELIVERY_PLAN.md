@@ -1,6 +1,6 @@
 # LifeOS — Piano principale di sviluppo e consegna
 
-**Versione:** 1.2 · **Data:** 21 ottobre 2026 · **Stato:** direzione operativa da applicare e aggiornare durante il lavoro.
+**Versione:** 1.3 · **Data:** 23 ottobre 2026 · **Stato:** direzione operativa da applicare e aggiornare durante il lavoro.
 
 **Obiettivo:** trasformare LifeOS esistente in una sola applicazione modulare, affidabile e mantenibile, preservandone le capacità e i dati; successivamente completare il redesign e i miglioramenti di prodotto.
 
@@ -309,8 +309,9 @@ La consegna include istruzioni per ambiente, dipendenze/lockfile, verifica, buil
 | DEC-006 | Task libere ammesse; orfani preservati in quarantena, non assegnati a progetti inventati | Decisione e riferimenti V1 in [INC-02](increments/INC-02.md); prove in corso |
 | DEC-007 | Autorità locale/remota, revisioni e conflitti per tipo di comando | INC-02: IndexedDB isolato con CAS atomico e Undo di sessione; remoto e verifica completa F7 restano aperti |
 | DEC-008 | Strategia di preview/build e hosting finale | INC-01: build locale, hash router e base relativa; hosting finale prima di F9 |
-| DEC-009 | Account, mapping utente, ambiente remoto e accessi | Emulatore predisposto; ambiente reale solo autorizzato |
+| DEC-009 | Account, mapping utente, ambiente remoto e accessi | Contratto emulatore demo in INC-02; autenticazione non implementata, ambiente reale solo autorizzato |
 | DEC-010 | Design Aurora/Prism, sidebar compatta e navigazione accessibile | Direzioni di prodotto da conservare |
+| DEC-011 | Prova RTDB solo su loopback e namespace demo fisso, adattatore non collegato alla UI | INC-02: binario ufficiale fissato con SHA-256, nessuna CLI/credenziale/produzione; dettagli nella scheda catalogo/emulatore |
 
 Le scelte tecniche del piano non sono dichiarazioni di implementazione né autorizzazioni a toccare dati o servizi in uso.
 
@@ -342,3 +343,4 @@ Consultati il 21 ottobre 2026; supportano le scelte degli strumenti, mentre l’
 | 1.0 | 2026-10-21 | Consolidamento della direzione tecnica, sorgente unica, sequenza F0–F9 e criteri di avanzamento; supera il processo storico design-first |
 | 1.1 | 2026-10-21 | INC-01 istituisce `app/`, congela le batch e attua toolchain/preview; parità V1, storage duraturo e backend restano gate separati |
 | 1.2 | 2026-10-21 | INC-02 definisce mapping Agenda circoscritto, task libere/orfani, schema 2 e persistenza locale transazionale; gate remoto ed intero percorso F2 non vengono anticipati |
+| 1.3 | 2026-10-23 | INC-02 prosegue con catalogo V1 e contratto RTDB su emulatore isolato; nessun cambiamento di backend dell'app o autorizzazione remota |

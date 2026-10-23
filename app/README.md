@@ -2,12 +2,13 @@
 
 Da INC-01 questa è l’implementazione attiva. Le batch in `design-lab/` sono conservate, congelate e non vengono duplicate in nuove app.
 
-**Stato:** base tecnica F1 e primo blocco INC-02, con fixture sintetiche salvate in IndexedDB e nessuna connessione remota. Non sostituisce la V1 e non dimostra parità completa.
+**Stato:** base tecnica F1/INC-02, con fixture sintetiche salvate in IndexedDB. Catalogo V1 e contratto RTDB verificabili separatamente su emulatore; l'app non ha connessioni remote. Non sostituisce la V1 e non dimostra parità completa.
 
 - [Piano principale](../docs/v2/DELIVERY_PLAN.md)
 - [Stato, limiti e prossimo incremento](../docs/v2/DELIVERY_STATUS.md)
 - [Provenienza, prove e decisioni INC-01](../docs/v2/increments/INC-01.md)
 - [Mapping Agenda, salvataggio e limiti INC-02](../docs/v2/increments/INC-02.md)
+- [Catalogo e contratto emulatore INC-02](../docs/v2/increments/INC-02-catalog-emulator.md)
 
 ## Avvio riproducibile
 
@@ -27,7 +28,20 @@ Anteprima della **build**, non del sorgente: `http://127.0.0.1:8878/#/today`. Pr
 
 `pnpm verify` esegue controlli del codice, build ed E2E; i browser devono essere già installati. Su Linux, `pnpm test:e2e:install --with-deps` installa anche i requisiti dei browser. La CI applica questi passaggi senza deploy e soltanto sul branch di laboratorio.
 
-La cache, i browser e i risultati rimangono fuori da Git. Nessuno script di installazione dei pacchetti viene eseguito. Non è prevista alcuna configurazione Firebase o credenziale in questa fase.
+La cache, i browser e i risultati rimangono fuori da Git. Nessuno script di installazione dei pacchetti viene eseguito. Nessuna configurazione o credenziale di produzione: la prova emulatore usa un progetto demo senza risorse reali.
+
+### Contratto emulatore separato
+
+Con Java 21 disponibile (eventualmente indicando il solo eseguibile portabile in `LIFEOS_TEST_JAVA`):
+
+```text
+pnpm test:emulator:install
+pnpm test:emulator
+```
+
+Il primo comando scarica esclusivamente il binario RTDB ufficiale 4.11.2 con SHA-256 fissato nella cache; il secondo lo verifica, avvia su `127.0.0.1:8900`, carica regole di sola prova, esegue i test e ferma il processo. La porta occupata causa errore: non viene usato un servizio già avviato. Nessuna CLI Firebase, login, deploy, configurazione o dato reale; nessuna dipendenza npm aggiuntiva. La CI esegue sia `verify` sia questo contratto, con Java fissato.
+
+Il test REST ETag/If-Match non è un backend collegato all'interfaccia, una coda offline o una sincronizzazione multi-device. Le regole consentono richieste anonime solo al sottoalbero sintetico dei contratti e negano il resto: **non sono regole di produzione o autenticazione**. Un controllo d'architettura impedisce che l'avvio browser importi questo adattatore. Gli esiti di conferma persa sono distinti dai rifiuti sicuri.
 
 ## Cosa funziona nella base corrente
 
@@ -42,7 +56,7 @@ La cache, i browser e i risultati rimangono fuori da Git. Nessuno script di inst
 - Validazione, rollback, snapshot immutabili, revisione ottimistica e rifiuto degli aggiornamenti concorrenti obsoleti.
 - Moduli non trasferiti chiaramente indicati: non simulano operazioni disponibili.
 
-Schema locale 2: primo contratto Task/progetti, non formato dell'intero backup V1. Il mapper puro lavora soltanto su estratti Agenda e progetti già risolti; i record ambigui sono conservati nel report di quarantena. Non è esposto come importatore di backup personali. Creazione/modifica completa, bulk, import/export e contratto remoto in emulatore rimangono INC-02/03 e fasi successive.
+Schema locale 2: primo contratto Task/progetti, non formato dell'intero backup V1. I mapper puri ricostruiscono il catalogo da PD/custom/override e trasformano estratti Agenda. Il report conserva metadati cartelle/archivio/tipo/ordine e originali: tali metadati non sono ancora nello schema locale della UI. I record ambigui sono in quarantena. Non è esposto un importatore di backup personali. Creazione/modifica completa, bulk, import/export e coda/sync rimangono INC-03 e fasi successive.
 
 ### Limiti del salvataggio locale
 
@@ -62,11 +76,14 @@ Il salvataggio dipende da browser e origine (protocollo, host e porta): `localho
 | `src/data/ports/` | Contratti asincroni del repository |
 | `src/data/adapters/memory/` | Implementazione volatile e motore transazionale recuperato |
 | `src/data/adapters/local/` | Repository duraturo, cache immutabile, CAS e Undo di sessione |
+| `src/data/adapters/shared/` | Motore repository comune ai driver persistenti e al contratto emulato |
+| `src/data/adapters/rtdb/` | Codec e adattatore esclusivo per l'emulatore, non importati dall'avvio UI |
 | `src/data/adapters/indexeddb/` | Transazioni native, inizializzazione isolata e gestione versione |
 | `src/data/migrations/` | Trasformazioni legacy pure e report con originali/quarantena |
 | `src/data/fixtures/` | Soltanto dataset sintetici |
 | `tests/unit/` | Dominio, repository, componenti e confini architetturali |
 | `tests/e2e/` | Percorsi sulla build e matrice browser |
+| `tests/contracts/`, `tests/emulator/` | Contratto comune, prove RTDB reali di test e regole non produttive |
 
 Le viste inviano comandi al servizio; non modificano snapshot o scrivono nel repository. L'avvio browser apre sempre IndexedDB prima delle route; la factory in memoria serve ai test isolati. La revisione evita sovrascritture silenziose tra istanze dello stesso archivio; al ritorno in primo piano i dati vengono riletti. Non equivale a sincronizzazione multi-device o idempotenza persistente dei comandi futuri.
 

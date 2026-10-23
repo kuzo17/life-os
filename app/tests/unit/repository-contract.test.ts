@@ -6,8 +6,7 @@ import type { AtomicWorkspaceStorage } from '../../src/data/ports/atomic-workspa
 import { createWorkspaceService } from '../../src/application/workspace-service';
 import { cloneMutable } from '../../src/domain/shared/immutable';
 import type { Workspace } from '../../src/domain/workspace/model';
-import { mapLegacyAgenda } from '../../src/data/migrations/legacy-agenda';
-import { tasksForProject, tasksOn } from '../../src/domain/workspace/selectors';
+import { workspaceRepositoryContract } from '../contracts/workspace-contract';
 
 // Fake atomico per il contratto, NON un emulatore IndexedDB/RTDB. IDB reale negli E2E.
 function fakeStorage(seed = createSyntheticWorkspace()) {
@@ -29,56 +28,7 @@ function fakeStorage(seed = createSyntheticWorkspace()) {
 for (const adapter of ['memory', 'local-contract'] as const) describe(`contratto repository ${adapter}`, () => {
   async function open(seed = createSyntheticWorkspace()) { return adapter === 'memory' ? createMemoryWorkspaceRepository(seed) : createLocalWorkspaceRepository(fakeStorage(seed).storage); }
 
-  it('estratto V1 → mapper → repository → comando: identità e metadati rimangono canonici', async () => {
-    const mapped = mapLegacyAgenda('contratto', createSyntheticWorkspace().projects, {
-      'agenda_2026-10-25': [{ text: 'Task V1 sintetica', projId: 'orione', done: false, time: '23:30', pri: 'high', type: 'day', ts: 1000 }],
-    });
-    const repo = await open(cloneMutable<Workspace>(mapped.workspace));
-    const id = mapped.mappings[0]!.taskId;
-    expect((await createWorkspaceService(repo).execute({ type: 'task.setCompleted', id, completed: true })).ok).toBe(true);
-    const current = (await repo.read()).data;
-    expect(tasksOn(current, '2026-10-25')[0]).toBe(tasksForProject(current, 'orione')[0]);
-    expect(current.tasks).toHaveLength(1);
-    expect(current.tasks[0]).toMatchObject({ id, completed: true, time: '23:30', priority: 'high', scheduledOn: '2026-10-25' });
-    repo.close();
-  });
-
-  it('commit, lettura stabile, snapshot immutabili, notifiche e Undo monotono', async () => {
-    const repo = await open();
-    const initial = await repo.read();
-    expect(repo.getSnapshot()).toBe(initial);
-    const next = cloneMutable<Workspace>(initial.data);
-    next.tasks[0]!.completed = true;
-    let notified = 0;
-    repo.subscribe(() => { throw new Error('Osservatore isolato'); });
-    const stop = repo.subscribe(() => { notified++; });
-    expect(await repo.commit({ expectedRevision: 0, next, label: 'Completa' })).toEqual({ ok: true, value: 1 });
-    next.tasks.splice(0);
-    expect(repo.getSnapshot().data.tasks[0]?.completed).toBe(true);
-    expect(initial.data.tasks[0]?.completed).toBe(false);
-    expect(Object.isFrozen(repo.getSnapshot().data.tasks[0])).toBe(true);
-    expect(repo.getSnapshot().undoLabel).toBe('Completa');
-    expect(await repo.undo(1)).toEqual({ ok: true, value: 2 });
-    expect(repo.getSnapshot().data).toEqual(initial.data);
-    expect(notified).toBe(2);
-    stop();
-    expect((await repo.undo(2)).ok).toBe(false);
-    repo.close();
-  });
-
-  it('rifiuta record invalidi e commit obsoleti senza notificare o sovrascrivere', async () => {
-    const repo = await open();
-    const initial = repo.getSnapshot();
-    const next = cloneMutable<Workspace>(initial.data);
-    next.tasks[0]!.time = '25:00';
-    expect((await repo.commit({ expectedRevision: 0, next, label: 'Invalida' })).ok).toBe(false);
-    expect(repo.getSnapshot()).toBe(initial);
-    next.tasks[0]!.time = '12:00';
-    const results = await Promise.all([repo.commit({ expectedRevision: 0, next, label: 'A' }), repo.commit({ expectedRevision: 0, next, label: 'B' })]);
-    expect(results.filter(result => result.ok)).toHaveLength(1);
-    expect(repo.getSnapshot().revision).toBe(1);
-    repo.close();
-  });
+  workspaceRepositoryContract(open);
 });
 
 it('fallimento duraturo: niente snapshot ottimistico, Undo consumato o messaggi interni', async () => {
@@ -120,4 +70,35 @@ it('istanze condivise: CAS rifiuta stale, refresh invalida Undo e una bozza non 
   const reopened = await createLocalWorkspaceRepository(fake.storage);
   expect(reopened.getSnapshot().data).toEqual(b.getSnapshot().data);
   expect(reopened.getSnapshot().undoLabel).toBeNull();
+});
+
+it('una conferma lenta non fa regredire una cache che ha già letto la revisione successiva', async () => {
+  let stored = { revision: 0, data: createSyntheticWorkspace() };
+  let release!: () => void;
+  let written!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const started = new Promise<void>(resolve => { written = resolve; });
+  const storage: AtomicWorkspaceStorage = {
+    read: async () => structuredClone(stored), close: () => {},
+    async compareAndSwap(_expected, next) {
+      const saved = { revision: 1, data: structuredClone(next) };
+      stored = saved;
+      written();
+      await gate;
+      return saved;
+    },
+  };
+  const repo = await createLocalWorkspaceRepository(storage);
+  const next = createSyntheticWorkspace();
+  next.projects[0]!.name = 'Prima conferma lenta';
+  const commit = repo.commit({ expectedRevision: 0, next, label: 'Lenta' });
+  await started;
+  stored = { revision: 2, data: createSyntheticWorkspace() };
+  stored.data.projects[0]!.name = 'Seconda modifica già letta';
+  await repo.read();
+  release();
+  expect((await commit).ok).toBe(true);
+  expect(repo.getSnapshot().revision).toBe(2);
+  expect(repo.getSnapshot().data.projects[0]?.name).toBe('Seconda modifica già letta');
+  expect(repo.getSnapshot().undoLabel).toBeNull();
 });

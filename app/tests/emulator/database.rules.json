@@ -1,0 +1,13 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "contractRuns": {
+      "$run": {
+        ".read": true,
+        ".write": "newData.exists()",
+        ".validate": "newData.hasChildren(['format', 'revision', 'schemaVersion', 'projectCount', 'taskCount']) && newData.child('format').val() === 1 && newData.child('schemaVersion').val() === 2 && ((!data.exists() && newData.child('revision').val() === 0) || (data.exists() && newData.child('revision').val() === data.child('revision').val() + 1))"
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # INC-02 — Contratto Agenda V1 e salvataggio locale
 
-**Stato:** primo blocco locale consegnato; incremento complessivo in corso · 21 ottobre 2026 · DATA-001, LEG-001, parte DATA-002.
+**Stato:** primo blocco locale consegnato; [continuazione catalogo/emulatore del 23 ottobre](INC-02-catalog-emulator.md) · DATA-001, LEG-001, DATA-002. Il resoconto sotto conserva la consegna iniziale del 21 ottobre, pubblicata il 23.
 
 ## Decisioni prima dell'implementazione
 
@@ -61,6 +61,6 @@ Un'unica app in `app/`, nessuna nuova batch. All'avvio browser il repository Ind
 
 **Stato capacità:** implementazione parziale verificata localmente · dati sintetici locali duraturi · caratterizzazione V1 Agenda parziale · non rilasciata. Nessuna riconciliazione privata eseguita.
 
-**Ancora aperto in INC-02:** merge del catalogo progetti e provenienza, contratto remoto RTDB in emulatore e casi di doppio invio/coda. Il fake atomico dei test di contratto **non** è un emulatore IndexedDB o Firebase; IndexedDB è provato nei browser reali di test. LEG-001/DATA-002 e F2 non sono chiuse.
+**Aperti alla consegna iniziale:** merge del catalogo progetti e provenienza, contratto remoto RTDB in emulatore e casi di doppio invio/coda. Catalogo e contratto sono affrontati nella [continuazione del 23 ottobre](INC-02-catalog-emulator.md), senza chiudere F2 o la coda/sync. Il fake atomico dei test di contratto **non** è un emulatore IndexedDB o Firebase; IndexedDB è provato nei browser reali di test.
 
 **Segue INC-03:** creazione/modifica/spostamento/bulk sullo stesso record, Quick Add minimo e percorso completo con export/ripristino sintetico. Nessun salvataggio locale equivale a backup o sincronizzazione; cambio di origine, cancellazione browser, eviction e modalità privata restano limiti espliciti. La preview non va usata per dati personali da conservare.

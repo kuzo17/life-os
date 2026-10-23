@@ -1,6 +1,6 @@
 # LifeOS — Registro operativo dello sviluppo
 
-**Aggiornato:** 23 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.2](DELIVERY_PLAN.md).
+**Aggiornato:** 23 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.3](DELIVERY_PLAN.md).
 
 Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non vengono convertite in dichiarazioni di parità. Le autorizzazioni per produzione, dati reali e nuovi servizi rimangono quelle del piano e dell’utente.
 
@@ -9,10 +9,10 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 - Branch di lavoro: `lifeos-visual-lab`.
 - Baseline V1: `e58a77e3e00445474d93008d15ecf3a171f2a783`.
 - Baseline del materiale LAB recuperabile: `774de73d552a2e3e755fdd9713794d66229545de`.
-- Consegna completata: **INC-01 / F1**, base applicativa verificata in locale Windows e in CI Ubuntu. [Run riuscito sul codice `81e909a`](https://github.com/kuzo17/life-os/actions/runs/39604511767). Blocco corrente: **INC-02 / F2**, mapping Agenda circoscritto e salvataggio locale; F2 non completa. [Decisioni, prove e limiti](increments/INC-02.md).
+- Consegna completata: **INC-01 / F1**. **INC-02** prosegue con [catalogo progetti e contratto emulatore](increments/INC-02-catalog-emulator.md), verificati in locale sul sottoinsieme sintetico; verifica CI del nuovo checkpoint in attesa. F2 non completa. Prossimo blocco funzionale: **INC-03**, percorso Task completo.
 - Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
 - React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
-- Persistenza nella nuova base: **IndexedDB locale su fixture sintetiche**. Sincronizzazione remota: **non implementata**; contratto RTDB in emulatore ancora da verificare.
+- Persistenza nella nuova base: **IndexedDB locale su fixture sintetiche**. Contratto RTDB separato: **verificato su emulatore ufficiale solo loopback**, senza connessione dall'interfaccia. Autenticazione, coda e sincronizzazione remota: **non implementate**.
 - Codice INC-02 pubblicato: `3c281a6`; verifica locale del 21 ottobre e **CI Ubuntu del 23 ottobre riuscita**, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118), con 33 test e 65 E2E. Solo branch di laboratorio, nessun deploy.
 - Migrazione e riconciliazione di dati reali: **non eseguite**.
 - Disponibilità e validità dei backup privati: **da verificare privatamente prima del relativo gate**; non blocca le implementazioni con fixture sintetiche.
@@ -33,6 +33,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | CI sul codice `81e909a`, [run 39604511767](https://github.com/kuzo17/life-os/actions/runs/39604511767) | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E: PASS Ubuntu | Non verifica dati personali, Firebase o dispositivi reali |
 | INC-02, controlli del 21 ottobre | `pnpm verify`: PASS Windows; 33 test unit/component/contratto, build e 65 E2E con riavvio processo browser e profilo sintetico | Niente remoto, import completo o dispositivi fisici |
 | INC-02, [CI del 23 ottobre](https://github.com/kuzo17/life-os/actions/runs/39921317118), codice `3c281a6` | Installazione da lockfile, typecheck/lint, 33 test, build e 65 E2E: PASS Ubuntu | Non chiude il contratto remoto/emulatore o la migrazione reale |
+| Checkpoint catalogo/emulatore INC-02 del 23 ottobre | Typecheck/lint/build e 43 test PASS; 10 test RTDB ufficiale PASS; 39 E2E Chromium/Firefox/mobile Chromium PASS | WebKit locale bloccato da Code Integrity prima dell'app (26 casi); nessuna protezione modificata. CI nuova completa in attesa |
 
 ## 2. Stati da usare
 
@@ -58,8 +59,8 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 | ARCH-002 | F1 | Confini, componenti, route, shell e gestione errori | ARCH-001 | Verificata localmente in INC-01 |
 | QA-001 | F1 | Typecheck, lint, test, build e CI di verifica | ARCH-001 | Verificata: Windows e CI Ubuntu; primo difetto CI corretto e caso mantenuto nella suite |
 | DATA-001 | F1/F2 | Modelli canonici, validazione, date, ID e porte repository | ARCH-001 | In corso: schema 2 Task con orario/priorità/ordine, date civili e task libere; contratto totale V1 ancora parziale |
-| DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | In corso: memoria/locale e IndexedDB reale; contratto remoto/emulatore ancora da realizzare |
-| LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | In corso: estratti Agenda deterministici e quarantena; merge catalogo PD/custom/override e import completo non implementati |
+| DATA-002 | F2 | Repository locale duraturo e contratto memoria/emulatore | DATA-001 | Verificata localmente per schema 2: contratto comune memoria/locale/RTDB emulato; IndexedDB reale nei browser. Conferma persa distinta da rifiuto. Non include coda/sync o backend UI |
+| LEG-001 | F2 | Mapping task/progetti V1 e fixture di caratterizzazione | DATA-001, DEC-006 | Verificata su fixture per estratti Agenda giornalieri e catalogo PD/custom/override, con quarantena e originali. Metadati catalogo nel report, non ancora nello schema UI; nessun import completo/privato |
 | TASK-001 | F2 | Task/Oggi/Progetti/Agenda sullo stesso record persistente | LEG-001, DATA-002, ARCH-002 | Viste e due comandi con salvataggio locale sintetico; creazione/modifica completa e percorso INC-03 ancora da realizzare |
 | TASK-002 | F2 | Scadute, ordinamenti, priorità/orari e operazioni bulk | TASK-001 | LAB parziale da trasferire |
 | PROJ-001 | F3 | Cartelle, progetti speciali/custom, override, ordine, archivio | TASK-001 | LAB parziale da trasferire |
@@ -82,7 +83,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 | SEARCH-001 | F6 | Ricerca aggiornata, azioni e deep link ai record | Domini verificati e ARCH-002 | LAB da trasferire |
 | SETTINGS-001 | F6 | Preferenze, ordinamenti, impostazioni e versioni | DATA-002 | LAB parziale da trasferire |
 | BACKUP-001 | F6 | Export/import versionati e round-trip sintetico | Schemi dei domini e DATA-002 | Da iniziare |
-| SYNC-001 | F2/F7 | Coda duratura, revisioni, retry e conflitti per dominio | Contratti iniziali F2; domini verificati | Da iniziare |
+| SYNC-001 | F2/F7 | Coda duratura, revisioni, retry e conflitti per dominio | Contratti iniziali F2; domini verificati | Contratto iniziale CAS/replay/ACK incerto verificato in emulatore; coda duratura e sync non implementate |
 | AUTH-001 | F7 | Utenti, accessi e regole negate/consentite in emulatore | DATA-001, SYNC-001 | Da iniziare |
 | PWA-001 | F7 | Offline, riapertura, aggiornamento cache e recupero | SYNC-001, BACKUP-001 | Da trasferire e verificare |
 | UX-001 | F1/F8 | Componenti accessibili, temi Aurora/Prism e personalizzazione | Minimo F1; consolidamento F8 | Direzione LAB recuperabile |
@@ -93,7 +94,7 @@ Tutte le attività sotto sono da realizzare nella sorgente unica; l’eventuale 
 
 ## 4. Prossimi tre incrementi concreti
 
-INC-01 attua il piano nella sorgente unica. Il prossimo blocco principale è INC-02; non riaprire da zero scelta del framework o audit generale. Nessun collegamento ai dati reali è autorizzato da questo avanzamento.
+INC-01 attua il piano nella sorgente unica; INC-02 prepara i contratti dati e legacy. Il prossimo blocco funzionale è INC-03, dopo la verifica CI del checkpoint catalogo/emulatore. Non riaprire da zero scelta del framework o audit generale. Nessun collegamento ai dati reali è autorizzato da questo avanzamento.
 
 ### INC-01 — Istituire il progetto applicativo e il controllo qualità
 
@@ -109,7 +110,7 @@ INC-01 attua il piano nella sorgente unica. Il prossimo blocco principale è INC
 
 **Comprende:** DATA-001, LEG-001 e parte DATA-002.
 
-**Avanzamento corrente:** [scheda INC-02](increments/INC-02.md). DEC-006 definita sul sorgente; primo mapper Agenda conservativo, schema 2, repository locale e avvio asincrono. L'app non importa automaticamente dati V1 né legge backup privati. Il prossimo sotto-blocco chiude catalogo/mapping e contratto remoto in emulatore, prima del percorso INC-03.
+**Avanzamento corrente:** [prima consegna](increments/INC-02.md) e [continuazione catalogo/emulatore](increments/INC-02-catalog-emulator.md). DEC-006 definita sul sorgente; mapper Agenda e catalogo conservativi, schema 2, repository locale e contratto RTDB su emulatore ufficiale con stessi test. L'app non importa automaticamente dati V1 né legge backup privati. Cartelle/archivio/tipo/ordine sono conservati nel report di migrazione, non ancora funzioni UI. Il percorso completo INC-03 segue questi contratti; F2 resta aperta.
 
 **Operazioni:** usare le funzioni Agenda/progetto già catalogate; associare i casi a righe della baseline; decidere task libere/progetto, identità, date e orfani; creare fixture sintetiche che riproducano il formato V1; implementare trasformazione deterministica e repository in memoria/locale. Provare il contratto remoto in emulatore senza dati reali.
 
@@ -132,7 +133,7 @@ Dopo INC-03 aggiornare l’ordine dettagliato di F3–F9 con le informazioni ott
 | DEC-006 | Task senza progetto e semantica dei record orfani | Decisione fissata in INC-02 | Task libere ammesse; orfani in quarantena con originale, nessun progetto generico inventato |
 | DEC-007 | Autorità locale/remota e revisione/conflitti | Contratto INC-02, consolidamento F7 | Implementare e testare le porte, senza promettere sync reale |
 | DEC-008 | Preview della build e hosting finale | INC-01 / prima di F9 | Usare preview locale; niente deploy sulla produzione attuale |
-| DEC-009 | Ambiente remoto, utenti e regole di accesso | Emulatore F2/F7; reale prima di staging | Dati sintetici, nessuna credenziale o accesso alla produzione |
+| DEC-009 | Ambiente remoto, utenti e regole di accesso | Emulatore contratto F2 verificato; auth F7 ancora aperta | Progetto demo e regole non produttive limitate al sottoalbero di prova; nessun accesso alla produzione |
 | NUM-001 | Conversione monetaria e arrotondamenti legacy | Prima di FIN-001 | Preservare gli originali nei fixture e rendere espliciti i casi ambigui |
 | DATA-PRIVATE-001 | Provenienza/validità dei backup privati | Prima di MIG-001 | Sviluppare e verificare con fixture sintetiche |
 
@@ -189,3 +190,4 @@ Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del pi
 | 2026-10-21 | Chiusura QA-001 / INC-01 | Primo CI: caso iniziale hover Chromium Linux individuato. Codice `81e909a`: correzione hover/pin e report sintetici in caso di errore; 22 test e 35 E2E riconfermati Windows e Ubuntu CI, run `39604511767` riuscito. F1 chiusa, nessun cambio ai gate di persistenza/parità/rilascio. |
 | 2026-10-21 | Primo blocco INC-02 / DATA-001/002, LEG-001 | Schema 2, caratterizzazione e mapper Agenda circoscritto, IndexedDB locale, conferma dopo commit, Undo di sessione con effetto salvato e gestione conflitti/errori. `pnpm verify`: 33 test e 65 E2E PASS Windows; pin WebKit corretto sulla base degli eventi. Schermate desktop/mobile ispezionate. CI remota in attesa. INC-02/F2 ancora aperte per catalogo/mapping completo e contratto remoto in emulatore; nessun dato reale toccato. |
 | 2026-10-23 | Pubblicazione e verifica INC-02 locale | Codice `3c281a6`, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118): installazione pulita, typecheck/lint, 33 test, build e 65 E2E PASS Ubuntu. Preview locale della stessa build verificata HTTP 200. `main` e `lifeos-v2` invariati; nessun rilascio o dato reale migrato. Prossimo sotto-blocco: catalogo progetti V1 e contratto remoto in emulatore, prima di INC-03. |
+| 2026-10-23 | Catalogo/emulatore INC-02 | Catalogo PD/custom/override, originali e quarantena; repository condiviso e codec RTDB, CAS/replay/inizializzazione ripetuta/ACK incerto su emulatore ufficiale. 43 test e 10 test emulatore PASS; 39 E2E locali PASS, WebKit bloccato dal sistema prima dell'app. CI nuova completa in attesa. Nessuna dipendenza npm aggiunta; Java portabile solo cache; prossima implementazione INC-03. |

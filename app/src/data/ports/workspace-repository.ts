@@ -2,7 +2,7 @@ import type { DeepReadonly } from '../../domain/shared/immutable';
 import type { Result } from '../../domain/shared/result';
 import type { Workspace } from '../../domain/workspace/model';
 
-export type Durability = 'volatile' | 'local' | 'remote';
+export type Durability = 'volatile' | 'local' | 'emulated' | 'remote';
 
 export interface WorkspaceVersion {
   readonly data: DeepReadonly<Workspace>;

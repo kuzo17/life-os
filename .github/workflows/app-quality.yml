@@ -33,6 +33,12 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm test:e2e:install --with-deps
       - run: pnpm verify
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21.0.13+9'
+      - run: pnpm test:emulator:install
+      - run: pnpm test:emulator
       - name: Report sintetici in caso di fallimento
         if: failure()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
