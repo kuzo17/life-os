@@ -18,4 +18,5 @@ export interface WorkspaceRepository {
   read(): Promise<WorkspaceVersion>;
   commit(input: { expectedRevision: number; next: Workspace; label: string }): Promise<Result<number>>;
   undo(expectedRevision: number): Promise<Result<number>>;
+  close(): void;
 }

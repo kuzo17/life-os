@@ -2,11 +2,12 @@
 
 Da INC-01 questa è l’implementazione attiva. Le batch in `design-lab/` sono conservate, congelate e non vengono duplicate in nuove app.
 
-**Stato:** base tecnica F1 con fixture sintetiche, dati esclusivamente volatili e nessuna connessione remota. Non sostituisce la V1 e non dimostra parità completa.
+**Stato:** base tecnica F1 e primo blocco INC-02, con fixture sintetiche salvate in IndexedDB e nessuna connessione remota. Non sostituisce la V1 e non dimostra parità completa.
 
 - [Piano principale](../docs/v2/DELIVERY_PLAN.md)
 - [Stato, limiti e prossimo incremento](../docs/v2/DELIVERY_STATUS.md)
 - [Provenienza, prove e decisioni INC-01](../docs/v2/increments/INC-01.md)
+- [Mapping Agenda, salvataggio e limiti INC-02](../docs/v2/increments/INC-02.md)
 
 ## Avvio riproducibile
 
@@ -28,17 +29,26 @@ Anteprima della **build**, non del sorgente: `http://127.0.0.1:8878/#/today`. Pr
 
 La cache, i browser e i risultati rimangono fuori da Git. Nessuno script di installazione dei pacchetti viene eseguito. Non è prevista alcuna configurazione Firebase o credenziale in questa fase.
 
-## Cosa funziona in F1
+## Cosa funziona nella base corrente
 
 - Navigazione a pagine, deep link hash, Back/Forward, caricamento e recupero da route errata.
 - Rail desktop compatta: hover/focus, pin e chiusura dopo scelta; dialog mobile con Escape, Tab confinato e ritorno del focus, anche dopo ridimensionamento.
 - Token dark Aurora / light Prism recuperati dal laboratorio, senza font o asset esterni.
 - Due progetti e cinque task sintetiche: le viste Oggi, progetto e Agenda leggono gli stessi record.
-- Completamento task, rinomina progetto e Undo esclusivamente in memoria.
+- Completamento task e rinomina progetto salvati nel browser; orari e priorità visibili e ordinamento Agenda per orario.
+- Undo della sessione: l'effetto dell'annullamento viene salvato, la cronologia non viene recuperata dopo riapertura.
+- Transazioni IndexedDB con revisione atomica; una bozza obsoleta non sovrascrive silenziosamente modifiche di un'altra scheda.
+- Conferma dopo commit, errori di avvio/salvataggio e nessun reset automatico di archivi invalidi.
 - Validazione, rollback, snapshot immutabili, revisione ottimistica e rifiuto degli aggiornamenti concorrenti obsoleti.
 - Moduli non trasferiti chiaramente indicati: non simulano operazioni disponibili.
 
-Il formato workspace F1 è un primo contratto interno, non il formato della V1. Date/relazioni legacy, creazione/modifica completa, bulk, persistenza IndexedDB e contratto emulatore sono lavoro INC-02/03. Non usare questa base per immettere dati personali da conservare.
+Schema locale 2: primo contratto Task/progetti, non formato dell'intero backup V1. Il mapper puro lavora soltanto su estratti Agenda e progetti già risolti; i record ambigui sono conservati nel report di quarantena. Non è esposto come importatore di backup personali. Creazione/modifica completa, bulk, import/export e contratto remoto in emulatore rimangono INC-02/03 e fasi successive.
+
+### Limiti del salvataggio locale
+
+Archivio isolato `lifeos-lab-workspace-v1`, distinto dalla V1. Il seed viene scritto solo alla creazione del database. Un errore non avvia una copia volatile e non risemina i dati. Dopo un errore di versione/archivio, chiudere vecchie schede e riprovare/ricaricare; non cancellare lo storage per aggirarlo.
+
+Il salvataggio dipende da browser e origine (protocollo, host e porta): `localhost`, `127.0.0.1` o un'altra porta non condividono l'archivio. Non è un backup, non sincronizza dispositivi e non protegge da cancellazione/eviction o modalità privata. Anche le preferenze tema/pin restano di sessione. Non usare questa preview per dati personali da conservare.
 
 ## Confini del codice
 
@@ -51,11 +61,14 @@ Il formato workspace F1 è un primo contratto interno, non il formato della V1. 
 | `src/domain/` | Modelli, regole e selettori puri, senza React/DOM/SDK |
 | `src/data/ports/` | Contratti asincroni del repository |
 | `src/data/adapters/memory/` | Implementazione volatile e motore transazionale recuperato |
+| `src/data/adapters/local/` | Repository duraturo, cache immutabile, CAS e Undo di sessione |
+| `src/data/adapters/indexeddb/` | Transazioni native, inizializzazione isolata e gestione versione |
+| `src/data/migrations/` | Trasformazioni legacy pure e report con originali/quarantena |
 | `src/data/fixtures/` | Soltanto dataset sintetici |
 | `tests/unit/` | Dominio, repository, componenti e confini architetturali |
 | `tests/e2e/` | Percorsi sulla build e matrice browser |
 
-Le viste inviano comandi al servizio; non modificano snapshot o scrivono nel repository. La revisione locale evita sovrascritture silenziose nella stessa istanza: non equivale a sincronizzazione multi-device o idempotenza persistente.
+Le viste inviano comandi al servizio; non modificano snapshot o scrivono nel repository. L'avvio browser apre sempre IndexedDB prima delle route; la factory in memoria serve ai test isolati. La revisione evita sovrascritture silenziose tra istanze dello stesso archivio; al ritorno in primo piano i dati vengono riletti. Non equivale a sincronizzazione multi-device o idempotenza persistente dei comandi futuri.
 
 ## Matrice browser e protezione della preview
 

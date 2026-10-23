@@ -5,7 +5,7 @@ function requireValue(condition: unknown, message: string): asserts condition {
   if (!condition) throw new DomainError(message);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
@@ -18,7 +18,7 @@ export function requireText(value: unknown, label: string, max = 180): asserts v
   requireValue(typeof value === 'string' && value.trim().length > 0 && value.length <= max, `Controlla ${label}.`);
 }
 
-function requireId(value: unknown): asserts value is string {
+export function requireId(value: unknown): asserts value is string {
   requireValue(typeof value === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(value), 'ID non valido.');
 }
 
@@ -30,7 +30,7 @@ export function isCalendarDate(value: unknown): value is string {
 
 export function validateWorkspace(value: unknown): asserts value is Workspace {
   record(value, ['schemaVersion', 'projects', 'tasks']);
-  requireValue(value.schemaVersion === 1, 'Versione del workspace non supportata.');
+  requireValue(value.schemaVersion === 2, 'Versione del workspace non supportata.');
   requireValue(Array.isArray(value.projects) && Array.isArray(value.tasks), 'Collezioni non valide.');
   const projectIds = new Set<string>();
   for (const project of value.projects) {
@@ -43,13 +43,16 @@ export function validateWorkspace(value: unknown): asserts value is Workspace {
   }
   const taskIds = new Set<string>();
   for (const task of value.tasks) {
-    record(task, ['id', 'title', 'projectId', 'scheduledOn', 'completed']);
+    record(task, ['id', 'title', 'projectId', 'scheduledOn', 'completed', 'time', 'priority', 'sortOrder']);
     requireId(task.id);
     requireText(task.title, 'titolo task');
     requireValue(!taskIds.has(task.id), 'ID task duplicato.');
     requireValue(task.projectId === null || (typeof task.projectId === 'string' && projectIds.has(task.projectId)), 'Progetto della task non valido.');
     requireValue(task.scheduledOn === null || isCalendarDate(task.scheduledOn), 'Data della task non valida.');
     requireValue(typeof task.completed === 'boolean', 'Stato della task non valido.');
+    requireValue(task.time === null || (typeof task.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(task.time)), 'Orario della task non valido.');
+    requireValue(typeof task.priority === 'string' && ['none', 'medium', 'high'].includes(task.priority), 'Priorità non valida.');
+    requireValue(Number.isSafeInteger(task.sortOrder) && Number(task.sortOrder) >= 0, 'Ordine non valido.');
     taskIds.add(task.id);
   }
 }

@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigation } from 'react-router';
 import { Navigation } from './navigation';
 import { MobileNavigation } from './mobile-navigation';
 import { useRuntime, useWorkspace } from './workspace-context';
+import { StorageNotice } from './storage-notice';
+import { saveConfirmation } from '../application/save-confirmation';
 
 export function Shell() {
   const [pinned, setPinned] = useState(false);
@@ -24,7 +26,7 @@ export function Shell() {
   async function undo() {
     setUndoing(true);
     const result = await workspace.undo();
-    setMessage(result.ok ? 'Operazione annullata. Modifica solo in memoria.' : result.message);
+    setMessage(result.ok ? `Operazione annullata. ${saveConfirmation(version.durability)}` : result.message);
     setUndoing(false);
   }
 
@@ -36,7 +38,7 @@ export function Shell() {
       <div className="brand"><span className="brand-symbol" aria-hidden="true">L</span><span className="nav-text">Life<span>OS</span></span></div>
       <Navigation onNavigate={() => { setHoverEnabled(false); main.current?.focus(); }} />
       <button className="pin-button" type="button" aria-pressed={pinned} aria-label={pinned ? 'Sgancia la navigazione' : 'Fissa la navigazione'}
-        onPointerDown={event => event.currentTarget.focus()} onClick={() => setPinned(value => !value)}>
+        onPointerDown={event => event.currentTarget.focus()} onMouseDown={event => event.preventDefault()} onClick={() => setPinned(value => !value)}>
         <span className="nav-glyph" aria-hidden="true">⌁</span><span className="nav-text">{pinned ? 'Sgancia' : 'Fissa navigazione'}</span>
       </button>
     </aside>
@@ -48,11 +50,11 @@ export function Shell() {
           <button className="button" aria-label={theme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'} onClick={() => setTheme(value => value === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? 'Prism · chiaro' : 'Aurora · scuro'}</button>
         </div>
       </header>
-      <div className="environment-notice"><strong>Dati sintetici · solo memoria</strong><span>Le modifiche si perdono ricaricando. Nessun account o servizio collegato.</span></div>
+      <StorageNotice />
       <p className="sr-only" role="status">{message}</p>
       <div className="route-pending" role="status">{navigation.state !== 'idle' ? 'Apertura pagina…' : ''}</div>
       <main id="main-content" ref={main} tabIndex={-1} aria-busy={navigation.state !== 'idle'}><Outlet /></main>
-      <footer className="app-footer">Base applicativa F1 · dataset dimostrativo del 21 ottobre 2026 · parità V1 non ancora verificata</footer>
+      <footer className="app-footer">Base applicativa · archivio locale sintetico · parità V1 parziale, nessun dato personale migrato</footer>
     </div>
   </div>;
 }

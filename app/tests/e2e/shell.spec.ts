@@ -35,7 +35,8 @@ async function navigate(page: Page, label: string) {
 
 test('stesso record tra Oggi, Progetto, Agenda e Undo', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).check();
+  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeChecked();
   await page.getByRole('main').getByRole('link', { name: 'Progetto Orione', exact: true }).first().click();
   await expect(page.getByRole('heading', { level: 1, name: 'Progetto Orione' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeChecked();
@@ -43,6 +44,8 @@ test('stesso record tra Oggi, Progetto, Agenda e Undo', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Agenda' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeChecked();
   await page.getByRole('button', { name: 'Annulla ultima operazione' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).not.toBeChecked();
+  await page.reload();
   await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).not.toBeChecked();
 });
 
@@ -121,19 +124,115 @@ test('rinomina, conferma, Undo e riferimenti stabili', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Nome del progetto' }).fill('Progetto rinominato');
   await page.getByRole('button', { name: 'Aggiorna nome' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Progetto rinominato' })).toBeVisible();
-  await expect(page.getByText(/Nome aggiornato solo in memoria/)).toBeVisible();
+  await expect(page.getByText(/Nome aggiornato. Salvato in questo browser/)).toBeVisible();
   await navigate(page, 'Oggi');
   await expect(page.getByRole('main').getByRole('link', { name: 'Progetto rinominato', exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Annulla ultima operazione' }).click();
   await expect(page.getByRole('main').getByRole('link', { name: 'Progetto Orione', exact: true }).first()).toBeVisible();
 });
 
-test('reload esplicito: i dati sono ancora volatili', async ({ page }) => {
+test('IndexedDB reale: reload e nuova scheda conservano i record, non Undo di sessione', async ({ page, context }) => {
   await page.goto('/#/today');
-  await expect(page.getByText('Dati sintetici · solo memoria')).toBeVisible();
-  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).check();
+  await expect(page.getByText('Dati sintetici · salvataggio locale')).toBeVisible();
+  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).click();
+  await expect(page.getByText(/Stato aggiornato. Salvato in questo browser/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Annulla ultima operazione' })).toBeDisabled();
+  const reopened = await context.newPage();
+  await reopened.goto('/#/projects/orione');
+  await expect(reopened.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeChecked();
+  await reopened.getByRole('checkbox', { name: 'Definire il prossimo passo' }).click();
+  await expect(reopened.getByText(/Stato aggiornato. Salvato in questo browser/)).toBeVisible();
+  await reopened.close();
   await page.reload();
   await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).not.toBeChecked();
+});
+
+test('due schede: una bozza obsoleta non sovrascrive il nome già salvato', async ({ page, context }) => {
+  await page.goto('/#/projects/orione');
+  await page.getByRole('textbox', { name: 'Nome del progetto' }).fill('Bozza prima scheda');
+  const other = await context.newPage();
+  await other.goto('/#/projects/orione');
+  await other.getByRole('textbox', { name: 'Nome del progetto' }).fill('Salvato dalla seconda');
+  await other.getByRole('button', { name: 'Aggiorna nome' }).click();
+  await expect(other.getByText(/Nome aggiornato. Salvato in questo browser/)).toBeVisible();
+  await page.getByRole('button', { name: 'Aggiorna nome' }).click();
+  await expect(page.getByText(/Un’altra modifica è stata salvata/)).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Salvato dalla seconda' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Nome del progetto' })).toHaveValue('Bozza prima scheda');
+  await page.getByRole('button', { name: 'Riprendi il nome salvato' }).click();
+  await expect(page.getByRole('textbox', { name: 'Nome del progetto' })).toHaveValue('Salvato dalla seconda');
+  await other.close();
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Salvato dalla seconda' })).toBeVisible();
+});
+
+test('abort della scrittura reale: niente falso salvataggio, rollback e nuovo tentativo', async ({ page }) => {
+  await page.goto('/#/today');
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).toBeVisible();
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      const request = original.apply(this, args);
+      IDBObjectStore.prototype.put = original;
+      this.transaction.abort();
+      return request;
+    };
+  });
+  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).click();
+  await expect(page.getByText(/Operazione non riuscita. Nessuna modifica applicata/)).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).not.toBeChecked();
+  await expect(page.getByRole('button', { name: 'Annulla ultima operazione' })).toBeDisabled();
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: 'Definire il prossimo passo' })).not.toBeChecked();
+  await page.getByRole('checkbox', { name: 'Definire il prossimo passo' }).click();
+  await expect(page.getByText(/Stato aggiornato. Salvato in questo browser/)).toBeVisible();
+});
+
+test('storage negato: errore recuperabile senza fallback volatile', async ({ page }) => {
+  await page.addInitScript(() => {
+    IDBFactory.prototype.open = () => { throw new DOMException('accesso negato', 'SecurityError'); };
+  });
+  await page.goto('/#/today');
+  await expect(page.getByRole('heading', { name: 'Archivio locale non disponibile' })).toBeVisible();
+  await page.getByRole('button', { name: 'Riprova apertura' }).click();
+  await expect(page.getByRole('heading', { name: 'Archivio locale non disponibile' })).toBeVisible();
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+});
+
+for (const corruption of ['schema', 'missing'] as const) test(`archivio ${corruption}: niente reset o seed su dati esistenti`, async ({ page }) => {
+  await page.goto('/#/today');
+  await expect(page.getByRole('heading', { level: 1, name: 'Oggi' })).toBeVisible();
+  await page.evaluate(async kind => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('lifeos-lab-workspace-v1', 1);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction('workspace', 'readwrite');
+        const store = transaction.objectStore('workspace');
+        if (kind === 'missing') store.delete('current');
+        else store.put({ format: 1, revision: 0, data: { schemaVersion: 999, marker: 'sintetico-da-conservare' } }, 'current');
+        transaction.oncomplete = () => { db.close(); resolve(); };
+        transaction.onabort = () => { db.close(); reject(transaction.error); };
+      };
+    });
+  }, corruption);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Archivio locale non disponibile' })).toBeVisible();
+  const retained = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+    const request = indexedDB.open('lifeos-lab-workspace-v1', 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction('workspace');
+      const get = transaction.objectStore('workspace').get('current');
+      get.onsuccess = () => { db.close(); resolve(get.result ?? null); };
+    };
+  }));
+  if (corruption === 'missing') expect(retained).toBeNull();
+  else expect(retained).toMatchObject({ data: { schemaVersion: 999, marker: 'sintetico-da-conservare' } });
 });
 
 test('deep link della build anche sotto un percorso statico', async ({ page }) => {

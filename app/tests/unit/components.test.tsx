@@ -45,7 +45,7 @@ describe('interfaccia collegata ai casi d’uso', () => {
     await user.type(field, 'Nuova direzione');
     await user.click(screen.getByRole('button', { name: 'Aggiorna nome' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Nuova direzione' })).toBeVisible();
-    expect(screen.getByText(/Nome aggiornato solo in memoria/)).toBeVisible();
+    expect(screen.getByText(/Nome aggiornato. Modifica solo in memoria/)).toBeVisible();
     expect(runtime.repository.getSnapshot().data.tasks[0]?.projectId).toBe('orione');
     await user.click(screen.getByRole('button', { name: 'Annulla ultima operazione' }));
     expect(field).toHaveValue('Progetto Orione');

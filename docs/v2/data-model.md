@@ -2,6 +2,8 @@
 
 > Direzione corrente: [piano principale, contratti e persistenza](DELIVERY_PLAN.md#5-regole-dei-dati-e-del-comportamento). Questo è un modello logico candidato. Namespace Firestore e note specifiche del backend non autorizzano un cambio da RTDB; contratti, compatibilità e ambiguità vengono consolidati per dominio con test.
 
+> Contratto effettivamente implementato: schema locale 2 Task/progetti in [INC-02](increments/INC-02.md). Non coincide con tutte le collezioni candidate sotto; primo mapper Agenda circoscritto, dati sintetici e nessun backend collegato.
+
 This is the **logical model**, not an already deployed Firestore schema. Parent path `users/{uid}` is an owner namespace with owner-only Rules; never rely on a client-side UID check.
 
 ## Common invariants

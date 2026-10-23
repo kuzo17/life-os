@@ -20,5 +20,6 @@ export function createMemoryWorkspaceRepository(seed: Workspace): WorkspaceRepos
       draft.tasks = owned.tasks;
     }),
     undo: async expectedRevision => store.undo(expectedRevision),
+    close: () => {},
   } satisfies WorkspaceRepository);
 }

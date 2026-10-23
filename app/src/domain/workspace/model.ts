@@ -10,11 +10,14 @@ export interface Task {
   projectId: string | null;
   scheduledOn: string | null;
   completed: boolean;
+  time: string | null;
+  priority: 'none' | 'medium' | 'high';
+  sortOrder: number;
 }
 
-// Primo contratto sintetico F1. Mapping e semantica V1 vengono verificati in F2.
+// Primo schema persistente locale. Non rappresenta ancora tutti i domini V1.
 export interface Workspace {
-  schemaVersion: 1;
+  schemaVersion: 2;
   projects: Project[];
   tasks: Task[];
 }
