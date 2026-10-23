@@ -1,6 +1,6 @@
 # LifeOS — Registro operativo dello sviluppo
 
-**Aggiornato:** 21 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.2](DELIVERY_PLAN.md).
+**Aggiornato:** 23 ottobre 2026 · **Piano:** [DELIVERY_PLAN.md, versione 1.2](DELIVERY_PLAN.md).
 
 Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non vengono convertite in dichiarazioni di parità. Le autorizzazioni per produzione, dati reali e nuovi servizi rimangono quelle del piano e dell’utente.
 
@@ -13,6 +13,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 - Sorgente attiva: [`app/`](../../app/README.md); batch congelate, nessuna nuova copia dell’app.
 - React/TypeScript/Vite: **configurati con dipendenze fissate e lockfile**.
 - Persistenza nella nuova base: **IndexedDB locale su fixture sintetiche**. Sincronizzazione remota: **non implementata**; contratto RTDB in emulatore ancora da verificare.
+- Codice INC-02 pubblicato: `3c281a6`; verifica locale del 21 ottobre e **CI Ubuntu del 23 ottobre riuscita**, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118), con 33 test e 65 E2E. Solo branch di laboratorio, nessun deploy.
 - Migrazione e riconciliazione di dati reali: **non eseguite**.
 - Disponibilità e validità dei backup privati: **da verificare privatamente prima del relativo gate**; non blocca le implementazioni con fixture sintetiche.
 - Nessuna capacità V1 viene dichiarata completa o rilasciata da INC-01. [Provenienza, scenari e limiti](increments/INC-01.md).
@@ -30,7 +31,8 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | `app/` e consegna INC-01 | Base React/TypeScript, contratti repository, comandi e test del workspace sintetico | Nessun import legacy, storage duraturo, sync o parità completa |
 | Controlli INC-01 del 21 ottobre | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E su cinque profili: PASS locale | Windows con mobile emulato; nessuna certificazione hardware/produzione; CI remota separata |
 | CI sul codice `81e909a`, [run 39604511767](https://github.com/kuzo17/life-os/actions/runs/39604511767) | Installazione pulita, typecheck/lint, 22 test, build e 35 E2E: PASS Ubuntu | Non verifica dati personali, Firebase o dispositivi reali |
-| INC-02, controlli del 21 ottobre | `pnpm verify`: PASS Windows; 33 test unit/component/contratto, build e 65 E2E con riavvio processo browser e profilo sintetico | CI del nuovo codice ancora in attesa; niente remoto, import completo o dispositivi fisici |
+| INC-02, controlli del 21 ottobre | `pnpm verify`: PASS Windows; 33 test unit/component/contratto, build e 65 E2E con riavvio processo browser e profilo sintetico | Niente remoto, import completo o dispositivi fisici |
+| INC-02, [CI del 23 ottobre](https://github.com/kuzo17/life-os/actions/runs/39921317118), codice `3c281a6` | Installazione da lockfile, typecheck/lint, 33 test, build e 65 E2E: PASS Ubuntu | Non chiude il contratto remoto/emulatore o la migrazione reale |
 
 ## 2. Stati da usare
 
@@ -186,3 +188,4 @@ Una pausa, un errore o un nuovo requisito non giustificano la riscrittura del pi
 | 2026-10-21 | INC-01 / ARCH-001/002, QA-001, parte DATA-001 | Sorgente unica, recupero selettivo del core, componenti/route e contratto repository volatile. Installazione pulita, typecheck/lint, 22 test, build e 35 E2E locali: PASS. Workflow di sola verifica predisposto; esito remoto distinto. Nessuna capacità V1 completa o dato reale migrato. |
 | 2026-10-21 | Chiusura QA-001 / INC-01 | Primo CI: caso iniziale hover Chromium Linux individuato. Codice `81e909a`: correzione hover/pin e report sintetici in caso di errore; 22 test e 35 E2E riconfermati Windows e Ubuntu CI, run `39604511767` riuscito. F1 chiusa, nessun cambio ai gate di persistenza/parità/rilascio. |
 | 2026-10-21 | Primo blocco INC-02 / DATA-001/002, LEG-001 | Schema 2, caratterizzazione e mapper Agenda circoscritto, IndexedDB locale, conferma dopo commit, Undo di sessione con effetto salvato e gestione conflitti/errori. `pnpm verify`: 33 test e 65 E2E PASS Windows; pin WebKit corretto sulla base degli eventi. Schermate desktop/mobile ispezionate. CI remota in attesa. INC-02/F2 ancora aperte per catalogo/mapping completo e contratto remoto in emulatore; nessun dato reale toccato. |
+| 2026-10-23 | Pubblicazione e verifica INC-02 locale | Codice `3c281a6`, [run 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118): installazione pulita, typecheck/lint, 33 test, build e 65 E2E PASS Ubuntu. Preview locale della stessa build verificata HTTP 200. `main` e `lifeos-v2` invariati; nessun rilascio o dato reale migrato. Prossimo sotto-blocco: catalogo progetti V1 e contratto remoto in emulatore, prima di INC-03. |

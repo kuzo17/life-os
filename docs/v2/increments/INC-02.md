@@ -53,7 +53,7 @@ Un'unica app in `app/`, nessuna nuova batch. All'avvio browser il repository Ind
 
 ### Verifiche
 
-- `pnpm verify`: **PASS Windows**, typecheck, lint, **33 test unit/component/contratto**, build e **65 E2E su cinque profili browser**. CI remota in attesa sul commit di consegna, distinta dall'esito locale.
+- `pnpm verify`: **PASS Windows** il 21 ottobre e **PASS CI Ubuntu** il 23 ottobre: installazione da lockfile, typecheck, lint, **33 test unit/component/contratto**, build e **65 E2E su cinque profili browser**. Codice pubblicato `3c281a6`, [run riuscito 39921317118](https://github.com/kuzo17/life-os/actions/runs/39921317118). Questa successiva registrazione è documentale; il codice applicativo non cambia dopo il run.
 - E2E: Chromium/Firefox/WebKit desktop, Chromium/WebKit mobile emulati; nuova scheda, reload, **chiusura del processo browser e riapertura del medesimo profilo sintetico**; stesso record e Undo salvato; bozza obsoleta, abort di transazione, storage negato, schema sconosciuto e record mancante senza reset.
 - La prova locale iniziale ha evidenziato un difetto preesistente del pin WebKit: `mousedown` toglieva il focus dopo `pointerdown`, la rail si restringeva prima di `mouseup`. Riprodotto tramite eventi, corretto impedendo quel default, senza retry/forzature del test. Il caso resta nella matrice.
 - Schermate desktop dark e mobile light ispezionate: etichette/orario/priorità leggibili, navigazione compatta e nessun overflow nel caso verificato; resta il controllo 320 px della suite.
