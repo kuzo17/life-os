@@ -34,6 +34,7 @@ Questo file registra fatti e prossimi passi. Le descrizioni dei prototipi non ve
 | INC-02, controlli del 21 ottobre | `pnpm verify`: PASS Windows; 33 test unit/component/contratto, build e 65 E2E con riavvio processo browser e profilo sintetico | Niente remoto, import completo o dispositivi fisici |
 | INC-02, [CI del 23 ottobre](https://github.com/kuzo17/life-os/actions/runs/39921317118), codice `3c281a6` | Installazione da lockfile, typecheck/lint, 33 test, build e 65 E2E: PASS Ubuntu | Non chiude il contratto remoto/emulatore o la migrazione reale |
 | Checkpoint catalogo/emulatore INC-02 del 23 ottobre | Typecheck/lint/build e 43 test PASS; 10 test RTDB ufficiale PASS; 39 E2E Chromium/Firefox/mobile Chromium PASS | WebKit locale bloccato da Code Integrity prima dell'app (26 casi); nessuna protezione modificata. CI nuova completa in attesa |
+| Prima CI catalogo/emulatore, [run 39925411607](https://github.com/kuzo17/life-os/actions/runs/39925411607) | 43 test e 65 E2E PASS Ubuntu sul codice `fdf02a3` | Job fallito nel successivo setup Java per selettore build abbreviato; corretta stringa completa disponibile `21.0.13+9.0.LTS`, nuova CI in attesa |
 
 ## 2. Stati da usare
 

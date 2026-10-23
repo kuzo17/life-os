@@ -42,7 +42,9 @@ Il nuovo esito `uncertain` non sostiene che la scrittura sia fallita: chiede ril
 
 La matrice locale completa non è verde su Windows: i **26 casi WebKit** non arrivano all'app, perché Code Integrity blocca `ngtcp2.dll` del browser di test (uscita `0xC0E90002`, eventi 3033/3077). Nessuna esclusione o protezione di sistema è stata modificata. I **39 casi Chromium/Firefox/mobile Chromium PASS**, eseguiti separatamente; la CI mantiene tutti i **65 casi**, nessuno skip/retry. Esito CI ancora in attesa sul commit di consegna.
 
-La CI aggiunge Java Temurin `21.0.13+9` con action fissata e i due comandi emulatore; nessun deploy. Il runtime portabile locale è Temurin JRE `21.0.12.1+1`, verificato con SHA-256 e conservato solo in cache; Java installato non è stato sostituito. Nessuna dipendenza npm aggiunta/aggiornata e nessun backup/configurazione privati in Git.
+Prima CI sul codice `fdf02a3`, [run 39925411607](https://github.com/kuzo17/life-os/actions/runs/39925411607): **43 test e 65 E2E PASS Ubuntu**, compresi i 26 WebKit non avviabili localmente. Il job complessivo è fallito dopo queste prove, perché `setup-java` non risolve la forma abbreviata `21.0.13+9`: il catalogo della action espone `21.0.13+9.0.LTS`. Selettore corretto alla stringa completa disponibile, senza cambiare codice app o disattivare test. Ripetizione CI del contratto emulatore in attesa.
+
+La CI aggiunge Java Temurin `21.0.13+9.0.LTS` con action fissata e i due comandi emulatore; nessun deploy. Il runtime portabile locale è Temurin JRE `21.0.12.1+1`, verificato con SHA-256 e conservato solo in cache; Java installato non è stato sostituito. Nessuna dipendenza npm aggiunta/aggiornata e nessun backup/configurazione privati in Git.
 
 **Stato:** mapping degli estratti e contratto di repository verificati localmente · app ancora solo IndexedDB sintetico · parità V1 parziale · non rilasciata. Import completo dei backup, schema metadata persistente, interfaccia F3, autenticazione, sync multi-device, coda e riconciliazione privata rimangono gate distinti.
 
