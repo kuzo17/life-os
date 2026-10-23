@@ -46,6 +46,8 @@ Prima CI sul codice `fdf02a3`, [run 39925411607](https://github.com/kuzo17/life-
 
 La CI aggiunge Java Temurin `21.0.13+9.0.LTS` con action fissata e i due comandi emulatore; nessun deploy. Il runtime portabile locale è Temurin JRE `21.0.12.1+1`, verificato con SHA-256 e conservato solo in cache; Java installato non è stato sostituito. Nessuna dipendenza npm aggiunta/aggiornata e nessun backup/configurazione privati in Git.
 
+**Affinamento QA prima della modifica workflow:** la ripetizione CI resta a lungo nella preparazione browser, prima del test Java. Separare nello stesso workflow due job indipendenti: controlli app/browser e contratto emulatore. Entrambi devono riuscire; nessun caso viene rimosso. Il job app esegue typecheck/lint/unit/build prima di scaricare i browser. Motivazione: isolamento degli errori e feedback sul contratto indipendente dal download dei browser, non aggiramento dei controlli. Nessun cambiamento al codice applicativo dopo `fdf02a3`.
+
 **Stato:** mapping degli estratti e contratto di repository verificati localmente · app ancora solo IndexedDB sintetico · parità V1 parziale · non rilasciata. Import completo dei backup, schema metadata persistente, interfaccia F3, autenticazione, sync multi-device, coda e riconciliazione privata rimangono gate distinti.
 
 **Prossimo incremento:** INC-03, creazione/modifica/pianificazione e operazioni multiple sullo stesso record, Quick Add minimo, prova export/ripristino sintetico. Questi mapper non sono presentati come importatore completo o come merge tra backup V1 successivi.
